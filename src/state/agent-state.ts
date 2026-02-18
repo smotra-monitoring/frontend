@@ -1,0 +1,325 @@
+/**
+ * Agent monitoring data state management
+ */
+
+import { createState } from './global-state.js';
+import type { Agent, DashboardState, FilterOptions, SortOptions, AgentUpdate } from '../types/dashboard-types.js';
+
+// Initial dashboard state
+const initialDashboardState: DashboardState = {
+  agents: [],
+  filter: {},
+  sort: {
+    field: 'name',
+    direction: 'asc',
+  },
+  viewMode: 'grid',
+  selectedAgent: null,
+  loading: false
+};
+
+// Create dashboard state instance
+export const dashboardState = createState<DashboardState>(initialDashboardState);
+
+/**
+ * Set agents list
+ */
+export function setAgents(agents: Agent[]): void {
+  dashboardState.setState({ agents });
+}
+
+/**
+ * Add single agent
+ */
+export function addAgent(agent: Agent): void {
+  const current = dashboardState.getState();
+  const agents = [...current.agents, agent];
+  dashboardState.setState({ agents });
+}
+
+/**
+ * Update single agent
+ */
+export function updateAgent(update: AgentUpdate): void {
+  const current = dashboardState.getState();
+  const agents = current.agents.map(agent => {
+    if (agent.id === update.id) {
+      return {
+        ...agent,
+        ...(update.status && { status: update.status }),
+        ...(update.metrics && { metrics: { ...agent.metrics, ...update.metrics } }),
+        ...(update.lastSeen && { lastSeen: update.lastSeen }),
+      };
+    }
+    return agent;
+  });
+  dashboardState.setState({ agents });
+}
+
+/**
+ * Remove agent
+ */
+export function removeAgent(agentId: string): void {
+  const current = dashboardState.getState();
+  const agents = current.agents.filter(agent => agent.id !== agentId);
+  dashboardState.setState({ agents });
+}
+
+/**
+ * Set filter options
+ */
+export function setFilter(filter: FilterOptions): void {
+  dashboardState.setState({ filter });
+}
+
+/**
+ * Clear filters
+ */
+export function clearFilters(): void {
+  dashboardState.setState({ filter: {} });
+}
+
+/**
+ * Set sort options
+ */
+export function setSort(sort: SortOptions): void {
+  dashboardState.setState({ sort });
+}
+
+/**
+ * Set view mode
+ */
+export function setViewMode(viewMode: 'grid' | 'list' | 'table'): void {
+  dashboardState.setState({ viewMode });
+}
+
+/**
+ * Select agent
+ */
+export function selectAgent(agentId: string | null): void {
+  dashboardState.setState({ selectedAgent: agentId });
+}
+
+/**
+ * Get filtered and sorted agents
+ */
+export function getFilteredAgents(): Agent[] {
+  const { agents, filter, sort } = dashboardState.getState();
+
+  let filtered = [...agents];
+
+  // Apply status filter
+  if (filter.status && filter.status.length > 0) {
+    filtered = filtered.filter(agent => filter.status!.includes(agent.status));
+  }
+
+  // Apply tags filter
+  if (filter.tags && filter.tags.length > 0) {
+    filtered = filtered.filter(agent =>
+      filter.tags!.some((tag: string) => agent.tags.includes(tag))
+    );
+  }
+
+  // Apply search filter
+  if (filter.search) {
+    const searchLower = filter.search.toLowerCase();
+    filtered = filtered.filter(agent =>
+      agent.name.toLowerCase().includes(searchLower) ||
+      agent.hostname.toLowerCase().includes(searchLower) ||
+      agent.ip.includes(searchLower)
+    );
+  }
+
+  // Apply sorting
+  filtered.sort((a, b) => {
+    let aValue: any;
+    let bValue: any;
+
+    switch (sort.field) {
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      case 'latency':
+        aValue = a.metrics.latency;
+        bValue = b.metrics.latency;
+        break;
+      case 'uptime':
+        aValue = a.metrics.uptime;
+        bValue = b.metrics.uptime;
+        break;
+      case 'lastSeen':
+        aValue = a.lastSeen;
+        bValue = b.lastSeen;
+        break;
+      default:
+        aValue = a.name;
+        bValue = b.name;
+    }
+
+    if (aValue < bValue) {
+      return sort.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sort.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  return filtered;
+}
+
+/**
+ * Get all agents (legacy - use getAgents)
+ */
+export function getAgents(): Agent[] {
+  return dashboardState.getState().agents;
+}
+
+/**
+ * Filter agents by criteria
+ */
+export function filterAgents(filter: FilterOptions): Agent[] {
+  const agents = dashboardState.getState().agents;
+  let filtered = [...agents];
+
+  // Apply status filter
+  if (filter.status) {
+    if (Array.isArray(filter.status)) {
+      filtered = filtered.filter(agent => filter.status!.includes(agent.status));
+    } else {
+      filtered = filtered.filter(agent => agent.status === filter.status);
+    }
+  }
+
+  // Apply hostname filter
+  if (filter.hostname) {
+    filtered = filtered.filter(agent => agent.hostname === filter.hostname);
+  }
+
+  // Apply tags filter
+  if (filter.tags && filter.tags.length > 0) {
+    filtered = filtered.filter(agent =>
+      filter.tags!.some((tag: string) => agent.tags.includes(tag))
+    );
+  }
+
+  // Apply search filter
+  if (filter.search) {
+    const searchLower = filter.search.toLowerCase();
+    filtered = filtered.filter(agent =>
+      agent.name.toLowerCase().includes(searchLower) ||
+      agent.hostname.toLowerCase().includes(searchLower) ||
+      agent.ip?.includes(searchLower) ||
+      agent.ipAddress?.includes(searchLower)
+    );
+  }
+
+  return filtered;
+}
+
+/**
+ * Sort agents by field and direction
+ */
+export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
+  const sorted = [...agents];
+
+  sorted.sort((a, b) => {
+    let aValue: any;
+    let bValue: any;
+
+    switch (sort.field) {
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      case 'latency':
+        aValue = a.metrics.latency;
+        bValue = b.metrics.latency;
+        break;
+      case 'uptime':
+        aValue = a.metrics.uptime;
+        bValue = b.metrics.uptime;
+        break;
+      case 'lastSeen':
+        aValue = a.lastSeen;
+        bValue = b.lastSeen;
+        break;
+      default:
+        aValue = a.name;
+        bValue = b.name;
+    }
+
+    if (aValue < bValue) {
+      return sort.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sort.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  return sorted;
+}
+
+/**
+ * Subscribe to agent state changes
+ */
+export function subscribeToAgents(callback: (state: DashboardState) => void): () => void {
+  return dashboardState.subscribe(callback);
+}
+
+/**
+ * Get agent by ID
+ */
+export function getAgentById(agentId: string): Agent | null {
+  const agents = dashboardState.getState().agents;
+  return agents.find((agent: Agent) => agent.id === agentId) || null;
+}
+
+/**
+ * Get agent count by status
+ */
+export function getAgentCountByStatus(): Record<string, number> {
+  const agents = dashboardState.getState().agents;
+  const counts: Record<string, number> = {
+    online: 0,
+    offline: 0,
+    warning: 0,
+    unknown: 0,
+  };
+
+  agents.forEach((agent: Agent) => {
+    counts[agent.status] = (counts[agent.status] || 0) + 1;
+  });
+
+  return counts;
+}
+
+/**
+ * Load agents from API
+ * TODO: Implement actual API call when backend is ready
+ */
+export async function loadAgents(): Promise<void> {
+  // For now, this is a stub. In production, it would fetch from API
+  // The WebSocket will provide real-time updates after initial load
+  try {
+    // Future: const response = await fetch('/api/v1/agents');
+    // Future: const agents = await response.json();
+    // Future: setAgents(agents);
+    
+    // For now, just resolve - WebSocket will populate data
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Failed to load agents:', error);
+    throw error;
+  }
+}
