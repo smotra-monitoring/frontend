@@ -11,6 +11,9 @@ build/
 # TypeScript
 *.tsbuildinfo
 
+# Coverage
+coverage/
+
 # Environment variables
 # .env
 .env.local
