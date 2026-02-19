@@ -1,6 +1,8 @@
 - [ ] check card style:
 ```css
 .dashboard-card {
+  contain: layout; /* Standard performance boost */
+
   /* Using rem for consistent spacing */
   padding: 1.5rem;
   border-radius: 0.75rem; /* 12px */
@@ -18,6 +20,9 @@
 }
 
 .dashboard-card:hover {
+  /* Only promote to GPU when the user is actually interacting with it */
+  will-change: transform;
+
   transform: translateY(-4px); /* Slight lift on hover */
 }
 
