@@ -6,14 +6,14 @@
   --color-text-primary: #e6e6e6;
   --color-text-secondary: #9ca3af;
   --color-border: #2a2f3a;
-  
+
   --color-success: #48c78e;
   --color-warning: #ffe08a;
   --color-error: #f14668;
   --color-info: #3e8ed0;
-  
+
   --color-focus: #68a8e0;
-  
+
   /* Neumorphic shadows for dark mode */
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.5);
   --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.5);
