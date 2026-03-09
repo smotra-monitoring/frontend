@@ -3,8 +3,6 @@
  * Extends the generated OpenAPI types with application-specific auth types
  */
 
-export type ThemePreference = 'system' | 'light' | 'dark';
-
 export interface AuthState {
   isAuthenticated: boolean;
   user: UserInfo | null;
@@ -27,6 +25,8 @@ export interface UserInfo {
   picture?: string;
 }
 
+export type OAuth2Provider = 'okta' | 'auth0' | 'azure' | 'google' | 'oidc';
+
 export interface OAuth2Config {
   provider: OAuth2Provider;
   clientId: string;
@@ -35,8 +35,6 @@ export interface OAuth2Config {
   tokenEndpoint: string;
   scopes: string[];
 }
-
-export type OAuth2Provider = 'okta' | 'auth0' | 'azure' | 'google' | 'oidc';
 
 export interface PKCEChallenge {
   code_verifier: string;
