@@ -64,7 +64,7 @@ describe('storage utility', () => {
     it('removes a stored item', () => {
       setItem('to-remove', 'value');
       expect(getItem('to-remove')).toBe('value');
-      
+
       removeItem('to-remove');
       expect(getItem('to-remove')).toBeNull();
     });
@@ -79,9 +79,9 @@ describe('storage utility', () => {
       setItem('key1', 'value1');
       setItem('key2', 'value2');
       setItem('key3', 'value3');
-      
+
       clear();
-      
+
       expect(getItem('key1')).toBeNull();
       expect(getItem('key2')).toBeNull();
       expect(getItem('key3')).toBeNull();
@@ -105,6 +105,25 @@ describe('storage utility', () => {
 
       // Restore
       Storage.prototype.setItem = originalSetItem;
+    });
+
+    it('handles storage exceptions by logging an error', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+      const setItemSpy = jest.spyOn(localStorage, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError');
+      });
+
+      // 1. Verify it doesn't crash the UI
+      expect(() => setItem('key', 'value')).not.toThrow();
+
+      // 2. Verify the error was actually handled/logged
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy.mock.calls[0][0]).toContain('Error');
+      expect(consoleSpy.mock.calls[0][1]).toBeInstanceOf(Error);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Error'), expect.any(Error));
+
+      consoleSpy.mockRestore();
+      setItemSpy.mockRestore();
     });
   });
 });
