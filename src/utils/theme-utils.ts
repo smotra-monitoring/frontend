@@ -17,18 +17,18 @@ export function getSystemThemePreference(): ThemeMode {
 /**
  * Alias for getSystemThemePreference
  */
-export const detectSystemTheme = getSystemThemePreference;
+export const getSystemThemePreference_ForTests = getSystemThemePreference;
 
 /**
  * Listen for system theme changes
  */
 export function watchSystemTheme(callback: (theme: ThemeMode) => void): () => void {
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  
+
   const handler = (e: MediaQueryListEvent) => {
     callback(e.matches ? 'dark' : 'light');
   };
-  
+
   // Modern browsers
   if (mediaQuery.addEventListener) {
     mediaQuery.addEventListener('change', handler);
@@ -39,8 +39,8 @@ export function watchSystemTheme(callback: (theme: ThemeMode) => void): () => vo
     mediaQuery.addListener(handler);
     return () => mediaQuery.removeListener(handler);
   }
-  
-  return () => {};
+
+  return () => { };
 }
 
 /**
@@ -48,16 +48,16 @@ export function watchSystemTheme(callback: (theme: ThemeMode) => void): () => vo
  */
 export function applyTheme(mode: ThemeMode | ThemePreference): void {
   const html = document.documentElement;
-  
+
   // Resolve 'system' preference to actual mode
   const resolvedMode: ThemeMode = mode === 'system' ? getSystemThemePreference() : mode as ThemeMode;
-  
+
   // Remove both theme classes first
   html.classList.remove('theme-light', 'theme-dark');
-  
+
   // Add the current theme class
   html.classList.add(`theme-${resolvedMode}`);
-  
+
   // Update meta theme-color for mobile browsers
   updateMetaThemeColor(resolvedMode);
 }
@@ -67,13 +67,13 @@ export function applyTheme(mode: ThemeMode | ThemePreference): void {
  */
 function updateMetaThemeColor(mode: ThemeMode): void {
   let metaThemeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  
+
   if (!metaThemeColor) {
     metaThemeColor = document.createElement('meta');
     metaThemeColor.name = 'theme-color';
     document.head.appendChild(metaThemeColor);
   }
-  
+
   // Set appropriate color based on theme
   metaThemeColor.content = mode === 'dark' ? '#0b0e14' : '#ffffff';
 }
@@ -93,14 +93,14 @@ export function resolveThemeMode(preference: ThemePreference): ThemeMode {
  */
 export function getCurrentThemeClass(): ThemeMode | null {
   const html = document.documentElement;
-  
+
   if (html.classList.contains('theme-dark')) {
     return 'dark';
   }
   if (html.classList.contains('theme-light')) {
     return 'light';
   }
-  
+
   return null;
 }
 

@@ -9,7 +9,7 @@ import {
   getThemePreference,
   subscribeToThemeChanges,
 } from '../../src/state/theme-manager.js';
-import { applyTheme, cycleTheme, detectSystemTheme } from '../../src/utils/theme-utils.js';
+import { applyTheme, cycleTheme, getSystemThemePreference_ForTests } from '../../src/utils/theme-utils.js';
 import { mockMatchMedia } from '../mocks/viewport-mocks.js';
 
 describe('Theme Switching (Integration)', () => {
