@@ -136,5 +136,13 @@ describe('url-utils', () => {
       expect(result).toContain('count=42');
       expect(result).toContain('enabled=true');
     });
+
+    it('handle plus sign in values', () => {
+      const params = {
+        query: 'a+b c',
+      };
+      const result = buildQueryString(params);
+      expect(result).toBe('query=a%2Bb%20c');
+    });
   });
 });
