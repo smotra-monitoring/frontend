@@ -107,7 +107,7 @@ describe('storage utility', () => {
       Storage.prototype.setItem = originalSetItem;
     });
 
-    it('handles storage exceptions by logging an error', () => {
+    it('handles storage exceptions by spying on an error', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
       const setItemSpy = jest.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('QuotaExceededError');
