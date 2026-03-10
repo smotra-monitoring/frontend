@@ -32,25 +32,23 @@ describe('global-state', () => {
     it('setState merges partial updates', () => {
       const state = createState(initialState);
       state.setState({ count: 10 });
-      
+
       expect(state.getState()).toEqual({
+        ...initialState,
         count: 10,
-        name: 'test',
-        items: [],
       });
     });
 
     it('notifies subscribers on state change', () => {
       const state = createState(initialState);
       const callback = jest.fn();
-      
+
       state.subscribe(callback);
       state.setState({ count: 5 });
-      
+
       expect(callback).toHaveBeenCalledWith({
+        ...initialState,
         count: 5,
-        name: 'test',
-        items: [],
       });
     });
 
@@ -58,12 +56,12 @@ describe('global-state', () => {
       const state = createState(initialState);
       const callback1 = jest.fn();
       const callback2 = jest.fn();
-      
+
       state.subscribe(callback1);
       state.subscribe(callback2);
-      
+
       state.setState({ count: 10 });
-      
+
       expect(callback1).toHaveBeenCalled();
       expect(callback2).toHaveBeenCalled();
     });
@@ -71,10 +69,10 @@ describe('global-state', () => {
     it('unsubscribe removes subscriber', () => {
       const state = createState(initialState);
       const callback = jest.fn();
-      
+
       const unsubscribe = state.subscribe(callback);
       unsubscribe();
-      
+
       state.setState({ count: 5 });
       expect(callback).not.toHaveBeenCalled();
     });
@@ -86,15 +84,15 @@ describe('global-state', () => {
           age: number;
         };
       }
-      
+
       const nestedState = createState<NestedState>({
         user: { name: 'John', age: 30 },
       });
-      
+
       nestedState.setState({
         user: { name: 'Jane', age: 25 },
       });
-      
+
       expect(nestedState.getState().user).toEqual({
         name: 'Jane',
         age: 25,
@@ -103,10 +101,10 @@ describe('global-state', () => {
 
     it('handles array updates', () => {
       const state = createState(initialState);
-      
+
       state.setState({ items: ['a', 'b', 'c'] });
       expect(state.getState().items).toEqual(['a', 'b', 'c']);
-      
+
       state.setState({ items: [...state.getState().items, 'd'] });
       expect(state.getState().items).toEqual(['a', 'b', 'c', 'd']);
     });
