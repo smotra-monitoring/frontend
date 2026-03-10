@@ -7,7 +7,7 @@
  */
 export function parseQueryParams(url: string = window.location.href): Record<string, string> {
   const params: Record<string, string> = {};
-  
+
   try {
     const urlObj = new URL(url);
     urlObj.searchParams.forEach((value, key) => {
@@ -16,7 +16,7 @@ export function parseQueryParams(url: string = window.location.href): Record<str
   } catch (error) {
     console.error('Error parsing URL query parameters:', error);
   }
-  
+
   return params;
 }
 
@@ -30,12 +30,12 @@ export function getQueryParam(name: string, urlOrDefault?: string): string | nul
     const url = urlOrDefault && urlOrDefault.includes('://') ? urlOrDefault : window.location.href;
     const urlObj = new URL(url);
     const value = urlObj.searchParams.get(name);
-    
+
     // If value is null and urlOrDefault doesn't look like a URL, treat it as default value
     if (value === null && urlOrDefault && !urlOrDefault.includes('://')) {
       return urlOrDefault;
     }
-    
+
     return value;
   } catch (error) {
     console.error('Error getting query parameter:', error);
@@ -74,14 +74,14 @@ export function removeQueryParam(key: string): void {
  */
 export function parseQueryString(queryString: string): Record<string, string> {
   const params: Record<string, string> = {};
-  
+
   try {
     // Remove leading ? if present
     const cleanQuery = queryString.replace(/^\?/, '');
     if (!cleanQuery) {
       return params;
     }
-    
+
     const searchParams = new URLSearchParams(cleanQuery);
     searchParams.forEach((value, key) => {
       params[key] = value;
@@ -89,7 +89,7 @@ export function parseQueryString(queryString: string): Record<string, string> {
   } catch (error) {
     console.error('Error parsing query string:', error);
   }
-  
+
   return params;
 }
 
@@ -104,7 +104,7 @@ export function buildQueryString(params: Record<string, any>): string {
         searchParams.set(key, String(value));
       }
     });
-    
+
     // Convert + to %20 for consistency with URL encoding
     return searchParams.toString().replace(/\+/g, '%20');
   } catch (error) {
@@ -139,7 +139,7 @@ export function parseOAuthCallback(url: string = window.location.href): {
   error_description: string | null;
 } {
   const params = parseQueryParams(url);
-  
+
   return {
     code: params.code || null,
     state: params.state || null,
@@ -164,7 +164,7 @@ export function removeQueryParams(url: string = window.location.href): string {
 /**
  * Update browser URL without reload
  */
-export function updateUrl(url: string, title?: string): void {
+export function pushUrl(url: string, title?: string): void {
   try {
     window.history.pushState({}, title || document.title, url);
   } catch (error) {
@@ -195,17 +195,17 @@ export function getCurrentPath(): string {
  */
 export function matchesPath(pattern: string): boolean {
   const current = getCurrentPath();
-  
+
   // Exact match
   if (pattern === current) {
     return true;
   }
-  
+
   // Wildcard match
   if (pattern.endsWith('*')) {
     const prefix = pattern.slice(0, -1);
     return current.startsWith(prefix);
   }
-  
+
   return false;
 }
