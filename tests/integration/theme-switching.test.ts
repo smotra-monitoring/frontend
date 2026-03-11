@@ -9,7 +9,7 @@ import {
   getThemePreference,
   subscribeToThemeChanges,
 } from '../../src/state/theme-manager.js';
-import { applyTheme, cycleTheme, getSystemThemePreference_ForTests } from '../../src/utils/theme-utils.js';
+import { applyTheme, getNextThemePreference_ForTests, getSystemThemePreference_ForTests } from '../../src/utils/theme-utils.js';
 import { mockMatchMedia } from '../mocks/viewport-mocks.js';
 
 describe('Theme Switching (Integration)', () => {
@@ -56,19 +56,19 @@ describe('Theme Switching (Integration)', () => {
     expect(getThemePreference()).toBe('system');
 
     // Cycle to light
-    const nextTheme1 = cycleTheme(getThemePreference());
+    const nextTheme1 = getNextThemePreference_ForTests(getThemePreference());
     setTheme(nextTheme1);
     expect(getThemePreference()).toBe('light');
     expect(document.documentElement.classList.contains('theme-light')).toBe(true);
 
     // Cycle to dark
-    const nextTheme2 = cycleTheme(getThemePreference());
+    const nextTheme2 = getNextThemePreference_ForTests(getThemePreference());
     setTheme(nextTheme2);
     expect(getThemePreference()).toBe('dark');
     expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
 
     // Cycle back to system
-    const nextTheme3 = cycleTheme(getThemePreference());
+    const nextTheme3 = getNextThemePreference_ForTests(getThemePreference());
     setTheme(nextTheme3);
     expect(getThemePreference()).toBe('system');
   });

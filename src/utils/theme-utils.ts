@@ -147,4 +147,4 @@ export function getNextThemePreference(current: ThemePreference): ThemePreferenc
 /**
  * Alias for getNextThemePreference
  */
-export const cycleTheme = getNextThemePreference;
+export const getNextThemePreference_ForTests = getNextThemePreference;

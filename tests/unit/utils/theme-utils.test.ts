@@ -5,7 +5,7 @@
 import {
   getSystemThemePreference_ForTests,
   applyTheme,
-  cycleTheme,
+  getNextThemePreference_ForTests,
   getThemeIcon,
 } from '../../../src/utils/theme-utils.js';
 import type { ThemePreference } from '../../../src/types/theme-types.js';
@@ -57,9 +57,9 @@ describe('theme-utils', () => {
 
   describe('cycleTheme', () => {
     it('cycles system → light → dark → system', () => {
-      expect(cycleTheme('system')).toBe('light');
-      expect(cycleTheme('light')).toBe('dark');
-      expect(cycleTheme('dark')).toBe('system');
+      expect(getNextThemePreference_ForTests('system')).toBe('light');
+      expect(getNextThemePreference_ForTests('light')).toBe('dark');
+      expect(getNextThemePreference_ForTests('dark')).toBe('system');
     });
   });
 
