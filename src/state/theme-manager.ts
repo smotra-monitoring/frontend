@@ -69,7 +69,7 @@ export function subscribeToThemeChanges(callback: (state: ThemeState) => void): 
 /**
  * Set theme preference (system, light, or dark)
  */
-export function setThemePreference(preference: ThemePreference): void {
+function setThemePreference(preference: ThemePreference): void {
   // Save preference
   Storage.set(STORAGE_KEY, preference);
 
