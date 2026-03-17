@@ -4,7 +4,7 @@
 
 import type { ViewportBreakpoint } from '../../src/types/viewport-types.js';
 
-export interface MockMediaQueryList {
+interface MockMediaQueryList {
   matches: boolean;
   media: string;
   addEventListener: jest.Mock;

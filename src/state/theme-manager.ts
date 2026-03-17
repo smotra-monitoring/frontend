@@ -53,13 +53,6 @@ export function initializeTheme(): void {
 }
 
 /**
- * Set theme preference
- */
-export function setTheme(preference: ThemePreference): void {
-  setThemePreference(preference);
-}
-
-/**
  * Subscribe to theme changes
  */
 export function subscribeToThemeChanges(callback: (state: ThemeState) => void): () => void {
@@ -69,7 +62,7 @@ export function subscribeToThemeChanges(callback: (state: ThemeState) => void): 
 /**
  * Set theme preference (system, light, or dark)
  */
-function setThemePreference(preference: ThemePreference): void {
+export function setTheme(preference: ThemePreference): void {
   // Save preference
   Storage.set(STORAGE_KEY, preference);
 
@@ -122,7 +115,7 @@ export function getCurrentThemeMode(): ThemeMode {
 export function toggleTheme(): void {
   const current = themeState.getState().currentMode;
   const next: ThemePreference = current === 'dark' ? 'light' : 'dark';
-  setThemePreference(next);
+  setTheme(next);
 }
 
 /**
@@ -146,7 +139,7 @@ export function cycleThemePreference(): void {
       next = 'system';
   }
 
-  setThemePreference(next);
+  setTheme(next);
 }
 
 /**

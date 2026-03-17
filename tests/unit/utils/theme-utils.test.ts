@@ -8,7 +8,6 @@ import {
   getNextThemePreference_ForTests,
   getThemeIcon,
 } from '../../../src/utils/theme-utils.js';
-import type { ThemePreference } from '../../../src/types/theme-types.js';
 import { mockMatchMedia } from '../../mocks/viewport-mocks.js';
 
 describe('theme-utils', () => {

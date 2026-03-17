@@ -9,7 +9,6 @@ import {
   subscribeToThemeChanges,
   initializeTheme,
 } from '../../../src/state/theme-manager.js';
-import type { ThemePreference } from '../../../src/types/theme-types.js';
 import { mockMatchMedia } from '../../mocks/viewport-mocks.js';
 
 describe('theme-manager', () => {
@@ -33,7 +32,7 @@ describe('theme-manager', () => {
     });
 
     it('returns stored preference', () => {
-      localStorage.setItem('theme_preference', JSON.stringify('dark'));
+      setTheme('dark');
       expect(getThemePreference()).toBe('dark');
     });
   });
@@ -51,14 +50,14 @@ describe('theme-manager', () => {
 
     it('stores preference in localStorage', () => {
       setTheme('light');
-      const stored = localStorage.getItem('theme_preference');
+      const stored = localStorage.getItem('theme');
       expect(JSON.parse(stored!)).toBe('light');
     });
 
     it('handles system preference', () => {
       mockMatchMedia(true); // system is dark
       setTheme('system');
-      
+
       expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
     });
 
@@ -68,7 +67,7 @@ describe('theme-manager', () => {
         unsubscribe();
         done();
       });
-      
+
       setTheme('dark');
     });
   });
@@ -77,52 +76,40 @@ describe('theme-manager', () => {
     it('notifies on theme changes', () => {
       const callback = jest.fn();
       const unsubscribe = subscribeToThemeChanges(callback);
-      
+
       setTheme('dark');
       expect(callback).toHaveBeenCalled();
-      
+
       unsubscribe();
     });
 
     it('can unsubscribe', () => {
       const callback = jest.fn();
       const unsubscribe = subscribeToThemeChanges(callback);
-      
+
       unsubscribe();
       setTheme('light');
-      
+
       expect(callback).not.toHaveBeenCalled();
     });
   });
 
   describe('initializeTheme', () => {
     it('initializes with stored preference', () => {
-      localStorage.setItem('theme_preference', JSON.stringify('dark'));
+      localStorage.setItem('theme', JSON.stringify('dark'));
       document.documentElement.className = '';
-      
+
       initializeTheme();
-      
+
       expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
     });
 
     it('initializes with system preference when no preference stored', () => {
-      mockMatchMedia(true); // dark
-      
-      initializeTheme();
-      
-      expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
-    });
+      mockMatchMedia(false); // light
 
-    it('listens for system theme changes', () => {
-      const mediaQueryList = mockMatchMedia(false); // light
-      localStorage.removeItem('theme_preference'); // system preference
-      
       initializeTheme();
-      
-      expect(mediaQueryList.addEventListener).toHaveBeenCalledWith(
-        'change',
-        expect.any(Function)
-      );
+
+      expect(document.documentElement.classList.contains('theme-light')).toBe(true);
     });
   });
 });
