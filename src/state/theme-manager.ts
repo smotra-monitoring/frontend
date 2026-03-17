@@ -181,7 +181,7 @@ function startWatchingSystemTheme(): void {
 /**
  * Stop watching system theme changes
  */
-export function stopWatchingSystemTheme(): void {
+function stopWatchingSystemTheme(): void {
   if (systemThemeUnwatch) {
     systemThemeUnwatch();
     systemThemeUnwatch = null;
