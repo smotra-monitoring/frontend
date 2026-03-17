@@ -22,7 +22,7 @@ const initialThemeState: ThemeState = {
 };
 
 // Create theme state instance
-export const themeState = createState<ThemeState>(initialThemeState);
+const themeState = createState<ThemeState>(initialThemeState);
 
 let systemThemeUnwatch: (() => void) | null = null;
 
