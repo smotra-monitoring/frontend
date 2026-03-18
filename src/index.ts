@@ -14,43 +14,45 @@ import { initializeRouter } from './pages/router.js';
  */
 async function bootstrap(): Promise<void> {
   try {
+    debugger;
+
     console.log('🚀 Bootstrapping Smotra...');
-    
+
     // 1. Initialize theme FIRST (prevent FOUC)
     // This ensures correct theme is applied before rendering
     initializeTheme();
     console.log('✓ Theme initialized');
-    
+
     // 2. Initialize viewport tracking
     // Monitors window size for responsive rendering
     initializeViewport();
     console.log('✓ Viewport tracking initialized');
-    
+
     // 3. Load authentication state from localStorage
     // Restores user session if tokens exist
     loadAuthState();
     console.log('✓ Authentication state loaded');
-    
+
     // 4. Initialize authentication service
     // Sets up token refresh scheduling
     initializeAuthService();
     console.log('✓ Authentication service initialized');
-    
+
     // 5. Initialize router
     // Sets up routing and renders appropriate page
     const appRoot = document.getElementById('app');
-    
+
     if (!appRoot) {
       throw new Error('App root element not found');
     }
-    
+
     initializeRouter(appRoot);
     console.log('✓ Router initialized');
-    
+
     console.log('✅ Smotra initialized successfully');
   } catch (error) {
     console.error('❌ Bootstrap error:', error);
-    
+
     // Display error to user
     const appRoot = document.getElementById('app');
     if (appRoot) {
