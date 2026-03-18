@@ -2,40 +2,8 @@
  * Viewport detection and responsive utilities
  */
 
-import type { BreakpointName, ViewportState, BREAKPOINTS } from '../types/viewport-types.js';
-
-// Import breakpoints definition
-const BREAKPOINTS_DATA = [
-  {
-    name: 'mobile' as const,
-    minWidth: 0,
-    maxWidth: 767,
-    columns: { min: 1, max: 1 }
-  },
-  {
-    name: 'tablet' as const,
-    minWidth: 768,
-    maxWidth: 1023,
-    columns: { min: 2, max: 2 }
-  },
-  {
-    name: 'desktop' as const,
-    minWidth: 1024,
-    maxWidth: 1439,
-    columns: { min: 3, max: 4 }
-  },
-  {
-    name: 'wide' as const,
-    minWidth: 1440,
-    maxWidth: 1919,
-    columns: { min: 4, max: 5 }
-  },
-  {
-    name: 'ultrawide' as const,
-    minWidth: 1920,
-    columns: { min: 5, max: 6 }
-  }
-];
+import type { BreakpointName, ViewportState } from '../types/viewport-types.js';
+import { BREAKPOINTS } from '../types/viewport-types.js';
 
 /**
  * Get current viewport dimensions
@@ -51,7 +19,7 @@ export function getViewportDimensions(): { width: number; height: number } {
  * Detect current breakpoint based on viewport width
  */
 export function getCurrentBreakpoint(width: number = window.innerWidth): BreakpointName {
-  for (const breakpoint of BREAKPOINTS_DATA) {
+  for (const breakpoint of BREAKPOINTS) {
     if (breakpoint.maxWidth !== undefined) {
       if (width >= breakpoint.minWidth && width <= breakpoint.maxWidth) {
         return breakpoint.name;
@@ -62,7 +30,7 @@ export function getCurrentBreakpoint(width: number = window.innerWidth): Breakpo
       }
     }
   }
-  
+
   return 'mobile';
 }
 
@@ -75,29 +43,29 @@ export const getBreakpoint = getCurrentBreakpoint;
  * Calculate optimal column count for current viewport
  */
 export function getOptimalColumns(width: number = window.innerWidth): number {
-  const breakpoint = BREAKPOINTS_DATA.find(bp => {
+  const breakpoint = BREAKPOINTS.find(bp => {
     if (bp.maxWidth !== undefined) {
       return width >= bp.minWidth && width <= bp.maxWidth;
     }
     return width >= bp.minWidth;
   });
-  
+
   if (!breakpoint) {
     return 1;
   }
-  
+
   // For auto-fit grid with 300px min card width
   const minCardWidth = 300;
   const gap = 24; // 1.5rem in pixels
   const padding = breakpoint.name === 'mobile' ? 16 : (breakpoint.name === 'tablet' ? 16 : 48);
-  
+
   // Available width for cards (subtract sidebar on desktop+)
   const sidebarWidth = breakpoint.name === 'desktop' || breakpoint.name === 'wide' || breakpoint.name === 'ultrawide' ? 200 : 0;
   const availableWidth = width - sidebarWidth - (padding * 2);
-  
+
   // Calculate how many cards can fit
   const columns = Math.floor((availableWidth + gap) / (minCardWidth + gap));
-  
+
   // Clamp to breakpoint's min/max
   return Math.max(breakpoint.columns.min, Math.min(columns, breakpoint.columns.max));
 }
@@ -160,7 +128,7 @@ export function getViewportState(): ViewportState {
   const orientation = getOrientation();
   const devicePixelRatio = window.devicePixelRatio || 1;
   const optimalColumns = getOptimalColumns(width);
-  
+
   return {
     width,
     height,
@@ -179,23 +147,23 @@ export function watchViewport(
   debounceMs: number = 150
 ): () => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
-  
+
   const handler = () => {
     if (timeout) {
       clearTimeout(timeout);
     }
-    
+
     timeout = setTimeout(() => {
       callback(getViewportState());
     }, debounceMs);
   };
-  
+
   window.addEventListener('resize', handler);
   window.addEventListener('orientationchange', handler);
-  
+
   // Initial call
   callback(getViewportState());
-  
+
   return () => {
     if (timeout) {
       clearTimeout(timeout);

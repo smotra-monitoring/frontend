@@ -2,7 +2,7 @@
  * Mock viewport utilities for testing responsive behavior
  */
 
-import type { ViewportBreakpoint } from '../../src/types/viewport-types.js';
+import type { BreakpointName } from '../../src/types/viewport-types.js';
 
 interface MockMediaQueryList {
   matches: boolean;
@@ -51,14 +51,14 @@ export function getComputedColumns(element: HTMLElement): number {
 }
 
 export const viewportBreakpoints = {
-  mobile: { width: 375, height: 667, breakpoint: 'mobile' as ViewportBreakpoint },
-  tablet: { width: 768, height: 1024, breakpoint: 'tablet' as ViewportBreakpoint },
-  desktop: { width: 1280, height: 800, breakpoint: 'desktop' as ViewportBreakpoint },
-  wide: { width: 1680, height: 1050, breakpoint: 'wide' as ViewportBreakpoint },
-  ultrawide: { width: 2560, height: 1440, breakpoint: 'ultrawide' as ViewportBreakpoint },
+  mobile: { width: 375, height: 667, breakpoint: 'mobile' as BreakpointName },
+  tablet: { width: 768, height: 1024, breakpoint: 'tablet' as BreakpointName },
+  desktop: { width: 1280, height: 800, breakpoint: 'desktop' as BreakpointName },
+  wide: { width: 1680, height: 1050, breakpoint: 'wide' as BreakpointName },
+  ultrawide: { width: 2560, height: 1440, breakpoint: 'ultrawide' as BreakpointName },
 };
 
-export function mockBreakpoint(breakpoint: ViewportBreakpoint): void {
+export function mockBreakpoint(breakpoint: BreakpointName): void {
   const viewport = viewportBreakpoints[breakpoint];
   mockViewport(viewport.width, viewport.height);
 }

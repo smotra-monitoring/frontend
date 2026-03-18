@@ -4,7 +4,7 @@
  */
 
 import type { ComponentLifecycle, ComponentState } from '../types/component-types.js';
-import type { ViewportBreakpoint, ViewportState } from '../types/viewport-types.js';
+import type { BreakpointName, ViewportState } from '../types/viewport-types.js';
 import { getCurrentBreakpoint } from '../utils/viewport-utils.js';
 import { subscribeToViewportChanges } from '../state/viewport-state.js';
 
@@ -31,7 +31,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
     private subscriptions: Array<() => void> = [];
 
     // Current viewport breakpoint
-    protected viewport: ViewportBreakpoint = getCurrentBreakpoint();
+    protected viewport: BreakpointName = getCurrentBreakpoint();
 
     constructor(root: HTMLElement, initialState: TState) {
         this.root = root;
@@ -79,7 +79,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
      * Lifecycle: Viewport breakpoint changed
      * Override to handle responsive changes
      */
-    onViewportChange?(prevBreakpoint: ViewportBreakpoint, newBreakpoint: ViewportBreakpoint): void;
+    onViewportChange?(prevBreakpoint: BreakpointName, newBreakpoint: BreakpointName): void;
 
     /**
      * Mount component to DOM
@@ -232,7 +232,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
     /**
      * Get current viewport breakpoint
      */
-    protected getViewport(): ViewportBreakpoint {
+    protected getViewport(): BreakpointName {
         return this.viewport;
     }
 

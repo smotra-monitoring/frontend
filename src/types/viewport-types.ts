@@ -13,12 +13,9 @@ export interface ViewportState {
 
 export type BreakpointName = 'mobile' | 'tablet' | 'desktop' | 'wide' | 'ultrawide';
 
-// Alias for backward compatibility
-export type ViewportBreakpoint = BreakpointName;
+type Orientation = 'portrait' | 'landscape';
 
-export type Orientation = 'portrait' | 'landscape';
-
-export interface Breakpoint {
+interface Breakpoint {
   name: BreakpointName;
   minWidth: number;
   maxWidth?: number;
