@@ -15,7 +15,7 @@ export type BreakpointName = 'mobile' | 'tablet' | 'desktop' | 'wide' | 'ultrawi
 
 type Orientation = 'portrait' | 'landscape';
 
-interface Breakpoint {
+export interface Breakpoint {
   name: BreakpointName;
   minWidth: number;
   maxWidth: number;

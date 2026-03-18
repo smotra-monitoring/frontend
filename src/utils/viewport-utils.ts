@@ -2,7 +2,7 @@
  * Viewport detection and responsive utilities
  */
 
-import type { BreakpointName, ViewportState } from '../types/viewport-types.js';
+import type { Breakpoint, BreakpointName, ViewportState } from '../types/viewport-types.js';
 import { BREAKPOINTS } from '../types/viewport-types.js';
 
 /**
@@ -18,27 +18,26 @@ export function getViewportDimensions(): { width: number; height: number } {
 /**
  * Detect current breakpoint based on viewport width
  */
-export function getBreakpoint(width: number = window.innerWidth): BreakpointName {
+function getBreakpoint(width: number = window.innerWidth): Breakpoint {
   for (const breakpoint of BREAKPOINTS) {
     if (width >= breakpoint.minWidth && width <= breakpoint.maxWidth) {
-      return breakpoint.name;
+      return breakpoint;
     }
   }
 
-  return 'mobile';
+  return BREAKPOINTS[0] as Breakpoint; // Default to mobile if no match
+}
+
+
+export function getBreakpointName(width: number = window.innerWidth): BreakpointName {
+  return getBreakpoint(width).name;
 }
 
 /**
  * Calculate optimal column count for current viewport
  */
 export function getOptimalColumns(width: number = window.innerWidth): number {
-  const breakpoint = BREAKPOINTS.find(bp => {
-    return width >= bp.minWidth && width <= bp.maxWidth;
-  });
-
-  if (!breakpoint) {
-    return 1;
-  }
+  const breakpoint = getBreakpoint(width);
 
   // For auto-fit grid with 300px min card width
   const minCardWidth = 300;
@@ -67,7 +66,7 @@ export function getOrientation(): 'portrait' | 'landscape' {
  * Check if viewport matches breakpoint
  */
 export function isBreakpoint(name: BreakpointName, width: number = window.innerWidth): boolean {
-  return getBreakpoint(width) === name;
+  return getBreakpointName(width) === name;
 }
 
 /**
@@ -110,7 +109,7 @@ export function isUltraWide(width: number = window.innerWidth): boolean {
  */
 export function getViewportState(): ViewportState {
   const { width, height } = getViewportDimensions();
-  const breakpoint = getBreakpoint(width);
+  const breakpoint = getBreakpointName(width);
   const orientation = getOrientation();
   const devicePixelRatio = window.devicePixelRatio || 1;
   const optimalColumns = getOptimalColumns(width);

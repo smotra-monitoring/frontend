@@ -2,7 +2,7 @@
  * Integration test for responsive dashboard behavior
  */
 
-import { getBreakpoint, getOptimalColumns, isMobile, isTablet, isDesktop } from '../../src/utils/viewport-utils.js';
+import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop } from '../../src/utils/viewport-utils.js';
 import { mockViewport, viewportBreakpoints, getComputedColumns } from '../mocks/viewport-mocks.js';
 
 describe('Responsive Dashboard (Integration)', () => {
@@ -12,7 +12,7 @@ describe('Responsive Dashboard (Integration)', () => {
     });
 
     it('detects mobile breakpoint', () => {
-      expect(getBreakpoint()).toBe('mobile');
+      expect(getBreakpointName()).toBe('mobile');
       expect(isMobile()).toBe(true);
       expect(isTablet()).toBe(false);
       expect(isDesktop()).toBe(false);
@@ -42,7 +42,7 @@ describe('Responsive Dashboard (Integration)', () => {
     });
 
     it('detects tablet breakpoint', () => {
-      expect(getBreakpoint()).toBe('tablet');
+      expect(getBreakpointName()).toBe('tablet');
       expect(isMobile()).toBe(false);
       expect(isTablet()).toBe(true);
       expect(isDesktop()).toBe(false);
@@ -59,7 +59,7 @@ describe('Responsive Dashboard (Integration)', () => {
     });
 
     it('detects desktop breakpoint', () => {
-      expect(getBreakpoint()).toBe('desktop');
+      expect(getBreakpointName()).toBe('desktop');
       expect(isMobile()).toBe(false);
       expect(isTablet()).toBe(false);
       expect(isDesktop()).toBe(true);
@@ -78,7 +78,7 @@ describe('Responsive Dashboard (Integration)', () => {
     });
 
     it('detects wide breakpoint', () => {
-      expect(getBreakpoint()).toBe('wide');
+      expect(getBreakpointName()).toBe('wide');
       expect(isDesktop()).toBe(true);
     });
 
@@ -95,7 +95,7 @@ describe('Responsive Dashboard (Integration)', () => {
     });
 
     it('detects ultrawide breakpoint', () => {
-      expect(getBreakpoint()).toBe('ultrawide');
+      expect(getBreakpointName()).toBe('ultrawide');
       expect(isDesktop()).toBe(true);
     });
 
@@ -110,12 +110,12 @@ describe('Responsive Dashboard (Integration)', () => {
     it('updates layout when resizing from mobile to desktop', () => {
       // Start mobile
       mockViewport(375, 667);
-      expect(getBreakpoint()).toBe('mobile');
+      expect(getBreakpointName()).toBe('mobile');
       expect(getOptimalColumns()).toBe(1);
 
       // Resize to desktop
       mockViewport(1280, 800);
-      expect(getBreakpoint()).toBe('desktop');
+      expect(getBreakpointName()).toBe('desktop');
       const cols = getOptimalColumns();
       expect(cols).toBeGreaterThanOrEqual(3);
     });
@@ -123,27 +123,27 @@ describe('Responsive Dashboard (Integration)', () => {
     it('updates layout when resizing from desktop to mobile', () => {
       // Start desktop
       mockViewport(1280, 800);
-      expect(getBreakpoint()).toBe('desktop');
+      expect(getBreakpointName()).toBe('desktop');
 
       // Resize to mobile
       mockViewport(375, 667);
-      expect(getBreakpoint()).toBe('mobile');
+      expect(getBreakpointName()).toBe('mobile');
       expect(getOptimalColumns()).toBe(1);
     });
 
     it('handles intermediate tablet size', () => {
       // Mobile
       mockViewport(767, 600);
-      expect(getBreakpoint()).toBe('mobile');
+      expect(getBreakpointName()).toBe('mobile');
 
       // Cross tablet threshold
       mockViewport(768, 600);
-      expect(getBreakpoint()).toBe('tablet');
+      expect(getBreakpointName()).toBe('tablet');
       expect(getOptimalColumns()).toBe(2);
 
       // Desktop
       mockViewport(1024, 768);
-      expect(getBreakpoint()).toBe('desktop');
+      expect(getBreakpointName()).toBe('desktop');
       expect(getOptimalColumns()).toBeGreaterThanOrEqual(3);
     });
   });

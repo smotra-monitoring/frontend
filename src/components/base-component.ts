@@ -5,7 +5,7 @@
 
 import type { ComponentLifecycle, ComponentState } from '../types/component-types.js';
 import type { BreakpointName, ViewportState } from '../types/viewport-types.js';
-import { getBreakpoint } from '../utils/viewport-utils.js';
+import { getBreakpointName } from '../utils/viewport-utils.js';
 import { subscribeToViewportChanges } from '../state/viewport-state.js';
 
 /**
@@ -31,7 +31,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
     private subscriptions: Array<() => void> = [];
 
     // Current viewport breakpoint
-    protected viewport: BreakpointName = getBreakpoint();
+    protected viewport: BreakpointName = getBreakpointName();
 
     constructor(root: HTMLElement, initialState: TState) {
         this.root = root;
