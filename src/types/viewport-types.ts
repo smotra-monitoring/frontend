@@ -18,7 +18,7 @@ type Orientation = 'portrait' | 'landscape';
 interface Breakpoint {
   name: BreakpointName;
   minWidth: number;
-  maxWidth?: number;
+  maxWidth: number;
   columns: ColumnRange;
 }
 
@@ -55,6 +55,7 @@ export const BREAKPOINTS: Breakpoint[] = [
   {
     name: 'ultrawide',
     minWidth: 1920,
+    maxWidth: Infinity,
     columns: { min: 5, max: 6 }
   }
 ];

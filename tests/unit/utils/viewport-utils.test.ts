@@ -3,7 +3,7 @@
  */
 
 import {
-  getBreakpoint,
+  getCurrentBreakpoint,
   isMobile,
   isTablet,
   isDesktop,
@@ -15,45 +15,45 @@ describe('viewport-utils', () => {
   describe('getBreakpoint', () => {
     it('returns mobile for width < 768', () => {
       mockViewport(375, 667);
-      expect(getBreakpoint()).toBe('mobile');
-      
+      expect(getCurrentBreakpoint()).toBe('mobile');
+
       mockViewport(767, 600);
-      expect(getBreakpoint()).toBe('mobile');
+      expect(getCurrentBreakpoint()).toBe('mobile');
     });
 
     it('returns tablet for width 768-1023', () => {
       mockViewport(768, 1024);
-      expect(getBreakpoint()).toBe('tablet');
-      
+      expect(getCurrentBreakpoint()).toBe('tablet');
+
       mockViewport(1023, 800);
-      expect(getBreakpoint()).toBe('tablet');
+      expect(getCurrentBreakpoint()).toBe('tablet');
     });
 
     it('returns desktop for width 1024-1439', () => {
       mockViewport(1024, 768);
-      expect(getBreakpoint()).toBe('desktop');
-      
+      expect(getCurrentBreakpoint()).toBe('desktop');
+
       mockViewport(1439, 900);
-      expect(getBreakpoint()).toBe('desktop');
+      expect(getCurrentBreakpoint()).toBe('desktop');
     });
 
     it('returns wide for width 1440-1919', () => {
       mockViewport(1440, 900);
-      expect(getBreakpoint()).toBe('wide');
-      
+      expect(getCurrentBreakpoint()).toBe('wide');
+
       mockViewport(1919, 1080);
-      expect(getBreakpoint()).toBe('wide');
+      expect(getCurrentBreakpoint()).toBe('wide');
     });
 
     it('returns ultrawide for width >= 1920', () => {
       mockViewport(1920, 1080);
-      expect(getBreakpoint()).toBe('ultrawide');
-      
+      expect(getCurrentBreakpoint()).toBe('ultrawide');
+
       mockViewport(2560, 1440);
-      expect(getBreakpoint()).toBe('ultrawide');
-      
+      expect(getCurrentBreakpoint()).toBe('ultrawide');
+
       mockViewport(3840, 2160);
-      expect(getBreakpoint()).toBe('ultrawide');
+      expect(getCurrentBreakpoint()).toBe('ultrawide');
     });
   });
 
@@ -66,7 +66,7 @@ describe('viewport-utils', () => {
     it('returns false for tablet and larger', () => {
       mockViewport(768, 1024);
       expect(isMobile()).toBe(false);
-      
+
       mockViewport(1280, 800);
       expect(isMobile()).toBe(false);
     });
@@ -81,7 +81,7 @@ describe('viewport-utils', () => {
     it('returns false for mobile and desktop', () => {
       mockViewport(375, 667);
       expect(isTablet()).toBe(false);
-      
+
       mockViewport(1024, 768);
       expect(isTablet()).toBe(false);
     });
@@ -91,10 +91,10 @@ describe('viewport-utils', () => {
     it('returns true for desktop viewports and larger', () => {
       mockViewport(1024, 768);
       expect(isDesktop()).toBe(true);
-      
+
       mockViewport(1440, 900);
       expect(isDesktop()).toBe(true);
-      
+
       mockViewport(1920, 1080);
       expect(isDesktop()).toBe(true);
     });
@@ -102,7 +102,7 @@ describe('viewport-utils', () => {
     it('returns false for mobile and tablet', () => {
       mockViewport(375, 667);
       expect(isDesktop()).toBe(false);
-      
+
       mockViewport(768, 1024);
       expect(isDesktop()).toBe(false);
     });

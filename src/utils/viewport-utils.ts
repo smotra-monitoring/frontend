@@ -20,14 +20,8 @@ export function getViewportDimensions(): { width: number; height: number } {
  */
 export function getCurrentBreakpoint(width: number = window.innerWidth): BreakpointName {
   for (const breakpoint of BREAKPOINTS) {
-    if (breakpoint.maxWidth !== undefined) {
-      if (width >= breakpoint.minWidth && width <= breakpoint.maxWidth) {
-        return breakpoint.name;
-      }
-    } else {
-      if (width >= breakpoint.minWidth) {
-        return breakpoint.name;
-      }
+    if (width >= breakpoint.minWidth && width <= breakpoint.maxWidth) {
+      return breakpoint.name;
     }
   }
 
@@ -35,19 +29,11 @@ export function getCurrentBreakpoint(width: number = window.innerWidth): Breakpo
 }
 
 /**
- * Alias for getCurrentBreakpoint
- */
-export const getBreakpoint = getCurrentBreakpoint;
-
-/**
  * Calculate optimal column count for current viewport
  */
 export function getOptimalColumns(width: number = window.innerWidth): number {
   const breakpoint = BREAKPOINTS.find(bp => {
-    if (bp.maxWidth !== undefined) {
-      return width >= bp.minWidth && width <= bp.maxWidth;
-    }
-    return width >= bp.minWidth;
+    return width >= bp.minWidth && width <= bp.maxWidth;
   });
 
   if (!breakpoint) {
