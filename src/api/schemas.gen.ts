@@ -908,7 +908,8 @@ export const ClaimStatusPendingSchema = {
     type: 'object',
     required: [
         'status',
-        'expiresAt'
+        'expiresAt',
+        'pollIn'
     ],
     properties: {
         status: {
@@ -921,6 +922,13 @@ export const ClaimStatusPendingSchema = {
             format: 'date-time',
             description: 'When the claim token expires (RFC3339)',
             example: '2026-02-01T12:00:00Z'
+        },
+        pollIn: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Seconds until next poll (server-controlled backoff)',
+            example: 30,
+            minimum: 1
         }
     }
 } as const;

@@ -371,6 +371,10 @@ export type ClaimStatusPending = {
      * When the claim token expires (RFC3339)
      */
     expiresAt: Date;
+    /**
+     * Seconds until next poll (server-controlled backoff)
+     */
+    pollIn: number;
 };
 
 export type ClaimStatusClaimed = {
