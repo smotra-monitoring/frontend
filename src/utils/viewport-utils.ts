@@ -8,7 +8,7 @@ import { BREAKPOINTS } from '../types/viewport-types.js';
 /**
  * Get current viewport dimensions
  */
-export function getViewportDimensions(): { width: number; height: number } {
+function getViewportDimensions(): { width: number; height: number } {
   return {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -60,13 +60,6 @@ export function getOptimalColumns(width: number = window.innerWidth): number {
  */
 export function getOrientation(): 'portrait' | 'landscape' {
   return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
-}
-
-/**
- * Check if viewport matches breakpoint
- */
-export function isBreakpoint(name: BreakpointName, width: number = window.innerWidth): boolean {
-  return getBreakpointName(width) === name;
 }
 
 /**

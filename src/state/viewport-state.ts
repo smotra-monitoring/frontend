@@ -6,11 +6,8 @@ import { createState } from './global-state.js';
 import type { ViewportState } from '../types/viewport-types.js';
 import { getViewportState, watchViewport } from '../utils/viewport-utils.js';
 
-// Initial viewport state
-const initialViewportState: ViewportState = getViewportState();
-
 // Create viewport state instance
-export const viewportState = createState<ViewportState>(initialViewportState);
+export const viewportState = createState<ViewportState>(getViewportState());
 
 let viewportUnwatch: (() => void) | null = null;
 
