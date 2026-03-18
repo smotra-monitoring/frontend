@@ -18,7 +18,7 @@ export function getViewportDimensions(): { width: number; height: number } {
 /**
  * Detect current breakpoint based on viewport width
  */
-export function getCurrentBreakpoint(width: number = window.innerWidth): BreakpointName {
+export function getBreakpoint(width: number = window.innerWidth): BreakpointName {
   for (const breakpoint of BREAKPOINTS) {
     if (width >= breakpoint.minWidth && width <= breakpoint.maxWidth) {
       return breakpoint.name;
@@ -67,7 +67,7 @@ export function getOrientation(): 'portrait' | 'landscape' {
  * Check if viewport matches breakpoint
  */
 export function isBreakpoint(name: BreakpointName, width: number = window.innerWidth): boolean {
-  return getCurrentBreakpoint(width) === name;
+  return getBreakpoint(width) === name;
 }
 
 /**
@@ -110,7 +110,7 @@ export function isUltraWide(width: number = window.innerWidth): boolean {
  */
 export function getViewportState(): ViewportState {
   const { width, height } = getViewportDimensions();
-  const breakpoint = getCurrentBreakpoint(width);
+  const breakpoint = getBreakpoint(width);
   const orientation = getOrientation();
   const devicePixelRatio = window.devicePixelRatio || 1;
   const optimalColumns = getOptimalColumns(width);

@@ -3,7 +3,7 @@
  */
 
 import {
-  getCurrentBreakpoint,
+  getBreakpoint,
   isMobile,
   isTablet,
   isDesktop,
@@ -15,45 +15,45 @@ describe('viewport-utils', () => {
   describe('getBreakpoint', () => {
     it('returns mobile for width < 768', () => {
       mockViewport(375, 667);
-      expect(getCurrentBreakpoint()).toBe('mobile');
+      expect(getBreakpoint()).toBe('mobile');
 
       mockViewport(767, 600);
-      expect(getCurrentBreakpoint()).toBe('mobile');
+      expect(getBreakpoint()).toBe('mobile');
     });
 
     it('returns tablet for width 768-1023', () => {
       mockViewport(768, 1024);
-      expect(getCurrentBreakpoint()).toBe('tablet');
+      expect(getBreakpoint()).toBe('tablet');
 
       mockViewport(1023, 800);
-      expect(getCurrentBreakpoint()).toBe('tablet');
+      expect(getBreakpoint()).toBe('tablet');
     });
 
     it('returns desktop for width 1024-1439', () => {
       mockViewport(1024, 768);
-      expect(getCurrentBreakpoint()).toBe('desktop');
+      expect(getBreakpoint()).toBe('desktop');
 
       mockViewport(1439, 900);
-      expect(getCurrentBreakpoint()).toBe('desktop');
+      expect(getBreakpoint()).toBe('desktop');
     });
 
     it('returns wide for width 1440-1919', () => {
       mockViewport(1440, 900);
-      expect(getCurrentBreakpoint()).toBe('wide');
+      expect(getBreakpoint()).toBe('wide');
 
       mockViewport(1919, 1080);
-      expect(getCurrentBreakpoint()).toBe('wide');
+      expect(getBreakpoint()).toBe('wide');
     });
 
     it('returns ultrawide for width >= 1920', () => {
       mockViewport(1920, 1080);
-      expect(getCurrentBreakpoint()).toBe('ultrawide');
+      expect(getBreakpoint()).toBe('ultrawide');
 
       mockViewport(2560, 1440);
-      expect(getCurrentBreakpoint()).toBe('ultrawide');
+      expect(getBreakpoint()).toBe('ultrawide');
 
       mockViewport(3840, 2160);
-      expect(getCurrentBreakpoint()).toBe('ultrawide');
+      expect(getBreakpoint()).toBe('ultrawide');
     });
   });
 
