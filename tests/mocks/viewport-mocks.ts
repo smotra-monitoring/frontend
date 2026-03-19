@@ -2,8 +2,6 @@
  * Mock viewport utilities for testing responsive behavior
  */
 
-import type { BreakpointName } from '../../src/types/viewport-types.js';
-
 interface MockMediaQueryList {
   matches: boolean;
   media: string;

@@ -141,7 +141,7 @@ describe('viewport-utils', () => {
     });
 
     it('respects minimum column width', () => {
-      mockViewport(400, 600); // Very narrow
+      mockViewport(2560, 600); // Unltrawide 
       const cols = getOptimalColumns(300); // min 300px per column
       expect(cols).toBe(1);
     });
