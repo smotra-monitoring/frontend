@@ -43,7 +43,7 @@ function startWatchingViewport(): void {
 /**
  * Stop watching viewport changes
  */
-export function stopWatchingViewport(): void {
+function stopWatchingViewport(): void {
   if (viewportUnwatch) {
     viewportUnwatch();
     viewportUnwatch = null;
