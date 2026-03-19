@@ -82,7 +82,17 @@ function getBreakpoint(width: number = window.innerWidth): Breakpoint {
   return BREAKPOINTS[0] as Breakpoint; // Default to mobile if no match
 }
 
+export function getBreakpointByName(name: BreakpointName): Breakpoint {
+  const breakpoint = BREAKPOINTS.find(bp => bp.name === name);
+  if (!breakpoint) {
+    throw new Error(`Invalid breakpoint name: ${name}`);
+  }
+  return breakpoint;
+}
 
+/**
+ * Get current breakpoint name
+ */
 export function getBreakpointName(width: number = window.innerWidth): BreakpointName {
   return getBreakpoint(width).name;
 }

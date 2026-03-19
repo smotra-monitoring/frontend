@@ -2,13 +2,15 @@
  * Integration test for responsive dashboard behavior
  */
 
-import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop } from '../../src/utils/viewport-utils.js';
-import { mockViewport, viewportBreakpoints, getComputedColumns } from '../mocks/viewport-mocks.js';
+import { BreakpointName } from '../../src/types/viewport-types.js';
+import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop, getBreakpointByName } from '../../src/utils/viewport-utils.js';
+import { mockViewport, getComputedColumns } from '../mocks/viewport-mocks.js';
 
 describe('Responsive Dashboard (Integration)', () => {
   describe('Mobile viewport (375px)', () => {
     beforeEach(() => {
-      mockViewport(viewportBreakpoints.mobile.width, viewportBreakpoints.mobile.height);
+      const breakpoint = getBreakpointByName('mobile' as BreakpointName);
+      mockViewport(breakpoint.minWidth, 667);
     });
 
     it('detects mobile breakpoint', () => {
@@ -38,7 +40,8 @@ describe('Responsive Dashboard (Integration)', () => {
 
   describe('Tablet viewport (768px)', () => {
     beforeEach(() => {
-      mockViewport(viewportBreakpoints.tablet.width, viewportBreakpoints.tablet.height);
+      const breakpoint = getBreakpointByName('tablet' as BreakpointName);
+      mockViewport(breakpoint.minWidth, 667);
     });
 
     it('detects tablet breakpoint', () => {
@@ -55,7 +58,8 @@ describe('Responsive Dashboard (Integration)', () => {
 
   describe('Desktop viewport (1280px)', () => {
     beforeEach(() => {
-      mockViewport(viewportBreakpoints.desktop.width, viewportBreakpoints.desktop.height);
+      const breakpoint = getBreakpointByName('desktop' as BreakpointName);
+      mockViewport(breakpoint.minWidth, 667);
     });
 
     it('detects desktop breakpoint', () => {
@@ -74,7 +78,8 @@ describe('Responsive Dashboard (Integration)', () => {
 
   describe('Wide viewport (1680px)', () => {
     beforeEach(() => {
-      mockViewport(viewportBreakpoints.wide.width, viewportBreakpoints.wide.height);
+      const breakpoint = getBreakpointByName('wide' as BreakpointName);
+      mockViewport(breakpoint.minWidth, 667);
     });
 
     it('detects wide breakpoint', () => {
@@ -91,7 +96,8 @@ describe('Responsive Dashboard (Integration)', () => {
 
   describe('Ultra-wide viewport (2560px)', () => {
     beforeEach(() => {
-      mockViewport(viewportBreakpoints.ultrawide.width, viewportBreakpoints.ultrawide.height);
+      const breakpoint = getBreakpointByName('ultrawide' as BreakpointName);
+      mockViewport(breakpoint.minWidth, 667);
     });
 
     it('detects ultrawide breakpoint', () => {
@@ -161,6 +167,8 @@ describe('Responsive Dashboard (Integration)', () => {
       // Width calculation: 100vw - sidebar (200px)
       const expectedWidth = window.innerWidth - 200;
       const actualWidth = mainContent.offsetWidth;
+
+      console.log(`Expected width: ${expectedWidth}px, Actual width: ${actualWidth}px`);
 
       // Allow some tolerance for browser rendering
       expect(Math.abs(actualWidth - expectedWidth)).toBeLessThan(10);

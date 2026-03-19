@@ -49,16 +49,3 @@ export function getComputedColumns(element: HTMLElement): number {
   }
   return gridTemplate.split(' ').length;
 }
-
-export const viewportBreakpoints = {
-  mobile: { width: 375, height: 667, breakpoint: 'mobile' as BreakpointName },
-  tablet: { width: 768, height: 1024, breakpoint: 'tablet' as BreakpointName },
-  desktop: { width: 1280, height: 800, breakpoint: 'desktop' as BreakpointName },
-  wide: { width: 1680, height: 1050, breakpoint: 'wide' as BreakpointName },
-  ultrawide: { width: 2560, height: 1440, breakpoint: 'ultrawide' as BreakpointName },
-};
-
-export function mockBreakpoint(breakpoint: BreakpointName): void {
-  const viewport = viewportBreakpoints[breakpoint];
-  mockViewport(viewport.width, viewport.height);
-}
