@@ -151,23 +151,16 @@ function startWatchingSystemTheme(): void {
   }
 
   systemThemeUnwatch = watchSystemTheme((systemMode: ThemeMode) => {
-    // Update system preference in state
-    themeState.setState({ systemPreference: systemMode });
 
     // If user is using system preference, update current mode
-    const current = themeState.getState();
-    if (current.preference === 'system') {
-      const prevMode = current.currentMode;
-      themeState.setState({ currentMode: systemMode });
-      applyTheme(systemMode);
-
-      // Notify listeners
-      notifyThemeChange({
-        previous: prevMode,
-        current: systemMode,
-        trigger: 'system',
-      });
+    const currentState = themeState.getState();
+    if (currentState.preference === 'system') {
+      setTheme('system'); // This will resolve and apply the new system mode
+    } else {
+      // Update system preference in state
+      themeState.setState({ systemPreference: systemMode });
     }
+
   });
 }
 
