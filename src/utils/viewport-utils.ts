@@ -6,6 +6,60 @@ import type { Breakpoint, BreakpointName, ViewportState } from '../types/viewpor
 import { BREAKPOINTS } from '../types/viewport-types.js';
 
 /**
+ * Get complete viewport state
+ */
+export function getViewportState(): ViewportState {
+  const { width, height } = getViewportDimensions();
+  const breakpoint = getBreakpointName(width);
+  const orientation = getOrientation();
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const optimalColumns = getOptimalColumns(width);
+
+  return {
+    width,
+    height,
+    breakpoint,
+    orientation,
+    devicePixelRatio,
+    optimalColumns,
+  };
+}
+
+/**
+ * Watch for viewport changes with debouncing
+ */
+export function watchViewport(
+  callback: (state: ViewportState) => void,
+  debounceMs: number = 150
+): () => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  const handler = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      callback(getViewportState());
+    }, debounceMs);
+  };
+
+  window.addEventListener('resize', handler);
+  window.addEventListener('orientationchange', handler);
+
+  // Initial call
+  callback(getViewportState());
+
+  return () => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    window.removeEventListener('resize', handler);
+    window.removeEventListener('orientationchange', handler);
+  };
+}
+
+/**
  * Get current viewport dimensions
  */
 function getViewportDimensions(): { width: number; height: number } {
@@ -95,60 +149,6 @@ export function isWide(width: number = window.innerWidth): boolean {
  */
 export function isUltraWide(width: number = window.innerWidth): boolean {
   return width >= 1920;
-}
-
-/**
- * Get complete viewport state
- */
-export function getViewportState(): ViewportState {
-  const { width, height } = getViewportDimensions();
-  const breakpoint = getBreakpointName(width);
-  const orientation = getOrientation();
-  const devicePixelRatio = window.devicePixelRatio || 1;
-  const optimalColumns = getOptimalColumns(width);
-
-  return {
-    width,
-    height,
-    breakpoint,
-    orientation,
-    devicePixelRatio,
-    optimalColumns,
-  };
-}
-
-/**
- * Watch for viewport changes with debouncing
- */
-export function watchViewport(
-  callback: (state: ViewportState) => void,
-  debounceMs: number = 150
-): () => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  const handler = () => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      callback(getViewportState());
-    }, debounceMs);
-  };
-
-  window.addEventListener('resize', handler);
-  window.addEventListener('orientationchange', handler);
-
-  // Initial call
-  callback(getViewportState());
-
-  return () => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    window.removeEventListener('resize', handler);
-    window.removeEventListener('orientationchange', handler);
-  };
 }
 
 /**
