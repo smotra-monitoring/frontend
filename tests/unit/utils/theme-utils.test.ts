@@ -3,7 +3,7 @@
  */
 
 import {
-  getSystemThemePreference_ForTests,
+  getSystemThemePreference,
   applyTheme,
   getNextThemePreference_ForTests,
   getThemeIcon,
@@ -18,12 +18,12 @@ describe('theme-utils', () => {
   describe('detectSystemTheme', () => {
     it('returns dark when system prefers dark', () => {
       mockMatchMedia(true); // matches dark
-      expect(getSystemThemePreference_ForTests()).toBe('dark');
+      expect(getSystemThemePreference()).toBe('dark');
     });
 
     it('returns light when system prefers light', () => {
       mockMatchMedia(false); // does not match dark
-      expect(getSystemThemePreference_ForTests()).toBe('light');
+      expect(getSystemThemePreference()).toBe('light');
     });
   });
 

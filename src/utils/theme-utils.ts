@@ -15,11 +15,6 @@ export function getSystemThemePreference(): ThemeMode {
 }
 
 /**
- * Alias for getSystemThemePreference
- */
-export const getSystemThemePreference_ForTests = getSystemThemePreference;
-
-/**
  * Listen for system theme changes
  */
 export function watchSystemTheme(callback: (theme: ThemeMode) => void): () => void {
