@@ -342,7 +342,7 @@ export async function loadAgents(): Promise<void> {
     // Future: const response = await fetch('/api/v1/agents');
     // Future: const agents = await response.json();
     // Future: setAgents(agents);
-    
+
     // For now, just resolve - WebSocket will populate data
     return Promise.resolve();
   } catch (error) {
