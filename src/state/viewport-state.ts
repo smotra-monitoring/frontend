@@ -51,7 +51,24 @@ function stopWatchingViewport(): void {
 }
 
 /**
- * Subscribe to viewport changes
+ * Subscribe to viewport changes using internal state management (observer pattern)
+ * 
+ * **Prefer this method for:**
+ * - Internal TypeScript components that already import this module
+ * - Better type safety and direct state access
+ * - More efficient subscriptions (no DOM event overhead)
+ * - Consistency with other state modules (auth-state, agent-state)
+ * 
+ * @param callback - Function called with new viewport state on changes
+ * @returns Unsubscribe function to remove the listener
+ * 
+ * @example
+ * ```ts
+ * const unsubscribe = subscribeToViewportChanges((state) => {
+ *   console.log('Viewport changed:', state.breakpoint);
+ * });
+ * // Later: unsubscribe();
+ * ```
  */
 export function subscribeToViewportChanges(callback: (state: ViewportState) => void): () => void {
   return viewportState.subscribe(callback);
@@ -65,7 +82,27 @@ export function getCurrentViewportState(): ViewportState {
 }
 
 /**
- * Subscribe to viewport changes
+ * Subscribe to viewport changes using DOM CustomEvent pattern
+ * 
+ * **Use this method for:**
+ * - Loose coupling when you don't want to import this module
+ * - Integration with vanilla JS or external libraries
+ * - Following standard DOM event patterns (bubbling, capturing)
+ * - Contexts where ES module imports are difficult
+ * 
+ * **Note:** For internal components, prefer `subscribeToViewportChanges` for
+ * better performance and type safety.
+ * 
+ * @param callback - Function called with new viewport state on changes
+ * @returns Unsubscribe function to remove the event listener
+ * 
+ * @example
+ * ```ts
+ * const unsubscribe = onViewportChange((state) => {
+ *   console.log('Viewport changed:', state.breakpoint);
+ * });
+ * // Later: unsubscribe();
+ * ```
  */
 export function onViewportChange(callback: (state: ViewportState) => void): () => void {
   const handler = (e: Event) => {
