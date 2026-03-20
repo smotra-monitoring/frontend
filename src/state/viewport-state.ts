@@ -16,8 +16,7 @@ let viewportUnwatch: (() => void) | null = null;
  */
 export function initializeViewport(): void {
   // Set initial state
-  const state = getViewportState();
-  viewportState.setState(state);
+  viewportState.setState(getViewportState());
 
   // Start watching for changes
   startWatchingViewport();
