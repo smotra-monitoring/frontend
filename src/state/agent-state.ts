@@ -271,7 +271,34 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
 }
 
 /**
- * Subscribe to agent state changes
+ * Subscribe to agent/dashboard state changes using internal state management (observer pattern)
+ * 
+ * Receives the **complete dashboard state** on every change, including:
+ * - agents: full list of monitored agents
+ * - filter: current filter options
+ * - sort: current sort configuration
+ * - viewMode: grid/list/table view mode
+ * - selectedAgent: currently selected agent ID
+ * - loading: loading state
+ * 
+ * **Use this for:**
+ * - Components that render agent lists or dashboards
+ * - Reacting to agent updates from WebSocket messages
+ * - Monitoring filter, sort, or view mode changes
+ * - Type-safe state subscriptions with full context
+ * 
+ * @param callback - Function called with complete dashboard state on changes
+ * @returns Unsubscribe function to remove the listener
+ * 
+ * @example
+ * ```ts
+ * const unsubscribe = subscribeToAgents((state) => {
+ *   console.log(`${state.agents.length} agents monitored`);
+ *   console.log('View mode:', state.viewMode);
+ *   // Re-render your component with new state
+ * });
+ * // Later: unsubscribe();
+ * ```
  */
 export function subscribeToAgents(callback: (state: DashboardState) => void): () => void {
   return dashboardState.subscribe(callback);

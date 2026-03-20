@@ -53,7 +53,30 @@ export function initializeTheme(): void {
 }
 
 /**
- * Subscribe to theme changes
+ * Subscribe to theme state changes using internal state management (observer pattern)
+ * 
+ * Receives the **complete theme state** on every change, including:
+ * - preference: user's theme setting (system/light/dark)
+ * - currentMode: actual resolved theme mode being applied
+ * - systemPreference: detected OS theme preference
+ * 
+ * **Prefer this method for:**
+ * - Internal TypeScript components that need full theme state
+ * - Better type safety and direct state access
+ * - More efficient subscriptions (no DOM event overhead)
+ * - Consistency with other state modules (auth-state, agent-state)
+ * 
+ * @param callback - Function called with complete theme state on changes
+ * @returns Unsubscribe function to remove the listener
+ * 
+ * @example
+ * ```ts
+ * const unsubscribe = subscribeToThemeChanges((state) => {
+ *   console.log('Theme:', state.currentMode);
+ *   console.log('Using system?', state.preference === 'system');
+ * });
+ * // Later: unsubscribe();
+ * ```
  */
 export function subscribeToThemeChanges(callback: (state: ThemeState) => void): () => void {
   return themeState.subscribe(callback);
@@ -184,7 +207,34 @@ function notifyThemeChange(event: ThemeChangeEvent): void {
 }
 
 /**
- * Subscribe to theme changes
+ * Subscribe to theme change events using DOM CustomEvent pattern
+ * 
+ * Receives **theme change events** with transition information:
+ * - previous: the theme mode before the change
+ * - current: the new theme mode after the change
+ * - trigger: what caused the change ('user' or 'system')
+ * 
+ * **Use this method for:**
+ * - Components that only need to react to theme transitions (not full state)
+ * - Loose coupling when you don't want to import this module
+ * - Integration with vanilla JS or external libraries
+ * - Following standard DOM event patterns (bubbling, capturing)
+ * - Animations or transitions that need previous/current values
+ * 
+ * **Note:** For internal components needing full theme state, prefer
+ * `subscribeToThemeChanges` for better performance and type safety.
+ * 
+ * @param callback - Function called with theme change event details
+ * @returns Unsubscribe function to remove the event listener
+ * 
+ * @example
+ * ```ts
+ * const unsubscribe = onThemeChange((event) => {
+ *   console.log(`Theme changed: ${event.previous} → ${event.current}`);
+ *   console.log('Triggered by:', event.trigger); // 'user' or 'system'
+ * });
+ * // Later: unsubscribe();
+ * ```
  */
 export function onThemeChange(callback: (event: ThemeChangeEvent) => void): () => void {
   const handler = (e: Event) => {
