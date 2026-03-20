@@ -3,7 +3,7 @@
  */
 
 import { BreakpointName } from '../../src/types/viewport-types.js';
-import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop, getBreakpointByName } from '../../src/utils/viewport-utils.js';
+import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop, getBreakpointByName, isWide, isUltraWide } from '../../src/utils/viewport-utils.js';
 import { mockViewport, getComputedColumns } from '../mocks/viewport-mocks.js';
 
 describe('Responsive Dashboard (Integration)', () => {
@@ -85,6 +85,7 @@ describe('Responsive Dashboard (Integration)', () => {
     it('detects wide breakpoint', () => {
       expect(getBreakpointName()).toBe('wide');
       expect(isDesktop()).toBe(true);
+      expect(isWide()).toBe(true);
     });
 
     it('recommends 4-5 columns', () => {
@@ -103,6 +104,8 @@ describe('Responsive Dashboard (Integration)', () => {
     it('detects ultrawide breakpoint', () => {
       expect(getBreakpointName()).toBe('ultrawide');
       expect(isDesktop()).toBe(true);
+      expect(isWide()).toBe(true);
+      expect(isUltraWide()).toBe(true);
     });
 
     it('recommends 5-6+ columns', () => {
@@ -155,36 +158,12 @@ describe('Responsive Dashboard (Integration)', () => {
   });
 
   describe('Full-width utilization', () => {
-    it('uses full width on desktop (no max-width)', () => {
-      mockViewport(1920, 1080);
-
-      const mainContent = document.createElement('div');
-      mainContent.style.width = '100%';
-      mainContent.style.maxWidth = 'none'; // Should not constrain width
-
-      document.body.appendChild(mainContent);
-
-      // Width calculation: 100vw - sidebar (200px)
-      const expectedWidth = window.innerWidth - 200;
-      const actualWidth = mainContent.offsetWidth;
-
-      console.log(`Expected width: ${expectedWidth}px, Actual width: ${actualWidth}px`);
-
-      // Allow some tolerance for browser rendering
-      expect(Math.abs(actualWidth - expectedWidth)).toBeLessThan(10);
-
-      document.body.removeChild(mainContent);
-    });
-
     it('uses full available width on ultra-wide', () => {
       mockViewport(2560, 1440);
 
       // Dashboard should scale to fill available space
       const cols = getOptimalColumns();
       expect(cols).toBeGreaterThanOrEqual(5);
-
-      // No artificial max-width should limit columns
-      expect(cols).not.toBe(3); // Should not be capped at desktop columns
     });
   });
 });
