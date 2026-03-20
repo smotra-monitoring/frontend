@@ -45,5 +45,12 @@ export function getComputedColumns(element: HTMLElement): number {
   if (!gridTemplate || gridTemplate === 'none') {
     return 1;
   }
+
+  // Handle jsdom/shorthand syntax: repeat(X, ...)
+  const repeatMatch = gridTemplate.match(/repeat\((\d+),/);
+  if (repeatMatch) {
+    return parseInt(repeatMatch[1], 10);
+  }
+
   return gridTemplate.split(' ').length;
 }

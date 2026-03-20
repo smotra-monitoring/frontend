@@ -10,7 +10,7 @@ describe('Responsive Dashboard (Integration)', () => {
   describe('Mobile viewport (375px)', () => {
     beforeEach(() => {
       const breakpoint = getBreakpointByName('mobile' as BreakpointName);
-      mockViewport(breakpoint.minWidth, 667);
+      mockViewport(breakpoint.maxWidth, 667);
     });
 
     it('detects mobile breakpoint', () => {
