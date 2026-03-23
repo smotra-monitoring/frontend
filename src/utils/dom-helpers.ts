@@ -6,24 +6,24 @@
  * Smooth scroll to element with fallback for older browsers
  */
 export function smoothScrollTo(element: HTMLElement | string, options?: ScrollIntoViewOptions): void {
-  const target = typeof element === 'string' 
-    ? document.querySelector<HTMLElement>(element) 
+  const target = typeof element === 'string'
+    ? document.querySelector<HTMLElement>(element)
     : element;
-  
+
   if (!target) {
     console.warn('Scroll target not found:', element);
     return;
   }
-  
+
   // Check if user prefers reduced motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
+
   const scrollOptions: ScrollIntoViewOptions = {
     behavior: prefersReducedMotion ? 'auto' : 'smooth',
     block: 'start',
     ...options,
   };
-  
+
   target.scrollIntoView(scrollOptions);
 }
 
@@ -32,7 +32,7 @@ export function smoothScrollTo(element: HTMLElement | string, options?: ScrollIn
  */
 export function scrollToTop(smooth: boolean = true): void {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
+
   window.scrollTo({
     top: 0,
     left: 0,
@@ -55,13 +55,13 @@ export function createElementFromHTML(html: string): HTMLElement {
 export function addEventListenerWithCleanup<K extends keyof HTMLElementEventMap>(
   element: HTMLElement | Window | Document,
   event: K,
-  handler: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+  handler: EventListener,
   options?: boolean | AddEventListenerOptions
 ): () => void {
-  element.addEventListener(event as any, handler as any, options);
-  
+  element.addEventListener(event, handler, options);
+
   return () => {
-    element.removeEventListener(event as any, handler as any, options);
+    element.removeEventListener(event, handler, options);
   };
 }
 
@@ -145,7 +145,7 @@ export function getElementOffset(element: HTMLElement): { top: number; left: num
   const rect = element.getBoundingClientRect();
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  
+
   return {
     top: rect.top + scrollTop,
     left: rect.left + scrollLeft,
@@ -157,7 +157,7 @@ export function getElementOffset(element: HTMLElement): { top: number; left: num
  */
 export function isInViewport(element: HTMLElement, offset: number = 0): boolean {
   const rect = element.getBoundingClientRect();
-  
+
   return (
     rect.top >= -offset &&
     rect.left >= -offset &&
@@ -185,14 +185,14 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return function(this: any, ...args: Parameters<T>) {
+
+  return function (this: any, ...args: Parameters<T>) {
     const context = this;
-    
+
     if (timeout) {
       clearTimeout(timeout);
     }
-    
+
     timeout = setTimeout(() => {
       func.apply(context, args);
     }, wait);
@@ -207,10 +207,10 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean = false;
-  
-  return function(this: any, ...args: Parameters<T>) {
+
+  return function (this: any, ...args: Parameters<T>) {
     const context = this;
-    
+
     if (!inThrottle) {
       func.apply(context, args);
       inThrottle = true;
