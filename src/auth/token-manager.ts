@@ -110,6 +110,8 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
   const tokens = getTokensFromState();
 
   if (!tokens || !tokens.refresh_token) {
+    console.warn('No refresh token available for refreshing access token');
+
     return {
       success: false,
       error: 'No refresh token available',
@@ -117,6 +119,8 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
   }
 
   try {
+    // TODO: Replace with actual API call to refresh token using the refresh token
+
     // This would use the generated SDK function
     // const response = await oauth2Token({
     //   body: {
