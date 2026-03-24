@@ -134,7 +134,7 @@ export function isAuthenticated(): boolean {
 /**
  * Get current user
  */
-export function getCurrentUserFromState(): UserInfo | null {
+export function getUserFromState(): UserInfo | null {
   return authState.getState().user;
 }
 
