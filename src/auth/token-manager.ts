@@ -3,7 +3,7 @@
  */
 
 import type { TokenData, TokenRefreshResult } from '../types/auth-types.js';
-import { getTokensFromState, updateTokens, clearAuthState, isTokenExpired } from '../state/auth-state.js';
+import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpired } from '../state/auth-state.js';
 import { Storage } from '../utils/storage.js';
 
 // Import generated SDK functions (will be available after openapi-ts runs)
@@ -32,7 +32,7 @@ export function storeTokens_TestsOnly(tokens: TokenData | any): void {
   Storage.set(TOKEN_STORAGE_KEY_TESTS_ONLY, tokenData);
 
   // Update state
-  updateTokens(tokenData);
+  updateTokensInState(tokenData);
 }
 
 /**
@@ -159,7 +159,7 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
     };
 
     // Update tokens in state and storage
-    updateTokens(newTokens);
+    updateTokensInState(newTokens);
 
     return {
       success: true,

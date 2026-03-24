@@ -107,7 +107,7 @@ export function updateUserInfo(user: Partial<UserInfo>): void {
 /**
  * Update tokens
  */
-export function updateTokens(tokens: TokenData): void {
+export function updateTokensInState(tokens: TokenData): void {
   const current = authState.getState();
   authState.setState({ tokens });
 
