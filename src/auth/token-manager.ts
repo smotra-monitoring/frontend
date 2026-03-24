@@ -3,7 +3,7 @@
  */
 
 import type { TokenData, TokenRefreshResult } from '../types/auth-types.js';
-import { getTokensFromState, updateTokens, clearAuthState } from '../state/auth-state.js';
+import { getTokensFromState, updateTokens, clearAuthState, isTokenExpired } from '../state/auth-state.js';
 import { Storage } from '../utils/storage.js';
 
 // Import generated SDK functions (will be available after openapi-ts runs)
@@ -71,7 +71,7 @@ export function clearTokens_TestsOnly(): void {
 /**
  * Check if access token is expired or about to expire
  */
-export function isTokenExpired(tokens: TokenData | null, bufferSeconds: number = 60): boolean {
+export function isTokenExpired_TestsOnly(tokens: TokenData | null, bufferSeconds: number = 60): boolean {
   if (!tokens) {
     return true;
   }
@@ -87,14 +87,9 @@ export function isTokenExpired(tokens: TokenData | null, bufferSeconds: number =
  * Get valid access token, refreshing if necessary
  */
 export async function getValidAccessToken(): Promise<string | null> {
-  const tokens = getTokensFromState();
-
-  if (!tokens) {
-    return null;
-  }
-
   // If token is still valid, return it
-  if (!isTokenExpired(tokens)) {
+  if (!isTokenExpired()) {
+    const tokens = getTokensFromState() as TokenData;
     return tokens.access_token;
   }
 

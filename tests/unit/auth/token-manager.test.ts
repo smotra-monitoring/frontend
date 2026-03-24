@@ -6,7 +6,7 @@ import {
     storeTokens_TestsOnly,
     getCurrentTokens_TestsOnly,
     clearTokens_TestsOnly,
-    isTokenExpired,
+    isTokenExpired_TestsOnly,
     scheduleTokenRefresh,
     refreshAccessToken,
 } from '../../../src/auth/token-manager.js';
@@ -87,7 +87,7 @@ describe('token-manager', () => {
         it('returns false for valid tokens', () => {
             storeTokens_TestsOnly(mockTokens); // expires in 3600 seconds
             const tokens = getCurrentTokens_TestsOnly();
-            expect(isTokenExpired(tokens!)).toBe(false);
+            expect(isTokenExpired_TestsOnly(tokens!)).toBe(false);
         });
 
         it('returns true for expired tokens', () => {
@@ -100,7 +100,7 @@ describe('token-manager', () => {
 
             // Advance time past expiration
             jest.advanceTimersByTime(1000);
-            expect(isTokenExpired(tokens!)).toBe(true);
+            expect(isTokenExpired_TestsOnly(tokens!)).toBe(true);
         });
 
         it('returns true with buffer time before actual expiration', () => {
@@ -110,7 +110,7 @@ describe('token-manager', () => {
             // Advance to within 5 minutes of expiration (default buffer)
             // jest.advanceTimersByTime((mockTokens.expires_in - 250) * 1000);
             jest.advanceTimersByTime((mockTokens.expires_at - 250) - Date.now());   // TODO: DOUBLE CHECK
-            expect(isTokenExpired(tokens!)).toBe(true);
+            expect(isTokenExpired_TestsOnly(tokens!)).toBe(true);
         });
     });
 
