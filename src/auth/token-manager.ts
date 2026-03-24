@@ -11,6 +11,9 @@ import { Storage } from '../utils/storage.js';
 
 const TOKEN_STORAGE_KEY_TESTS_ONLY = 'auth_tokens';
 
+// TODO: Think about moving below _TestsOnly functions to a separate file, 
+// as they are only needed for testing and not used in production code. 
+
 /**
  * Store tokens in state and localStorage
  */
@@ -143,7 +146,7 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
     });
 
     if (!response.ok) {
-      throw new Error('Token refresh failed');
+      throw new Error('Token refresh request failed with status ' + response.status);
     }
 
     const data = await response.json();
@@ -173,7 +176,7 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Token refresh failed',
+      error: error instanceof Error ? error.message : 'Token refresh request failed',
     };
   }
 }
