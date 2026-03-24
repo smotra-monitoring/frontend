@@ -11,7 +11,7 @@ import {
     exchangeCodeForTokens,
 } from '../../src/auth/oauth-manager.js';
 import { storeTokens, getCurrentTokens } from '../../src/auth/token-manager.js';
-import { setAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
+import { saveAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
 import type { AuthState, UserInfo, TokenData } from '../../src/types/auth-types.js';
 
 describe('OAuth Authentication Flow (Integration)', () => {
@@ -82,7 +82,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
             expires_at: Date.now() + tokens.expires_in * 1000,
             refresh_token: tokens.refresh_token || '', // Ensure refresh_token is a string
         };
-        setAuthState(userInfo, tokenData);
+        saveAuthState(userInfo, tokenData);
 
         // Step 9: Verify authentication state
         expect(isAuthenticated()).toBe(true);
@@ -174,7 +174,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
             refresh_token: tokens.refresh_token || '', // Ensure refresh_token is a string
         };
 
-        setAuthState(mockUserInfo, tokenData);
+        saveAuthState(mockUserInfo, tokenData);
 
         expect(isAuthenticated()).toBe(true);
 

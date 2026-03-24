@@ -4,7 +4,7 @@
 
 import { canAccessRoute, protectRoute } from '../../../src/auth/auth-guard.js';
 import { storeTokens, clearTokens } from '../../../src/auth/token-manager.js';
-import { setAuthState, clearAuthState } from '../../../src/state/auth-state.js';
+import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
 
 describe('auth-guard', () => {
@@ -30,7 +30,7 @@ describe('auth-guard', () => {
         it('allows access when authenticated with valid token', async () => {
             // Set up authenticated state
             storeTokens(mockTokens);
-            setAuthState(mockUserInfo, mockTokens);
+            saveAuthState(mockUserInfo, mockTokens);
 
             const result = await canAccessRoute(true);
             expect(result.allowed).toBe(true);
@@ -42,7 +42,7 @@ describe('auth-guard', () => {
                 expires_in: -1, // Expired
             };
             storeTokens(expiredTokens);
-            setAuthState(mockUserInfo, expiredTokens);
+            saveAuthState(mockUserInfo, expiredTokens);
 
             const result = await canAccessRoute(true);
             expect(result.allowed).toBe(false);
@@ -55,7 +55,7 @@ describe('auth-guard', () => {
                 expires_in: 100, // Expires soon
             };
             storeTokens(almostExpiredTokens);
-            setAuthState(mockUserInfo, almostExpiredTokens);
+            saveAuthState(mockUserInfo, almostExpiredTokens);
 
             // Mock refresh endpoint
             global.fetch = jest.fn(() =>

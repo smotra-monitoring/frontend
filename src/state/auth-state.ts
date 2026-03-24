@@ -161,9 +161,3 @@ export function isTokenExpired(bufferSeconds: number = 60): boolean {
   return expiresAt <= now + (bufferSeconds * 1000);
 }
 
-/**
- * Set authentication state (alias for saveAuthState)
- */
-export function setAuthState(user: UserInfo, tokens: TokenData): void {
-  saveAuthState(user, tokens);
-}
