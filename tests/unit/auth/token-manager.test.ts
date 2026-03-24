@@ -3,9 +3,9 @@
  */
 
 import {
-    storeTokens,
-    getCurrentTokens,
-    clearTokens,
+    storeTokens_TestsOnly,
+    getCurrentTokens_TestsOnly,
+    clearTokens_TestsOnly,
     isTokenExpired,
     scheduleTokenRefresh,
     refreshAccessToken,
@@ -25,7 +25,7 @@ describe('token-manager', () => {
 
     describe('storeTokens', () => {
         it('stores tokens in localStorage', () => {
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             const stored = localStorage.getItem('auth_tokens');
             expect(stored).toBeTruthy();
 
@@ -36,7 +36,7 @@ describe('token-manager', () => {
 
         it('calculates and stores expiration timestamp', () => {
             const beforeStore = Date.now();
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             const afterStore = Date.now();
 
             const stored = JSON.parse(localStorage.getItem('auth_tokens')!);
@@ -48,8 +48,8 @@ describe('token-manager', () => {
 
     describe('getCurrentTokens', () => {
         it('retrieves stored tokens', () => {
-            storeTokens(mockTokens);
-            const tokens = getCurrentTokens();
+            storeTokens_TestsOnly(mockTokens);
+            const tokens = getCurrentTokens_TestsOnly();
 
             expect(tokens).toBeTruthy();
             expect(tokens?.access_token).toBe(mockTokens.access_token);
@@ -57,7 +57,7 @@ describe('token-manager', () => {
         });
 
         it('returns null when no tokens stored', () => {
-            expect(getCurrentTokens()).toBeNull();
+            expect(getCurrentTokens_TestsOnly()).toBeNull();
         });
 
         it('returns null for expired tokens', () => {
@@ -65,28 +65,28 @@ describe('token-manager', () => {
                 ...mockTokens,
                 expires_in: -1, // Already expired
             };
-            storeTokens(expiredTokens);
+            storeTokens_TestsOnly(expiredTokens);
 
             // Should still return tokens (expiration check is separate)
-            const tokens = getCurrentTokens();
+            const tokens = getCurrentTokens_TestsOnly();
             expect(tokens).toBeTruthy();
         });
     });
 
     describe('clearTokens', () => {
         it('removes tokens from localStorage', () => {
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             expect(localStorage.getItem('auth_tokens')).toBeTruthy();
 
-            clearTokens();
+            clearTokens_TestsOnly();
             expect(localStorage.getItem('auth_tokens')).toBeNull();
         });
     });
 
     describe('isTokenExpired', () => {
         it('returns false for valid tokens', () => {
-            storeTokens(mockTokens); // expires in 3600 seconds
-            const tokens = getCurrentTokens();
+            storeTokens_TestsOnly(mockTokens); // expires in 3600 seconds
+            const tokens = getCurrentTokens_TestsOnly();
             expect(isTokenExpired(tokens!)).toBe(false);
         });
 
@@ -95,8 +95,8 @@ describe('token-manager', () => {
                 ...mockTokens,
                 expires_in: 0,
             };
-            storeTokens(expiredTokens);
-            const tokens = getCurrentTokens();
+            storeTokens_TestsOnly(expiredTokens);
+            const tokens = getCurrentTokens_TestsOnly();
 
             // Advance time past expiration
             jest.advanceTimersByTime(1000);
@@ -104,8 +104,8 @@ describe('token-manager', () => {
         });
 
         it('returns true with buffer time before actual expiration', () => {
-            storeTokens(mockTokens);
-            const tokens = getCurrentTokens();
+            storeTokens_TestsOnly(mockTokens);
+            const tokens = getCurrentTokens_TestsOnly();
 
             // Advance to within 5 minutes of expiration (default buffer)
             // jest.advanceTimersByTime((mockTokens.expires_in - 250) * 1000);
@@ -116,7 +116,7 @@ describe('token-manager', () => {
 
     describe('refreshAccessToken', () => {
         it('refreshes access token using refresh token', async () => {
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             mockFetchSuccess(mockRefreshTokenResponse);
 
             const result = await refreshAccessToken();
@@ -133,7 +133,7 @@ describe('token-manager', () => {
         });
 
         it('throws error on failed refresh', async () => {
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             global.fetch = jest.fn(() =>
                 Promise.resolve({
                     ok: false,

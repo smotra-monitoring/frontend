@@ -6,7 +6,7 @@
 import type { OAuth2Provider, UserInfo, TokenData } from '../types/auth-types.js';
 import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig } from '../auth/oauth-manager.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
-import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getCurrentTokens } from '../state/auth-state.js';
+import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 
 // Token refresh cleanup function
 let tokenRefreshCleanup: (() => void) | null = null;
@@ -197,7 +197,7 @@ export async function logout(): Promise<void> {
  */
 export function initializeAuthService(): void {
     // Load saved authentication state from localStorage
-    const tokens = getCurrentTokens();
+    const tokens = getTokensFromState();
 
     // If tokens exist, schedule refresh
     if (tokens) {

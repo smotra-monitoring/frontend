@@ -134,14 +134,14 @@ export function isAuthenticated(): boolean {
 /**
  * Get current user
  */
-export function getCurrentUser(): UserInfo | null {
+export function getCurrentUserFromState(): UserInfo | null {
   return authState.getState().user;
 }
 
 /**
  * Get current tokens
  */
-export function getCurrentTokens(): TokenData | null {
+export function getTokensFromState(): TokenData | null {
   return authState.getState().tokens;
 }
 
@@ -149,7 +149,7 @@ export function getCurrentTokens(): TokenData | null {
  * Check if access token is expired or about to expire
  */
 export function isTokenExpired(bufferSeconds: number = 60): boolean {
-  const tokens = getCurrentTokens();
+  const tokens = getTokensFromState();
   if (!tokens) {
     return true;
   }

@@ -3,13 +3,13 @@
  */
 
 import { canAccessRoute, protectRoute } from '../../../src/auth/auth-guard.js';
-import { storeTokens, clearTokens } from '../../../src/auth/token-manager.js';
+import { storeTokens_TestsOnly, clearTokens_TestsOnly } from '../../../src/auth/token-manager.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
 
 describe('auth-guard', () => {
     beforeEach(() => {
-        clearTokens();
+        clearTokens_TestsOnly();
         clearAuthState();
         delete (window as any).location;
         (window as any).location = { href: '' };
@@ -29,7 +29,7 @@ describe('auth-guard', () => {
 
         it('allows access when authenticated with valid token', async () => {
             // Set up authenticated state
-            storeTokens(mockTokens);
+            storeTokens_TestsOnly(mockTokens);
             saveAuthState(mockUserInfo, mockTokens);
 
             const result = await canAccessRoute(true);
@@ -41,7 +41,7 @@ describe('auth-guard', () => {
                 ...mockTokens,
                 expires_in: -1, // Expired
             };
-            storeTokens(expiredTokens);
+            storeTokens_TestsOnly(expiredTokens);
             saveAuthState(mockUserInfo, expiredTokens);
 
             const result = await canAccessRoute(true);
@@ -54,7 +54,7 @@ describe('auth-guard', () => {
                 ...mockTokens,
                 expires_in: 100, // Expires soon
             };
-            storeTokens(almostExpiredTokens);
+            storeTokens_TestsOnly(almostExpiredTokens);
             saveAuthState(mockUserInfo, almostExpiredTokens);
 
             // Mock refresh endpoint
