@@ -4,87 +4,9 @@
 
 import type { TokenData, TokenRefreshResult } from '../types/auth-types.js';
 import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpired } from '../state/auth-state.js';
-import { Storage } from '../utils/storage.js';
 
 // Import generated SDK functions (will be available after openapi-ts runs)
 // import { oauth2Token } from '../api/sdk.gen.js';
-
-const TOKEN_STORAGE_KEY_TESTS_ONLY = 'auth_tokens';
-
-// TODO: Think about moving below _TestsOnly functions to a separate file, 
-// as they are only needed for testing and not used in production code. 
-
-/**
- * Store tokens in state and localStorage
- */
-export function storeTokens_TestsOnly(tokens: TokenData | any): void {
-  // Calculate expires_at if only expires_in is provided
-  let tokenData: TokenData;
-  if ('expires_in' in tokens && !('expires_at' in tokens)) {
-    tokenData = {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      token_type: tokens.token_type || 'Bearer',
-      expires_at: Date.now() + (tokens.expires_in * 1000),
-    };
-  } else {
-    tokenData = tokens as TokenData;
-  }
-
-  // Store to localStorage
-  Storage.set(TOKEN_STORAGE_KEY_TESTS_ONLY, tokenData);
-
-  // Update state
-  updateTokensInState(tokenData);
-}
-
-/**
- * Get current tokens from state
- */
-export function getCurrentTokens_TestsOnly(): TokenData | null {
-  // It is bad idea to read from localStorage directly in production code, 
-  // but this is needed to sync with tests that use localStorage as source of truth for tokens
-
-  // Read from localStorage directly to sync with tests
-  const storedTokens = Storage.get<TokenData>(TOKEN_STORAGE_KEY_TESTS_ONLY);
-  if (storedTokens) {
-    // Check if expired
-    if (storedTokens.expires_at > Date.now()) {
-      return storedTokens;
-    }
-  }
-
-  // Fallback to state
-  const stateTokens = getTokensFromState();
-  if (stateTokens) {
-    return stateTokens;
-  }
-
-  return null;
-}
-
-/**
- * Clear all stored tokens
- */
-export function clearTokens_TestsOnly(): void {
-  Storage.remove(TOKEN_STORAGE_KEY_TESTS_ONLY);
-  clearAuthState();
-}
-
-/**
- * Check if access token is expired or about to expire
- */
-export function isTokenExpired_TestsOnly(tokens: TokenData | null, bufferSeconds: number = 60): boolean {
-  if (!tokens) {
-    return true;
-  }
-
-  const now = Date.now();
-  const expiresAt = tokens.expires_at;
-
-  // Check if token expires within buffer period
-  return expiresAt <= now + (bufferSeconds * 1000);
-}
 
 /**
  * Get valid access token, refreshing if necessary

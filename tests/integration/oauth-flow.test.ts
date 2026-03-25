@@ -10,7 +10,7 @@ import {
     buildAuthorizationUrl,
     exchangeCodeForTokens,
 } from '../../src/auth/oauth-manager.js';
-import { storeTokens_TestsOnly, getCurrentTokens_TestsOnly } from '../../src/auth/token-manager.js';
+import { storeTokens, getCurrentTokens } from '../helpers/token-helpers.js';
 import { saveAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
 import type { AuthState, UserInfo, TokenData } from '../../src/types/auth-types.js';
 
@@ -63,8 +63,8 @@ describe('OAuth Authentication Flow (Integration)', () => {
         expect(tokens.refresh_token).toBe(mockTokenResponse.refresh_token);
 
         // Step 7: Store tokens
-        storeTokens_TestsOnly(tokens);
-        const retrievedTokens = getCurrentTokens_TestsOnly();
+        storeTokens(tokens);
+        const retrievedTokens = getCurrentTokens();
         expect(retrievedTokens?.access_token).toBe(tokens.access_token);
 
         // Step 8: Fetch and store user info
@@ -165,7 +165,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
             mockAuthorizationCode,
             'verifier'
         );
-        storeTokens_TestsOnly(tokens);
+        storeTokens(tokens);
 
         // Convert tokens with expires_in to expires_at
         const tokenData = {
@@ -179,7 +179,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
         expect(isAuthenticated()).toBe(true);
 
         // Simulate page reload by re-reading from storage
-        const restoredTokens = getCurrentTokens_TestsOnly();
+        const restoredTokens = getCurrentTokens();
         expect(restoredTokens?.access_token).toBe(tokens.access_token);
 
         // User should still be authenticated
