@@ -46,11 +46,11 @@ export function getCurrentTokens(): TokenData | null {
         }
     }
 
-    // Fallback to state
-    const stateTokens = getTokensFromState();
-    if (stateTokens) {
-        return stateTokens;
-    }
+    // // Fallback to state
+    // const stateTokens = getTokensFromState();
+    // if (stateTokens) {
+    //     return stateTokens;
+    // }
 
     return null;
 }

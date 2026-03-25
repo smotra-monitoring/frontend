@@ -16,7 +16,7 @@ import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess } from '../../mo
 
 describe('token-manager', () => {
     beforeEach(() => {
-        localStorage.clear();
+        clearTokens();
         jest.clearAllTimers();
         jest.useFakeTimers();
     });
@@ -43,8 +43,7 @@ describe('token-manager', () => {
 
             const stored = JSON.parse(localStorage.getItem('auth_tokens')!);
             expect(stored.expires_at).toBeGreaterThan(beforeStore);
-            //   expect(stored.expires_at).toBeLessThanOrEqual(afterStore + mockTokens.expires_in * 1000);
-            expect(stored.expires_at).toBeLessThanOrEqual(mockTokens.expires_at);
+            expect(stored.expires_at).toBeCloseTo(mockTokens.expires_at);
         });
     });
 
@@ -58,20 +57,20 @@ describe('token-manager', () => {
             expect(tokens?.refresh_token).toBe(mockTokens.refresh_token);
         });
 
-        it('returns null when no tokens stored', () => {
-            expect(getCurrentTokens()).toBeNull();
-        });
-
         it('returns null for expired tokens', () => {
+            const { expires_at: _, ...remainingTokens } = mockTokens;
             const expiredTokens = {
-                ...mockTokens,
+                ...remainingTokens,
                 expires_in: -1, // Already expired
             };
             storeTokens(expiredTokens);
 
-            // Should still return tokens (expiration check is separate)
             const tokens = getCurrentTokens();
-            expect(tokens).toBeTruthy();
+            expect(tokens).toBeNull();
+        });
+
+        it('returns null when no tokens stored', () => {
+            expect(getCurrentTokens()).toBeNull();
         });
     });
 
