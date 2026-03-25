@@ -192,6 +192,8 @@ export async function revokeTokens(): Promise<boolean> {
   }
 
   try {
+    // TODO: Replace with generated SDK function to revoke tokens
+
     // Revoke access token
     if (tokens.access_token) {
       await fetch('/auth/oauth2/revoke', {
@@ -205,6 +207,8 @@ export async function revokeTokens(): Promise<boolean> {
         }),
       });
     }
+
+    // TODO: Replace with generated SDK function to revoke tokens
 
     // Revoke refresh token
     if (tokens.refresh_token) {
