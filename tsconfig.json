@@ -8,7 +8,9 @@
     // See also https://aka.ms/tsconfig/module
     "target": "ES2020",
     "module": "NodeNext",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "moduleResolution": "nodenext",
     // For nodejs:
     // "lib": ["esnext"],
@@ -45,7 +47,8 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noEmitOnError": true
   },
   "include": [
     "src/**/*"

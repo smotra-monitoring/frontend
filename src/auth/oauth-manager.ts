@@ -3,7 +3,7 @@
  * Handles OAuth authorization flow with multiple providers
  */
 
-import type { OAuth2Config, OAuth2Provider, PKCEChallenge, AuthorizationRequest } from '../types/auth-types.js';
+import type { OAuth2Config, OAuth2Provider, PKCEChallenge } from '../types/auth-types.js';
 import { Storage } from '../utils/storage.js';
 import { buildUrl, parseOAuthCallback } from '../utils/url-utils.js';
 
@@ -40,7 +40,7 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  
+
   // Convert to base64url
   const base64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
   return base64
@@ -62,7 +62,7 @@ export function generateState(): string {
 export async function generatePKCEChallenge(): Promise<PKCEChallenge> {
   const code_verifier = generateCodeVerifier();
   const code_challenge = await generateCodeChallenge(code_verifier);
-  
+
   return {
     code_verifier,
     code_challenge,
@@ -129,7 +129,7 @@ export function buildAuthorizationUrl(
     code_challenge_method: 'S256',
     state,
   };
-  
+
   return buildUrl(config.authorizationEndpoint, params);
 }
 
@@ -140,10 +140,10 @@ export async function buildFullAuthorizationUrl(config: OAuth2Config): Promise<s
   // Generate PKCE challenge
   const pkce = await generatePKCEChallenge();
   storePKCE(pkce);
-  
+
   // Generate state
   const state = generateAndStoreState();
-  
+
   // Build authorization request parameters
   const params: Record<string, string> = {
     client_id: config.clientId,
@@ -154,7 +154,7 @@ export async function buildFullAuthorizationUrl(config: OAuth2Config): Promise<s
     code_challenge: pkce.code_challenge,
     code_challenge_method: pkce.code_challenge_method,
   };
-  
+
   return buildUrl(config.authorizationEndpoint, params);
 }
 
@@ -207,7 +207,7 @@ export function handleOAuthCallback(): {
   valid: boolean;
 } {
   const callback = parseOAuthCallback();
-  
+
   // Check for error
   if (callback.error) {
     return {
@@ -216,7 +216,7 @@ export function handleOAuthCallback(): {
       valid: false,
     };
   }
-  
+
   // Validate state (CSRF protection)
   if (!callback.state || !validateState(callback.state)) {
     return {
@@ -225,7 +225,7 @@ export function handleOAuthCallback(): {
       valid: false,
     };
   }
-  
+
   // Check for authorization code
   if (!callback.code) {
     return {
@@ -234,7 +234,7 @@ export function handleOAuthCallback(): {
       valid: false,
     };
   }
-  
+
   return {
     code: callback.code,
     error: null,
@@ -276,6 +276,6 @@ export function getProviderConfig(provider: OAuth2Provider): Partial<OAuth2Confi
       scopes: ['openid', 'profile', 'email'],
     },
   };
-  
+
   return configs[provider];
 }
