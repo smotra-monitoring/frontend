@@ -7,12 +7,15 @@ import {
     refreshAccessToken,
 } from '../../../src/auth/token-manager.js';
 import {
+    getTokensFromState,
+    updateTokensInState,
+    isTokenExpiredInState,
+} from '../../../src/state/auth-state.js';
+import {
     storeTokens,
-    getCurrentTokens,
     clearTokens,
-    isTokenExpired,
 } from '../../helpers/token-helpers.js';
-import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess } from '../../mocks/oauth-responses.js';
+import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess, mockFetchError } from '../../mocks/oauth-responses.js';
 
 describe('token-manager', () => {
     beforeEach(() => {
@@ -25,93 +28,47 @@ describe('token-manager', () => {
         jest.useRealTimers();
     });
 
-    describe('storeTokens', () => {
-        it('stores tokens in localStorage', () => {
-            storeTokens(mockTokens);
-            const stored = localStorage.getItem('auth_tokens');
-            expect(stored).toBeTruthy();
-
-            const parsed = JSON.parse(stored!);
-            expect(parsed.access_token).toBe(mockTokens.access_token);
-            expect(parsed.refresh_token).toBe(mockTokens.refresh_token);
-        });
-
-        it('calculates and stores expiration timestamp', () => {
-            const beforeStore = Date.now();
-            storeTokens(mockTokens);
-            const afterStore = Date.now();
-
-            const stored = JSON.parse(localStorage.getItem('auth_tokens')!);
-            expect(stored.expires_at).toBeGreaterThan(beforeStore);
-            expect(stored.expires_at).toBeCloseTo(mockTokens.expires_at);
-        });
-    });
-
-    describe('getCurrentTokens', () => {
-        it('retrieves stored tokens', () => {
-            storeTokens(mockTokens);
-            const tokens = getCurrentTokens();
-
-            expect(tokens).toBeTruthy();
-            expect(tokens?.access_token).toBe(mockTokens.access_token);
-            expect(tokens?.refresh_token).toBe(mockTokens.refresh_token);
-        });
-
-        it('returns null for expired tokens', () => {
-            const { expires_at: _, ...remainingTokens } = mockTokens;
-            const expiredTokens = {
-                ...remainingTokens,
-                expires_in: -1, // Already expired
-            };
-            storeTokens(expiredTokens);
-
-            const tokens = getCurrentTokens();
-            expect(tokens).toBeNull();
-        });
-
-        it('returns null when no tokens stored', () => {
-            expect(getCurrentTokens()).toBeNull();
-        });
-    });
-
-    describe('clearTokens', () => {
-        it('removes tokens from localStorage', () => {
-            storeTokens(mockTokens);
-            expect(localStorage.getItem('auth_tokens')).toBeTruthy();
-
-            clearTokens();
-            expect(localStorage.getItem('auth_tokens')).toBeNull();
-        });
-    });
-
-    describe('isTokenExpired', () => {
+    describe('isTokenExpired (auth-state)', () => {
         it('returns false for valid tokens', () => {
-            storeTokens(mockTokens); // expires in 3600 seconds
-            const tokens = getCurrentTokens();
-            expect(isTokenExpired(tokens!)).toBe(false);
+            storeTokens(mockTokens);
+
+            expect(isTokenExpiredInState()).toBe(false);
+        });
+
+        it('returns true when no tokens stored', () => {
+            expect(isTokenExpiredInState()).toBe(true);
         });
 
         it('returns true for expired tokens', () => {
-            const expiredTokens = {
-                ...mockTokens,
-                expires_in: 0,
-            };
-            storeTokens(expiredTokens);
-            const tokens = getCurrentTokens();
+            storeTokens(mockTokens);
 
             // Advance time past expiration
-            jest.advanceTimersByTime(1000);
-            expect(isTokenExpired(tokens!)).toBe(true);
+            jest.advanceTimersByTime(mockTokens.expires_at - Date.now() + 1000);
+            expect(isTokenExpiredInState()).toBe(true);
         });
 
         it('returns true with buffer time before actual expiration', () => {
             storeTokens(mockTokens);
-            const tokens = getCurrentTokens();
 
-            // Advance to within 5 minutes of expiration (default buffer)
-            // jest.advanceTimersByTime((mockTokens.expires_in - 250) * 1000);
-            jest.advanceTimersByTime((mockTokens.expires_at - 250) - Date.now());   // TODO: DOUBLE CHECK
-            expect(isTokenExpired(tokens!)).toBe(true);
+            // Advance to within buffer time (default 60 seconds)
+            const bufferTime = 50 * 1000; // 50 seconds
+            jest.advanceTimersByTime(mockTokens.expires_at - Date.now() - bufferTime);
+
+            expect(isTokenExpiredInState()).toBe(true);
+        });
+
+        it('respects custom buffer time', () => {
+            storeTokens(mockTokens);
+
+            // Advance to within 2 minutes of expiration
+            const twoMinutesBeforeExpiration = (mockTokens.expires_at - 2 * 60 * 1000) - Date.now();
+            jest.advanceTimersByTime(twoMinutesBeforeExpiration);
+
+            // Should be expired with 121 second buffer
+            expect(isTokenExpiredInState(121)).toBe(true);
+
+            // Should NOT be expired with 119 second buffer
+            expect(isTokenExpiredInState(119)).toBe(false);
         });
     });
 
@@ -135,15 +92,10 @@ describe('token-manager', () => {
 
         it('throws error on failed refresh', async () => {
             storeTokens(mockTokens);
-            global.fetch = jest.fn(() =>
-                Promise.resolve({
-                    ok: false,
-                    status: 401,
-                    json: async () => ({ error: 'invalid_grant' }),
-                } as Response)
-            );
+            mockFetchError(401, 'Unauthorized');
 
             const result = await refreshAccessToken();
+
             expect(result.success).toBe(false);
         });
     });
@@ -161,11 +113,13 @@ describe('token-manager', () => {
         it('calls refresh function at scheduled time', async () => {
             mockFetchSuccess(mockRefreshTokenResponse);
 
-            const cleanup = scheduleTokenRefresh(mockTokens);
+            updateTokensInState(mockTokens);
+            const cleanup = scheduleTokenRefresh(getTokensFromState()!);
 
             // Fast-forward to refresh time (5 minutes before expiration)
             // jest.advanceTimersByTime((mockTokens.expires_in - 300) * 1000);
-            jest.advanceTimersByTime((mockTokens.expires_at - 300) - Date.now());   // TODO: DOUBLE CHECK
+            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
+            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
 
             // Wait for async operations
             await Promise.resolve();

@@ -26,6 +26,10 @@ export function storeTokens(tokens: TokenData | any): void {
         tokenData = tokens as TokenData;
     }
 
+    // TODO: consider removing localStorage usage in tests and rely solely on state for better test isolation
+    // re-check after oauth-flow.tests.ts will be reviewed
+    // Because this is the only place colling getCurrentTokens, which reads from localStorage, and it is used in token-manager tests, which also use localStorage to store tokens, it is better to keep it for now to avoid breaking tests. But in the future we should consider refactoring tests to rely solely on state for better isolation and testability.
+
     // Store to localStorage
     Storage.set(TOKEN_STORAGE_KEY, tokenData);
 

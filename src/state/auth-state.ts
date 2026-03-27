@@ -148,7 +148,7 @@ export function getTokensFromState(): TokenData | null {
 /**
  * Check if access token is expired or about to expire
  */
-export function isTokenExpired(bufferSeconds: number = 60): boolean {
+export function isTokenExpiredInState(bufferSeconds: number = 60): boolean {
   const tokens = getTokensFromState();
   if (!tokens) {
     return true;

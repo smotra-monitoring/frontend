@@ -3,7 +3,7 @@
  */
 
 import type { TokenData, TokenRefreshResult } from '../types/auth-types.js';
-import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpired } from '../state/auth-state.js';
+import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpiredInState } from '../state/auth-state.js';
 
 // Import generated SDK functions (will be available after openapi-ts runs)
 // import { oauth2Token } from '../api/sdk.gen.js';
@@ -13,7 +13,7 @@ import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpired
  */
 export async function getValidAccessToken(): Promise<string | null> {
   // If token is still valid, return it
-  if (!isTokenExpired()) {
+  if (!isTokenExpiredInState()) {
     const tokens = getTokensFromState() as TokenData;
     return tokens.access_token;
   }
