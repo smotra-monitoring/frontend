@@ -19,14 +19,14 @@ export async function login(provider: OAuth2Provider): Promise<void> {
         setAuthLoading(true);
 
         // Get provider configuration
-        const providerConfig = getProviderConfig(provider);
+        const partialProviderConfig = getProviderConfig(provider);
 
         // In production, these would come from environment variables
         const config = {
             provider,
             clientId: 'your-client-id',
             redirectUri: `${window.location.origin}/auth/callback`,
-            ...providerConfig,
+            ...partialProviderConfig,
         } as any;
 
         // Initiate OAuth flow (redirects user to provider)
@@ -45,10 +45,10 @@ export async function handleLoginCallback(): Promise<boolean> {
         setAuthLoading(true);
 
         // Parse and validate callback
-        const callback = handleOAuthCallback();
+        const callbackResult = handleOAuthCallback();
 
-        if (!callback.valid || callback.error) {
-            setAuthError(callback.error || 'Authentication failed');
+        if (!callbackResult.valid || callbackResult.error) {
+            setAuthError(callbackResult.error || 'Authentication failed');
             return false;
         }
 
@@ -61,7 +61,7 @@ export async function handleLoginCallback(): Promise<boolean> {
         }
 
         // Exchange authorization code for tokens
-        const tokens = await exchangeCodeForTokens(callback.code!, pkce.code_verifier);
+        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier);
 
         if (!tokens) {
             setAuthError('Token exchange failed');

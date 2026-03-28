@@ -22,7 +22,8 @@ function generateRandomString(length: number): string {
 /**
  * Generate PKCE code verifier (base64url encoded random string)
  */
-export function generateCodeVerifier(): string {
+export const generateCodeVerifier_ForTests = generateCodeVerifier;
+function generateCodeVerifier(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   // Convert to base64url
@@ -36,7 +37,8 @@ export function generateCodeVerifier(): string {
 /**
  * Generate PKCE code challenge from verifier
  */
-export async function generateCodeChallenge(verifier: string): Promise<string> {
+export const generateCodeChallenge_ForTests = generateCodeChallenge;
+async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
@@ -52,22 +54,26 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
 /**
  * Generate random state parameter for CSRF protection
  */
-export function generateState(): string {
+export function generateState_ForTests(): string {
   return generateRandomString(32);
 }
 
 /**
  * Generate PKCE challenge pair
  */
-export async function generatePKCEChallenge(): Promise<PKCEChallenge> {
+async function generateAndStorePKCEChallenge(): Promise<PKCEChallenge> {
   const code_verifier = generateCodeVerifier();
   const code_challenge = await generateCodeChallenge(code_verifier);
 
-  return {
+  const pkce: PKCEChallenge = {
     code_verifier,
     code_challenge,
     code_challenge_method: 'S256',
   };
+
+  storePKCE(pkce);
+
+  return pkce;
 }
 
 /**
@@ -98,7 +104,7 @@ function generateAndStoreState(): string {
 /**
  * Retrieve and remove stored state
  */
-export function retrieveState(): string | null {
+function retrieveState(): string | null {
   const state = Storage.get<string>(STATE_STORAGE_KEY);
   Storage.remove(STATE_STORAGE_KEY);
   return state;
@@ -107,15 +113,18 @@ export function retrieveState(): string | null {
 /**
  * Validate OAuth callback state parameter
  */
-export function validateState(receivedState: string): boolean {
+function validateState(receivedState: string): boolean {
   const storedState = retrieveState();
   return storedState === receivedState;
 }
 
 /**
  * Build authorization URL with PKCE parameters
+ * This funcion is for testing purposes to mock buildFullAuthorizationUrl without generating PKCE and state, 
+ * which are random and cannot be easily tested. 
+ * In production, buildFullAuthorizationUrl should be used, which generates PKCE and state internally.
  */
-export function buildAuthorizationUrl(
+export function buildAuthorizationUrl_ForTests(
   config: OAuth2Config | { authorizationEndpoint: string; clientId: string; redirectUri: string; scopes: string[] },
   codeChallenge: string,
   state: string
@@ -136,10 +145,9 @@ export function buildAuthorizationUrl(
 /**
  * Build full authorization URL for OAuth2 flow (with PKCE generation)
  */
-export async function buildFullAuthorizationUrl(config: OAuth2Config): Promise<string> {
+async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
   // Generate PKCE challenge
-  const pkce = await generatePKCEChallenge();
-  storePKCE(pkce);
+  const pkce = await generateAndStorePKCEChallenge();
 
   // Generate state
   const state = generateAndStoreState();
@@ -161,7 +169,7 @@ export async function buildFullAuthorizationUrl(config: OAuth2Config): Promise<s
 /**
  * Exchange authorization code for tokens
  */
-export async function exchangeCodeForTokens(
+export async function exchangeCodeForTokens_ForTests(
   config: OAuth2Config | { tokenEndpoint: string; clientId: string; redirectUri: string },
   authorizationCode: string,
   codeVerifier: string
@@ -194,7 +202,7 @@ export async function exchangeCodeForTokens(
  * Initiate OAuth2 authorization flow
  */
 export async function initiateOAuthFlow(config: OAuth2Config): Promise<void> {
-  const authUrl = await buildFullAuthorizationUrl(config);
+  const authUrl = await buildAuthorizationUrl(config);
   window.location.href = authUrl;
 }
 
@@ -206,19 +214,19 @@ export function handleOAuthCallback(): {
   error: string | null;
   valid: boolean;
 } {
-  const callback = parseOAuthCallback();
+  const callbackParams = parseOAuthCallback(window.location.href);
 
   // Check for error
-  if (callback.error) {
+  if (callbackParams.error) {
     return {
       code: null,
-      error: callback.error_description || callback.error,
+      error: callbackParams.error_description || callbackParams.error,
       valid: false,
     };
   }
 
   // Validate state (CSRF protection)
-  if (!callback.state || !validateState(callback.state)) {
+  if (!callbackParams.state || !validateState(callbackParams.state)) {
     return {
       code: null,
       error: 'Invalid state parameter. Possible CSRF attack.',
@@ -227,7 +235,7 @@ export function handleOAuthCallback(): {
   }
 
   // Check for authorization code
-  if (!callback.code) {
+  if (!callbackParams.code) {
     return {
       code: null,
       error: 'No authorization code received',
@@ -236,7 +244,7 @@ export function handleOAuthCallback(): {
   }
 
   return {
-    code: callback.code,
+    code: callbackParams.code,
     error: null,
     valid: true,
   };

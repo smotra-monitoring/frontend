@@ -132,7 +132,7 @@ export function buildUrl(baseUrl: string, params: Record<string, string | number
 /**
  * Parse OAuth callback URL and extract code, state, and error
  */
-export function parseOAuthCallback(url: string = window.location.href): {
+export function parseOAuthCallback(url: string): {
   code: string | null;
   state: string | null;
   error: string | null;
@@ -151,7 +151,7 @@ export function parseOAuthCallback(url: string = window.location.href): {
 /**
  * Remove query parameters from URL
  */
-export function removeQueryParams(url: string = window.location.href): string {
+export function removeQueryParams(url: string): string {
   try {
     const urlObj = new URL(url);
     return `${urlObj.origin}${urlObj.pathname}`;

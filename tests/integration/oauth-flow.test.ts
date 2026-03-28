@@ -4,11 +4,11 @@
 
 import { mockOAuthProvider, mockAuthorizationCode, mockTokenResponse, mockUserInfo, mockFetchSuccess } from '../mocks/oauth-responses.js';
 import {
-    generateCodeVerifier,
-    generateCodeChallenge,
-    generateState,
-    buildAuthorizationUrl,
-    exchangeCodeForTokens,
+    generateCodeVerifier_ForTests,
+    generateCodeChallenge_ForTests,
+    generateState_ForTests,
+    buildAuthorizationUrl_ForTests,
+    exchangeCodeForTokens_ForTests,
 } from '../../src/auth/oauth-manager.js';
 import { storeTokens, getCurrentTokens } from '../helpers/token-helpers.js';
 import { saveAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
@@ -23,16 +23,16 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
     it('completes full OAuth2 PKCE flow', async () => {
         // Step 1: Generate PKCE parameters
-        const verifier = generateCodeVerifier();
-        const challenge = await generateCodeChallenge(verifier);
-        const state = generateState();
+        const verifier = generateCodeVerifier_ForTests();
+        const challenge = await generateCodeChallenge_ForTests(verifier);
+        const state = generateState_ForTests();
 
         expect(verifier).toBeTruthy();
         expect(challenge).toBeTruthy();
         expect(state).toBeTruthy();
 
         // Step 2: Build authorization URL
-        const authUrl = buildAuthorizationUrl(mockOAuthProvider, challenge, state);
+        const authUrl = buildAuthorizationUrl_ForTests(mockOAuthProvider, challenge, state);
         expect(authUrl).toContain(mockOAuthProvider.authorizationEndpoint);
         expect(authUrl).toContain(challenge);
         expect(authUrl).toContain(state);
@@ -53,7 +53,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
         // Step 6: Exchange authorization code for tokens
         mockFetchSuccess(mockTokenResponse);
         const storedVerifier = localStorage.getItem('oauth_code_verifier');
-        const tokens = await exchangeCodeForTokens(
+        const tokens = await exchangeCodeForTokens_ForTests(
             mockOAuthProvider,
             mockAuthorizationCode,
             storedVerifier!
@@ -97,15 +97,15 @@ describe('OAuth Authentication Flow (Integration)', () => {
     });
 
     it('handles OAuth state mismatch (CSRF protection)', async () => {
-        const verifier = generateCodeVerifier();
-        const challenge = await generateCodeChallenge(verifier);
-        const originalState = generateState();
+        const verifier = generateCodeVerifier_ForTests();
+        const challenge = await generateCodeChallenge_ForTests(verifier);
+        const originalState = generateState_ForTests();
 
         // Store original state
         localStorage.setItem('oauth_state', originalState);
 
         // Simulate callback with different state (potential CSRF attack)
-        const differentState = generateState();
+        const differentState = generateState_ForTests();
         (window as any).location.search = `?code=${mockAuthorizationCode}&state=${differentState}`;
 
         const storedState = localStorage.getItem('oauth_state');
@@ -120,7 +120,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
     });
 
     it('handles missing authorization code error', () => {
-        const state = generateState();
+        const state = generateState_ForTests();
         localStorage.setItem('oauth_state', state);
 
         // Simulate error callback
@@ -135,7 +135,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
     });
 
     it('handles token exchange failure', async () => {
-        const verifier = generateCodeVerifier();
+        const verifier = generateCodeVerifier_ForTests();
 
         // Mock failed token exchange
         global.fetch = jest.fn(() =>
@@ -150,7 +150,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
         );
 
         await expect(
-            exchangeCodeForTokens(mockOAuthProvider, 'invalid-code', verifier)
+            exchangeCodeForTokens_ForTests(mockOAuthProvider, 'invalid-code', verifier)
         ).rejects.toThrow();
 
         // Verify user is not authenticated
@@ -160,7 +160,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
     it('persists authentication across page reloads', async () => {
         // Complete authentication
         mockFetchSuccess(mockTokenResponse);
-        const tokens = await exchangeCodeForTokens(
+        const tokens = await exchangeCodeForTokens_ForTests(
             mockOAuthProvider,
             mockAuthorizationCode,
             'verifier'

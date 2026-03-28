@@ -3,11 +3,11 @@
  */
 
 import {
-  generateCodeVerifier,
-  generateCodeChallenge,
-  generateState,
-  buildAuthorizationUrl,
-  exchangeCodeForTokens,
+  generateCodeVerifier_ForTests,
+  generateCodeChallenge_ForTests,
+  generateState_ForTests,
+  buildAuthorizationUrl_ForTests,
+  exchangeCodeForTokens_ForTests,
 } from '../../../src/auth/oauth-manager.js';
 import {
   mockOAuthProvider,
@@ -19,21 +19,21 @@ import {
 describe('oauth-manager', () => {
   describe('PKCE generation', () => {
     it('generates random code verifier of correct length', () => {
-      const verifier = generateCodeVerifier();
+      const verifier = generateCodeVerifier_ForTests();
       expect(verifier).toHaveLength(43); // Base64url of 32 bytes
       expect(verifier).toMatch(/^[A-Za-z0-9_-]+$/); // Base64url charset
     });
 
     it('generates unique code verifiers', () => {
-      const verifier1 = generateCodeVerifier();
-      const verifier2 = generateCodeVerifier();
+      const verifier1 = generateCodeVerifier_ForTests();
+      const verifier2 = generateCodeVerifier_ForTests();
       expect(verifier1).not.toBe(verifier2);
     });
 
     it('generates code challenge from verifier', async () => {
-      const verifier = generateCodeVerifier();
-      const challenge = await generateCodeChallenge(verifier);
-      
+      const verifier = generateCodeVerifier_ForTests();
+      const challenge = await generateCodeChallenge_ForTests(verifier);
+
       expect(challenge).toBeTruthy();
       expect(challenge).toHaveLength(43); // Base64url of SHA-256 hash
       expect(challenge).toMatch(/^[A-Za-z0-9_-]+$/);
@@ -41,33 +41,33 @@ describe('oauth-manager', () => {
 
     it('generates consistent challenge for same verifier', async () => {
       const verifier = 'test-verifier-123';
-      const challenge1 = await generateCodeChallenge(verifier);
-      const challenge2 = await generateCodeChallenge(verifier);
+      const challenge1 = await generateCodeChallenge_ForTests(verifier);
+      const challenge2 = await generateCodeChallenge_ForTests(verifier);
       expect(challenge1).toBe(challenge2);
     });
   });
 
   describe('state generation', () => {
     it('generates random state parameter', () => {
-      const state = generateState();
+      const state = generateState_ForTests();
       expect(state).toBeTruthy();
       expect(state.length).toBeGreaterThan(16);
     });
 
     it('generates unique state values', () => {
-      const state1 = generateState();
-      const state2 = generateState();
+      const state1 = generateState_ForTests();
+      const state2 = generateState_ForTests();
       expect(state1).not.toBe(state2);
     });
   });
 
   describe('buildAuthorizationUrl', () => {
     it('builds correct authorization URL', async () => {
-      const verifier = generateCodeVerifier();
-      const challenge = await generateCodeChallenge(verifier);
-      const state = generateState();
+      const verifier = generateCodeVerifier_ForTests();
+      const challenge = await generateCodeChallenge_ForTests(verifier);
+      const state = generateState_ForTests();
 
-      const url = buildAuthorizationUrl(
+      const url = buildAuthorizationUrl_ForTests(
         mockOAuthProvider,
         challenge,
         state
@@ -88,7 +88,7 @@ describe('oauth-manager', () => {
     it('exchanges authorization code for tokens', async () => {
       mockFetchSuccess(mockTokenResponse);
 
-      const tokens = await exchangeCodeForTokens(
+      const tokens = await exchangeCodeForTokens_ForTests(
         mockOAuthProvider,
         mockAuthorizationCode,
         'test-verifier'
@@ -109,7 +109,7 @@ describe('oauth-manager', () => {
     it('includes code_verifier in token request', async () => {
       mockFetchSuccess(mockTokenResponse);
 
-      await exchangeCodeForTokens(
+      await exchangeCodeForTokens_ForTests(
         mockOAuthProvider,
         mockAuthorizationCode,
         'test-verifier'
@@ -129,7 +129,7 @@ describe('oauth-manager', () => {
       );
 
       await expect(
-        exchangeCodeForTokens(mockOAuthProvider, 'invalid-code', 'verifier')
+        exchangeCodeForTokens_ForTests(mockOAuthProvider, 'invalid-code', 'verifier')
       ).rejects.toThrow();
     });
   });
