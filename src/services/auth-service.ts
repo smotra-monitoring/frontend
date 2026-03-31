@@ -108,7 +108,7 @@ export async function handleLoginCallback(): Promise<boolean> {
  */
 async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenData | null> {
     try {
-        // This would use the generated SDK function
+        // TODO: This would use the generated SDK function
         // import { oauth2Token } from '../api/sdk.gen.js';
 
         const response = await fetch('/auth/oauth2/token', {
@@ -150,7 +150,7 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
  */
 async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
     try {
-        // This would use the generated SDK function
+        // TODO: This would use the generated SDK function
         // import { getUserInfo } from '../api/sdk.gen.js';
 
         const response = await fetch('/auth/userinfo', {

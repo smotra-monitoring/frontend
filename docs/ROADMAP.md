@@ -48,4 +48,8 @@
 
   - [ ] In token-manager.ts -> refreshAccessToken
     TODO: Replace with actual API call to refresh token using the refresh token
+  - [ ] In auth-service.ts -> exchangeCodeForTokens
+    TODO: This would use the generated SDK function
+  - [ ] In auth-service.ts -> fetchUserInfo
+    TODO: This would use the generated SDK function
 
