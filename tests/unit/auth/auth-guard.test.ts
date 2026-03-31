@@ -5,7 +5,7 @@
 import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
 import { storeTokens, clearTokens } from '../../helpers/token-helpers.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
-import { mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
+import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
 
 describe('auth-guard', () => {
     beforeEach(() => {
@@ -29,7 +29,6 @@ describe('auth-guard', () => {
 
         it('allows access when authenticated with valid token', async () => {
             // Set up authenticated state
-            storeTokens(mockTokens);
             saveAuthState(mockUserInfo, mockTokens);
 
             const result = await canAccessRoute_ForTest(true);
@@ -39,9 +38,8 @@ describe('auth-guard', () => {
         it('denies access when token is expired', async () => {
             const expiredTokens = {
                 ...mockTokens,
-                expires_in: -1, // Expired
+                expires_at: Date.now() - 1000, // Expired in the past
             };
-            storeTokens(expiredTokens);
             saveAuthState(mockUserInfo, expiredTokens);
 
             const result = await canAccessRoute_ForTest(true);
@@ -50,24 +48,13 @@ describe('auth-guard', () => {
         });
 
         it('attempts token refresh for expired tokens', async () => {
+            mockFetchSuccess(mockTokens); // Mock successful refresh response
+
             const almostExpiredTokens = {
                 ...mockTokens,
-                expires_in: 100, // Expires soon
+                expires_at: Date.now() + 60 * 1000, // Expires in 1 minute (within default buffer time)
             };
-            storeTokens(almostExpiredTokens);
             saveAuthState(mockUserInfo, almostExpiredTokens);
-
-            // Mock refresh endpoint
-            global.fetch = jest.fn(() =>
-                Promise.resolve({
-                    ok: true,
-                    json: async () => ({
-                        access_token: 'new-token',
-                        token_type: 'Bearer',
-                        expires_in: 3600,
-                    }),
-                } as Response)
-            );
 
             const result = await canAccessRoute_ForTest(true);
             // Should allow access after successful refresh
@@ -76,27 +63,27 @@ describe('auth-guard', () => {
     });
 
     describe('protectRoute', () => {
-        it('redirects to login with return URL', () => {
+        it('redirects to login with return URL', async () => {
             const currentPath = '/dashboard';
-            protectRoute(currentPath);
+            await protectRoute(currentPath);
 
             expect(window.location.href).toContain('/login');
-            expect(window.location.href).toContain(`return=${encodeURIComponent(currentPath)}`);
+            expect(sessionStorage.getItem('redirect_after_login')).toContain(`${currentPath}`);
         });
 
-        it('stores return URL in localStorage', () => {
+        it('stores return URL in sessionStorage', async () => {
             const currentPath = '/dashboard/settings';
-            protectRoute(currentPath);
+            await protectRoute(currentPath);
 
-            const stored = localStorage.getItem('auth_return_url');
+            const stored = sessionStorage.getItem('redirect_after_login');
             expect(stored).toBe(currentPath);
         });
 
-        it('handles paths with query parameters', () => {
+        it('handles paths with query parameters', async () => {
             const currentPath = '/dashboard?filter=active&sort=name';
-            protectRoute(currentPath);
+            await protectRoute(currentPath);
 
-            const stored = localStorage.getItem('auth_return_url');
+            const stored = sessionStorage.getItem('redirect_after_login');
             expect(stored).toBe(currentPath);
         });
     });
