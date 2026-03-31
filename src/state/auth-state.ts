@@ -18,7 +18,7 @@ const initialAuthState: AuthState = {
 };
 
 // Create authentication state instance
-export const authState = createState<AuthState>(initialAuthState);
+const authState = createState<AuthState>(initialAuthState);
 
 /**
  * Load authentication state from localStorage

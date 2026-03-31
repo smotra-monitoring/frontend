@@ -19,7 +19,7 @@ const initialDashboardState: DashboardState = {
 };
 
 // Create dashboard state instance
-export const dashboardState = createState<DashboardState>(initialDashboardState);
+const dashboardState = createState<DashboardState>(initialDashboardState);
 
 /**
  * Set agents list
