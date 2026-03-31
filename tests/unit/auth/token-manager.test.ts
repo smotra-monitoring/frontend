@@ -6,6 +6,16 @@ import {
     scheduleTokenRefresh,
     refreshAccessToken,
 } from '../../../src/auth/token-manager.js';
+
+/** Drain the microtask queue fully (handles chained async/await in mocked fetch).
+ *  Cannot use process.nextTick here because jest.useFakeTimers() fakes it. */
+const flushPromises = async () => {
+    // 4 rounds covers: await fetch → await json() → refreshAccessToken resolves → .then/.await callback
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+};
 import {
     getTokensFromState,
     updateTokensInState,
@@ -137,6 +147,62 @@ describe('token-manager', () => {
             cleanup();
 
             expect(jest.getTimerCount()).toBeLessThan(timerCount);
+        });
+
+        it('invokes onRefreshComplete callback with new tokens after successful refresh', async () => {
+            mockFetchSuccess(mockRefreshTokenResponse);
+            updateTokensInState(mockTokens);
+
+            const onRefreshComplete = jest.fn();
+            const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
+
+            // Advance to the scheduled refresh time
+            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
+            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
+
+            // Drain all pending microtasks from the fetch → json() → callback chain
+            await flushPromises();
+
+            expect(onRefreshComplete).toHaveBeenCalledTimes(1);
+            expect(onRefreshComplete).toHaveBeenCalledWith(
+                expect.objectContaining({ access_token: mockRefreshTokenResponse.access_token }),
+            );
+
+            cleanup();
+        });
+
+        it('does not invoke onRefreshComplete when refresh fails', async () => {
+            mockFetchError(401, 'Unauthorized');
+            updateTokensInState(mockTokens);
+
+            const onRefreshComplete = jest.fn();
+            const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
+
+            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
+            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
+
+            await flushPromises();
+
+            expect(onRefreshComplete).not.toHaveBeenCalled();
+
+            cleanup();
+        });
+
+        it('immediately refreshes and invokes callback when token is already expiring', async () => {
+            mockFetchSuccess(mockRefreshTokenResponse);
+
+            // Token that expires in less than the 5-minute buffer
+            const expiringTokens = { ...mockTokens, expires_at: Date.now() + 2 * 60 * 1000 };
+            updateTokensInState(expiringTokens);
+
+            const onRefreshComplete = jest.fn();
+            scheduleTokenRefresh(expiringTokens, onRefreshComplete);
+
+            // Drain microtasks from the immediate .then() path
+            await flushPromises();
+
+            expect(fetch).toHaveBeenCalled();
+            expect(onRefreshComplete).toHaveBeenCalledTimes(1);
         });
     });
 });

@@ -8,8 +8,21 @@ import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 
-// Token refresh cleanup function
+// Token refresh cleanup function (tracks the current pending scheduled timeout)
 let tokenRefreshCleanup: (() => void) | null = null;
+
+/**
+ * Schedule a token refresh cycle that automatically re-schedules itself after
+ * each successful refresh, keeping the proactive refresh loop alive for the
+ * entire session.
+ */
+function scheduleRefreshCycle(tokens: TokenData): void {
+    tokenRefreshCleanup = scheduleTokenRefresh(tokens, (newTokens) => {
+        // After a successful refresh, immediately schedule the next cycle using
+        // the freshly issued tokens (which have a new expiration timestamp).
+        scheduleRefreshCycle(newTokens);
+    });
+}
 
 /**
  * Start OAuth login flow
@@ -79,8 +92,8 @@ export async function handleLoginCallback(): Promise<boolean> {
         // Save authentication state
         saveAuthState(userInfo, tokens);
 
-        // Schedule automatic token refresh
-        tokenRefreshCleanup = scheduleTokenRefresh(tokens);
+        // Schedule automatic token refresh (self-rescheduling cycle)
+        scheduleRefreshCycle(tokens);
 
         return true;
     } catch (error) {
@@ -199,8 +212,8 @@ export function initializeAuthService(): void {
     // Load saved authentication state from localStorage
     const tokens = getTokensFromState();
 
-    // If tokens exist, schedule refresh
+    // If tokens exist, start the self-rescheduling refresh cycle
     if (tokens) {
-        tokenRefreshCleanup = scheduleTokenRefresh(tokens);
+        scheduleRefreshCycle(tokens);
     }
 }

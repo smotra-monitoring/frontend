@@ -154,23 +154,40 @@ export async function revokeTokens(): Promise<boolean> {
 }
 
 /**
- * Schedule automatic token refresh before expiration
+ * Schedule automatic token refresh before expiration.
+ *
+ * @param tokens - Current token data with expiration timestamp.
+ * @param onRefreshComplete - Optional callback invoked with new tokens after a
+ *   successful refresh. Use this to chain the next refresh cycle (e.g. call
+ *   scheduleTokenRefresh again) so the proactive refresh loop continues for the
+ *   entire session rather than firing only once.
+ * @returns Cleanup function that cancels the pending timeout.
  */
-export function scheduleTokenRefresh(tokens: TokenData): () => void {
+export function scheduleTokenRefresh(
+  tokens: TokenData,
+  onRefreshComplete?: (newTokens: TokenData) => void,
+): () => void {
   const now = Date.now();
   const expiresAt = tokens.expires_at;
   const refreshBuffer = 5 * 60 * 1000; // Refresh 5 minutes before expiration
 
   const refreshTime = expiresAt - now - refreshBuffer;
 
-  // Don't schedule if token expires too soon
+  // Token already expired or expiring very soon — refresh immediately
   if (refreshTime <= 0) {
-    refreshAccessToken();
+    refreshAccessToken().then((result) => {
+      if (result.success && result.tokens) {
+        onRefreshComplete?.(result.tokens);
+      }
+    });
     return () => { };
   }
 
-  const timeoutId = setTimeout(() => {
-    refreshAccessToken();
+  const timeoutId = setTimeout(async () => {
+    const result = await refreshAccessToken();
+    if (result.success && result.tokens) {
+      onRefreshComplete?.(result.tokens);
+    }
   }, refreshTime);
 
   // Return cleanup function
