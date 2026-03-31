@@ -1,189 +1,127 @@
 /**
  * Integration test for OAuth authentication flow
+ * Tests the complete production path: initiateOAuthFlow → handleLoginCallback
  */
 
-import { mockOAuthProvider, mockAuthorizationCode, mockTokenResponse, mockUserInfo, mockFetchSuccess } from '../mocks/oauth-responses.js';
-import {
-    generateCodeVerifier,
-    generateCodeChallenge,
-    generateState,
-    buildAuthorizationUrl,
-    exchangeCodeForTokens,
-} from '../helpers/oauth-helpers.js';
+import { mockOAuthProvider, mockAuthorizationCode, mockTokenResponse, mockUserInfo } from '../mocks/oauth-responses.js';
+import { initiateOAuthFlow } from '../../src/auth/oauth-manager.js';
+import { handleLoginCallback } from '../../src/services/auth-service.js';
 import { storeTokens, getCurrentTokens } from '../helpers/token-helpers.js';
 import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
-import type { AuthState, UserInfo, TokenData } from '../../src/types/auth-types.js';
 
 describe('OAuth Authentication Flow (Integration)', () => {
     beforeEach(() => {
         localStorage.clear();
         clearAuthState();
+        jest.resetAllMocks();
         delete (window as any).location;
         (window as any).location = { href: '', search: '', origin: 'http://localhost:3000' };
     });
 
+    /**
+     * Runs initiateOAuthFlow and returns the state value stored in localStorage,
+     * ready to embed in a callback URL.
+     */
+    async function initiateAndGetStoredState(): Promise<string> {
+        await initiateOAuthFlow(mockOAuthProvider as any);
+        return JSON.parse(localStorage.getItem('oauth_state')!);
+    }
+
+    /**
+     * Mocks two sequential fetch calls made by handleLoginCallback:
+     *   1. POST /auth/oauth2/token  — token exchange (backend)
+     *   2. GET  /auth/userinfo      — user profile  (backend)
+     */
+    function mockBackendCalls(): void {
+        global.fetch = jest.fn()
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: async () => mockTokenResponse,
+            } as unknown as Response)
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: async () => mockUserInfo,
+            } as unknown as Response);
+    }
+
     it('completes full OAuth2 PKCE flow', async () => {
-        // Step 1: Generate PKCE parameters
-        const verifier = generateCodeVerifier();
-        const challenge = await generateCodeChallenge(verifier);
-        const state = generateState();
+        // Initiate flow — generates PKCE + state, stores both, redirects to provider
+        const storedState = await initiateAndGetStoredState();
 
-        expect(verifier).toBeTruthy();
-        expect(challenge).toBeTruthy();
-        expect(state).toBeTruthy();
+        // Simulate provider redirecting back with authorization code
+        window.location.href =
+            `http://localhost:3000/auth/callback?code=${mockAuthorizationCode}&state=${storedState}`;
 
-        // Step 2: Build authorization URL
-        const authUrl = buildAuthorizationUrl(mockOAuthProvider, challenge, state);
-        expect(authUrl).toContain(mockOAuthProvider.authorizationEndpoint);
-        expect(authUrl).toContain(challenge);
-        expect(authUrl).toContain(state);
+        mockBackendCalls();
 
-        // Step 3: Store PKCE parameters (would happen before redirect)
-        localStorage.setItem('oauth_code_verifier', verifier);
-        localStorage.setItem('oauth_state', state);
+        const result = await handleLoginCallback();
 
-        // Step 4: Simulate OAuth provider callback (user would be redirected here)
-        (window as any).location.search = `?code=${mockAuthorizationCode}&state=${state}`;
-
-        // Step 5: Verify state matches
-        const storedState = localStorage.getItem('oauth_state');
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnedState = urlParams.get('state');
-        expect(returnedState).toBe(storedState);
-
-        // Step 6: Exchange authorization code for tokens
-        mockFetchSuccess(mockTokenResponse);
-        const storedVerifier = localStorage.getItem('oauth_code_verifier');
-        const tokens = await exchangeCodeForTokens(
-            mockOAuthProvider,
-            mockAuthorizationCode,
-            storedVerifier!
-        );
-
-        expect(tokens.access_token).toBe(mockTokenResponse.access_token);
-        expect(tokens.refresh_token).toBe(mockTokenResponse.refresh_token);
-
-        // Step 7: Store tokens
-        storeTokens(tokens);
-        const retrievedTokens = getCurrentTokens();
-        expect(retrievedTokens?.access_token).toBe(tokens.access_token);
-
-        // Step 8: Fetch and store user info
-        mockFetchSuccess(mockUserInfo);
-        const userInfoResponse = await fetch(mockOAuthProvider.userInfoEndpoint, {
-            headers: {
-                Authorization: `Bearer ${tokens.access_token}`,
-            },
-        });
-        const userInfo = await userInfoResponse.json();
-
-        // Convert tokens with expires_in to expires_at
-        const tokenData = {
-            ...tokens,
-            expires_at: Date.now() + tokens.expires_in * 1000,
-            refresh_token: tokens.refresh_token || '', // Ensure refresh_token is a string
-        };
-        saveAuthState(userInfo, tokenData);
-
-        // Step 9: Verify authentication state
+        expect(result).toBe(true);
         expect(isAuthenticated()).toBe(true);
         expect(getStoredUserInfo()?.email).toBe(mockUserInfo.email);
-
-        // Step 10: Cleanup OAuth parameters
-        localStorage.removeItem('oauth_code_verifier');
-        localStorage.removeItem('oauth_state');
-
-        expect(localStorage.getItem('oauth_code_verifier')).toBeNull();
-        expect(localStorage.getItem('oauth_state')).toBeNull();
     });
 
-    it('handles OAuth state mismatch (CSRF protection)', async () => {
-        const verifier = generateCodeVerifier();
-        const challenge = await generateCodeChallenge(verifier);
-        const originalState = generateState();
+    it('rejects callback when state does not match stored state (CSRF protection)', async () => {
+        await initiateAndGetStoredState(); // seed real PKCE + state
 
-        // Store original state
-        localStorage.setItem('oauth_state', originalState);
+        // Tampered state in callback URL — simulates CSRF attack
+        window.location.href =
+            `http://localhost:3000/auth/callback?code=${mockAuthorizationCode}&state=tampered-state`;
 
-        // Simulate callback with different state (potential CSRF attack)
-        const differentState = generateState();
-        (window as any).location.search = `?code=${mockAuthorizationCode}&state=${differentState}`;
+        const result = await handleLoginCallback();
 
-        const storedState = localStorage.getItem('oauth_state');
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnedState = urlParams.get('state');
-
-        // State should NOT match
-        expect(returnedState).not.toBe(storedState);
-
-        // In real implementation, this would reject the flow
-        expect(returnedState === storedState).toBe(false);
-    });
-
-    it('handles missing authorization code error', () => {
-        const state = generateState();
-        localStorage.setItem('oauth_state', state);
-
-        // Simulate error callback
-        (window as any).location.search = `?error=access_denied&error_description=User+cancelled&state=${state}`;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        const errorDescription = urlParams.get('error_description');
-
-        expect(error).toBe('access_denied');
-        expect(errorDescription).toBe('User cancelled');
-    });
-
-    it('handles token exchange failure', async () => {
-        const verifier = generateCodeVerifier();
-
-        // Mock failed token exchange
-        global.fetch = jest.fn(() =>
-            Promise.resolve({
-                ok: false,
-                status: 400,
-                json: async () => ({
-                    error: 'invalid_grant',
-                    error_description: 'Authorization code is invalid',
-                }),
-            } as Response)
-        );
-
-        await expect(
-            exchangeCodeForTokens(mockOAuthProvider, 'invalid-code', verifier)
-        ).rejects.toThrow();
-
-        // Verify user is not authenticated
+        expect(result).toBe(false);
         expect(isAuthenticated()).toBe(false);
     });
 
-    it('persists authentication across page reloads', async () => {
-        // Complete authentication
-        mockFetchSuccess(mockTokenResponse);
-        const tokens = await exchangeCodeForTokens(
-            mockOAuthProvider,
-            mockAuthorizationCode,
-            'verifier'
-        );
-        storeTokens(tokens);
+    it('returns false when provider reports an error', async () => {
+        // Error comes from the provider before state is checked
+        window.location.href =
+            'http://localhost:3000/auth/callback?error=access_denied&error_description=User+cancelled';
 
-        // Convert tokens with expires_in to expires_at
+        const result = await handleLoginCallback();
+
+        expect(result).toBe(false);
+        expect(isAuthenticated()).toBe(false);
+    });
+
+    it('returns false when token exchange fails', async () => {
+        const storedState = await initiateAndGetStoredState();
+
+        window.location.href =
+            `http://localhost:3000/auth/callback?code=${mockAuthorizationCode}&state=${storedState}`;
+
+        // Backend rejects the token exchange
+        global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: false,
+            status: 400,
+            json: async () => ({ error: 'invalid_grant' }),
+        } as unknown as Response);
+
+        const result = await handleLoginCallback();
+
+        expect(result).toBe(false);
+        expect(isAuthenticated()).toBe(false);
+    });
+
+    it('persists authentication across page reloads', () => {
+        // Seed complete auth state directly — no OAuth flow needed for this assertion
         const tokenData = {
-            ...tokens,
-            expires_at: tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : 0, // If expires_in is missing, set expired
-            refresh_token: tokens.refresh_token || '', // Ensure refresh_token is a string
+            access_token: mockTokenResponse.access_token,
+            refresh_token: mockTokenResponse.refresh_token,
+            token_type: mockTokenResponse.token_type,
+            expires_at: Date.now() + mockTokenResponse.expires_in * 1000,
         };
-
+        storeTokens(tokenData);
         saveAuthState(mockUserInfo, tokenData);
 
         expect(isAuthenticated()).toBe(true);
 
-        // Simulate page reload by re-reading from storage
+        // Simulate page reload — re-read tokens from storage
         const restoredTokens = getCurrentTokens();
-        expect(restoredTokens?.access_token).toBe(tokens.access_token);
-
-        // User should still be authenticated
+        expect(restoredTokens?.access_token).toBe(tokenData.access_token);
         expect(isAuthenticated()).toBe(true);
     });
 });

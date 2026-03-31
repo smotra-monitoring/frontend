@@ -37,6 +37,8 @@
 }
 ```
 
+- [ ] check if scheduleTokenRefresh is really needed. It called just once. What is the point of having it ? Or may be logic of scheduled refresh should be reimplemented in a different way ?
+
 - [ ] clean up test code.
   - keep only relevant tests
   - move helper functions to separate files in tests/helpers

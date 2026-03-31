@@ -3,6 +3,11 @@
  * Runs before all tests
  */
 
+// TextEncoder/TextDecoder are needed by SubtleCrypto (PKCE code challenge generation)
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder as any;
+global.TextDecoder = TextDecoder as any;
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};

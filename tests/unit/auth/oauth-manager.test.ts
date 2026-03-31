@@ -10,13 +10,6 @@ import {
 } from '../../../src/auth/oauth-manager.js';
 import { mockOAuthProvider } from '../../mocks/oauth-responses.js';
 
-import { TextEncoder, TextDecoder } from 'util';
-
-// Ensure TextEncoder/TextDecoder are available in the jsdom test environment
-global.TextEncoder = TextEncoder as any;
-global.TextDecoder = TextDecoder as any;
-
-
 // Storage keys used internally by oauth-manager
 const PKCE_KEY = 'oauth_pkce';
 const STATE_KEY = 'oauth_state';

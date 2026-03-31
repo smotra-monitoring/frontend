@@ -84,10 +84,17 @@ export function retrievePKCE(): PKCEChallenge | null {
 }
 
 /**
+ * Generate random state parameter for CSRF protection
+ */
+function generateState(): string {
+  return generateRandomString(32);
+}
+
+/**
  * Generate and store random state parameter for CSRF protection
  */
 function generateAndStoreState(): string {
-  const state = generateRandomString(32);
+  const state = generateState();
   Storage.set(STATE_STORAGE_KEY, state);
   return state;
 }
