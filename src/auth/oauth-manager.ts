@@ -22,7 +22,6 @@ function generateRandomString(length: number): string {
 /**
  * Generate PKCE code verifier (base64url encoded random string)
  */
-export const generateCodeVerifier_ForTests = generateCodeVerifier;
 function generateCodeVerifier(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
@@ -37,7 +36,6 @@ function generateCodeVerifier(): string {
 /**
  * Generate PKCE code challenge from verifier
  */
-export const generateCodeChallenge_ForTests = generateCodeChallenge;
 async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
@@ -49,13 +47,6 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '');
-}
-
-/**
- * Generate random state parameter for CSRF protection
- */
-export function generateState_ForTests(): string {
-  return generateRandomString(32);
 }
 
 /**
@@ -119,30 +110,6 @@ function validateState(receivedState: string): boolean {
 }
 
 /**
- * Build authorization URL with PKCE parameters
- * This funcion is for testing purposes to mock buildFullAuthorizationUrl without generating PKCE and state, 
- * which are random and cannot be easily tested. 
- * In production, buildFullAuthorizationUrl should be used, which generates PKCE and state internally.
- */
-export function buildAuthorizationUrl_ForTests(
-  config: OAuth2Config | { authorizationEndpoint: string; clientId: string; redirectUri: string; scopes: string[] },
-  codeChallenge: string,
-  state: string
-): string {
-  const params = {
-    client_id: config.clientId,
-    redirect_uri: config.redirectUri,
-    response_type: 'code',
-    scope: config.scopes.join(' '),
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
-    state,
-  };
-
-  return buildUrl(config.authorizationEndpoint, params);
-}
-
-/**
  * Build full authorization URL for OAuth2 flow (with PKCE generation)
  */
 async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
@@ -164,38 +131,6 @@ async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
   };
 
   return buildUrl(config.authorizationEndpoint, params);
-}
-
-/**
- * Exchange authorization code for tokens
- */
-export async function exchangeCodeForTokens_ForTests(
-  config: OAuth2Config | { tokenEndpoint: string; clientId: string; redirectUri: string },
-  authorizationCode: string,
-  codeVerifier: string
-): Promise<{ access_token: string; refresh_token?: string; token_type: string; expires_in: number }> {
-  const params = new URLSearchParams({
-    grant_type: 'authorization_code',
-    code: authorizationCode,
-    redirect_uri: config.redirectUri,
-    client_id: config.clientId,
-    code_verifier: codeVerifier,
-  });
-
-  const response = await fetch(config.tokenEndpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params.toString(),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Token exchange failed: ${errorData.error || response.statusText}`);
-  }
-
-  return response.json();
 }
 
 /**

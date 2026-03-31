@@ -37,3 +37,9 @@
 }
 ```
 
+- [ ] clean up test code.
+  - keep only relevant tests
+  - move helper functions to separate files in tests/helpers
+  - ensure tests are focused on specific functionality (unit tests) or end-to-end flow (integration tests) without overlap
+  - remove any redundant or outdated tests that no longer reflect the current implementation.
+  - if a function exported only for testing is no longer needed, consider removing it from the source code to keep the codebase clean and maintainable. 
