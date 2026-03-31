@@ -45,3 +45,7 @@
   - ensure tests are focused on specific functionality (unit tests) or end-to-end flow (integration tests) without overlap
   - remove any redundant or outdated tests that no longer reflect the current implementation.
   - if a function exported only for testing is no longer needed, consider removing it from the source code to keep the codebase clean and maintainable. 
+
+  - [ ] In token-manager.ts -> refreshAccessToken
+    TODO: Replace with actual API call to refresh token using the refresh token
+

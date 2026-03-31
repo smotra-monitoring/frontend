@@ -2,7 +2,7 @@
  * Tests for authentication guards
  */
 
-import { canAccessRoute, protectRoute } from '../../../src/auth/auth-guard.js';
+import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
 import { storeTokens, clearTokens } from '../../helpers/token-helpers.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
@@ -17,12 +17,12 @@ describe('auth-guard', () => {
 
     describe('canAccessRoute', () => {
         it('allows access when not requiring auth', async () => {
-            const result = await canAccessRoute(false);
+            const result = await canAccessRoute_ForTest(false);
             expect(result.allowed).toBe(true);
         });
 
         it('denies access when requiring auth but not authenticated', async () => {
-            const result = await canAccessRoute(true);
+            const result = await canAccessRoute_ForTest(true);
             expect(result.allowed).toBe(false);
             expect(result.redirectTo).toBe('/login');
         });
@@ -32,7 +32,7 @@ describe('auth-guard', () => {
             storeTokens(mockTokens);
             saveAuthState(mockUserInfo, mockTokens);
 
-            const result = await canAccessRoute(true);
+            const result = await canAccessRoute_ForTest(true);
             expect(result.allowed).toBe(true);
         });
 
@@ -44,7 +44,7 @@ describe('auth-guard', () => {
             storeTokens(expiredTokens);
             saveAuthState(mockUserInfo, expiredTokens);
 
-            const result = await canAccessRoute(true);
+            const result = await canAccessRoute_ForTest(true);
             expect(result.allowed).toBe(false);
             expect(result.redirectTo).toBe('/login');
         });
@@ -69,7 +69,7 @@ describe('auth-guard', () => {
                 } as Response)
             );
 
-            const result = await canAccessRoute(true);
+            const result = await canAccessRoute_ForTest(true);
             // Should allow access after successful refresh
             expect(result.allowed).toBe(true);
         });

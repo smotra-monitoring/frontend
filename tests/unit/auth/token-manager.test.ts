@@ -163,6 +163,7 @@ describe('token-manager', () => {
             // Drain all pending microtasks from the fetch → json() → callback chain
             await flushPromises();
 
+            expect(fetch).toHaveBeenCalled();
             expect(onRefreshComplete).toHaveBeenCalledTimes(1);
             expect(onRefreshComplete).toHaveBeenCalledWith(
                 expect.objectContaining({ access_token: mockRefreshTokenResponse.access_token }),

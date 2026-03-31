@@ -9,11 +9,11 @@ import { getValidAccessToken } from './token-manager.js';
 /**
  * Check if user can access protected route
  */
-export async function canAccessRoute(requireAuth: boolean = true): Promise<AuthGuardResult> {
+async function canAccessRoute(requireAuth: boolean = true): Promise<AuthGuardResult> {
   if (!requireAuth) {
     return { allowed: true };
   }
-  
+
   // Check if user is authenticated
   if (!isAuthenticated()) {
     return {
@@ -21,35 +21,37 @@ export async function canAccessRoute(requireAuth: boolean = true): Promise<AuthG
       redirectTo: '/login',
     };
   }
-  
+
   // Check if token is valid
   const token = await getValidAccessToken();
-  
+
   if (!token) {
     return {
       allowed: false,
       redirectTo: '/login',
     };
   }
-  
+
   return { allowed: true };
 }
+export const canAccessRoute_ForTest = canAccessRoute; // Export for testing
+
 
 /**
  * Protect route - redirect if not authenticated
  */
 export async function protectRoute(currentPath: string = window.location.pathname): Promise<boolean> {
   const result = await canAccessRoute(true);
-  
+
   if (!result.allowed && result.redirectTo) {
     // Store intended destination for redirect after login
     sessionStorage.setItem('redirect_after_login', currentPath);
-    
+
     // Redirect to login
     window.location.href = result.redirectTo;
     return false;
   }
-  
+
   return result.allowed;
 }
 
@@ -64,7 +66,7 @@ export function canAccessPublicRoute(): AuthGuardResult {
       redirectTo: '/dashboard',
     };
   }
-  
+
   return { allowed: true };
 }
 
@@ -86,7 +88,7 @@ export function withAuthGuard(
 ): () => Promise<void> {
   return async () => {
     const result = await canAccessRoute(requireAuth);
-    
+
     if (result.allowed) {
       await handler();
     } else if (result.redirectTo) {
