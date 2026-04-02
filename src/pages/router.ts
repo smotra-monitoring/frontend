@@ -173,7 +173,7 @@ export function initializeRouter(appRoot: HTMLElement): Router {
 /**
  * Get router instance
  */
-export function getRouter(): Router {
+function getRouter(): Router {
   if (!routerInstance) {
     throw new Error('Router not initialized. Call initializeRouter() first.');
   }
