@@ -10,7 +10,6 @@ import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStore
 
 describe('OAuth Authentication Flow (Integration)', () => {
     beforeEach(() => {
-        localStorage.clear();
         clearAuthState();
         jest.resetAllMocks();
         delete (window as any).location;
