@@ -3,13 +3,11 @@
  */
 
 import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
-import { storeTokens, clearTokens } from '../../helpers/token-helpers.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
 
 describe('auth-guard', () => {
     beforeEach(() => {
-        clearTokens();
         clearAuthState();
         delete (window as any).location;
         (window as any).location = { href: '' };

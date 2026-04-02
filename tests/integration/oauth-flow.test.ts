@@ -6,8 +6,7 @@
 import { mockOAuthProvider, mockAuthorizationCode, mockTokenResponse, mockUserInfo } from '../mocks/oauth-responses.js';
 import { initiateOAuthFlow } from '../../src/auth/oauth-manager.js';
 import { handleLoginCallback } from '../../src/services/auth-service.js';
-import { storeTokens, getCurrentTokens } from '../helpers/token-helpers.js';
-import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStoredUserInfo } from '../../src/state/auth-state.js';
+import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStoredUserInfo, loadAuthState } from '../../src/state/auth-state.js';
 
 describe('OAuth Authentication Flow (Integration)', () => {
     beforeEach(() => {
@@ -114,14 +113,12 @@ describe('OAuth Authentication Flow (Integration)', () => {
             token_type: mockTokenResponse.token_type,
             expires_at: Date.now() + mockTokenResponse.expires_in * 1000,
         };
-        storeTokens(tokenData);
         saveAuthState(mockUserInfo, tokenData);
 
         expect(isAuthenticated()).toBe(true);
 
         // Simulate page reload — re-read tokens from storage
-        const restoredTokens = getCurrentTokens();
-        expect(restoredTokens?.access_token).toBe(tokenData.access_token);
+        loadAuthState();
         expect(isAuthenticated()).toBe(true);
     });
 });

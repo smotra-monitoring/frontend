@@ -20,16 +20,13 @@ import {
     getTokensFromState,
     updateTokensInState,
     isTokenExpiredInState,
+    clearAuthState,
 } from '../../../src/state/auth-state.js';
-import {
-    storeTokens,
-    clearTokens,
-} from '../../helpers/token-helpers.js';
 import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess, mockFetchError } from '../../mocks/oauth-responses.js';
 
 describe('token-manager', () => {
     beforeEach(() => {
-        clearTokens();
+        clearAuthState();
         jest.clearAllTimers();
         jest.useFakeTimers();
     });
@@ -40,7 +37,7 @@ describe('token-manager', () => {
 
     describe('isTokenExpired (auth-state)', () => {
         it('returns false for valid tokens', () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
 
             expect(isTokenExpiredInState()).toBe(false);
         });
@@ -50,7 +47,7 @@ describe('token-manager', () => {
         });
 
         it('returns true for expired tokens', () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
 
             // Advance time past expiration
             jest.advanceTimersByTime(mockTokens.expires_at - Date.now() + 1000);
@@ -58,7 +55,7 @@ describe('token-manager', () => {
         });
 
         it('returns true with buffer time before actual expiration', () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
 
             // Advance to within buffer time (default 60 seconds)
             const bufferTime = 50 * 1000; // 50 seconds
@@ -68,7 +65,7 @@ describe('token-manager', () => {
         });
 
         it('respects custom buffer time', () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
 
             // Advance to within 2 minutes of expiration
             const twoMinutesBeforeExpiration = (mockTokens.expires_at - 2 * 60 * 1000) - Date.now();
@@ -84,7 +81,7 @@ describe('token-manager', () => {
 
     describe('refreshAccessToken', () => {
         it('refreshes access token using refresh token', async () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
             mockFetchSuccess(mockRefreshTokenResponse);
 
             const result = await refreshAccessToken();
@@ -101,7 +98,7 @@ describe('token-manager', () => {
         });
 
         it('throws error on failed refresh', async () => {
-            storeTokens(mockTokens);
+            updateTokensInState(mockTokens);
             mockFetchError(401, 'Unauthorized');
 
             const result = await refreshAccessToken();

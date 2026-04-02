@@ -3,7 +3,7 @@
  * Orchestrates OAuth flow, token management,and user session
  */
 
-import type { OAuth2Provider, UserInfo, TokenData } from '../types/auth-types.js';
+import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types/auth-types.js';
 import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig } from '../auth/oauth-manager.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
@@ -40,7 +40,7 @@ export async function login(provider: OAuth2Provider): Promise<void> {
             clientId: 'your-client-id',
             redirectUri: `${window.location.origin}/auth/callback`,
             ...partialProviderConfig,
-        } as any;
+        } as OAuth2Config;
 
         // Initiate OAuth flow (redirects user to provider)
         await initiateOAuthFlow(config);
