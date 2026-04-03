@@ -29,6 +29,8 @@ export class Router {
 
   private currentPage: LoginPage | OAuthCallbackPage | DashboardPage | null = null;
   private appRoot: HTMLElement;
+  /** Guards against pushState/replaceState re-triggering the Navigation API 'navigate' event */
+  private isInternalNavigating = false;
 
   constructor(appRoot: HTMLElement) {
     this.appRoot = appRoot;
@@ -38,40 +40,59 @@ export class Router {
    * Initialize router
    */
   init(): void {
-    // Handle popstate (browser back/forward)
-    window.addEventListener('popstate', () => {
-      this.navigate(window.location.pathname, false);
-    });
+    // 1. The Modern Way: Handle ALL navigations (links, back/forward, location.href)
+    if (window.navigation) {
+      window.navigation.addEventListener('navigate', (event: any) => {
+        // Ignore events triggered by our own pushState/replaceState calls
+        if (this.isInternalNavigating) {
+          this.isInternalNavigating = false;
+          return;
+        }
 
-    // Handle custom navigate events (from sidebar, etc.)
-    window.addEventListener('navigate', ((event: CustomEvent) => {
-      this.navigate(event.detail.route);
-    }) as EventListener);
+        // Don't intercept if it's a cross-site redirect (e.g., to google.com)
+        if (!event.canIntercept || event.hashChange || event.downloadRequest) {
+          return;
+        }
 
-    // Handle link clicks
-    document.addEventListener('click', (e) => {
-      const link = (e.target as HTMLElement).closest('a');
+        const url = new URL(event.destination.url);
 
-      if (link && link.href && link.origin === window.location.origin) {
-        e.preventDefault();
-        this.navigate(link.pathname);
-      }
-    });
+        event.intercept({
+          handler: async () => {
+            console.log('Intercepted navigation to:', url.pathname);
+            // event.intercept() already handles URL/history update — pass 'none'
+            await this.navigate(url.pathname, 'none');
+          }
+        });
+      });
+    } else {
+      // 2. Fallback for older browsers (Safari/Firefox)
+      window.addEventListener('popstate', () => {
+        this.navigate(window.location.pathname, 'none');
+      });
 
-    // Navigate to current path
-    this.navigate(window.location.pathname, false);
+      document.addEventListener('click', (e) => {
+        const link = (e.target as HTMLElement).closest('a');
+        if (link && link.href && link.origin === window.location.origin) {
+          e.preventDefault();
+          this.navigate(link.pathname, 'push');
+        }
+      });
+    }
+
+    // Initial load — URL is already correct, no history manipulation needed
+    this.navigate(window.location.pathname, 'none');
   }
 
   /**
    * Navigate to a route
    */
-  async navigate(path: string, pushState: boolean = true): Promise<void> {
+  async navigate(path: string, historyMode: 'push' | 'replace' | 'none' = 'push'): Promise<void> {
     // Find matching route
     const route = this.findRoute(path);
 
     if (!route) {
       console.warn('Route not found:', path);
-      this.navigate('/dashboard');
+      this.navigate('/dashboard', 'push');
       return;
     }
 
@@ -85,15 +106,23 @@ export class Router {
     if (route.public) {
       const result = canAccessPublicRoute();
       if (!result.allowed && result.redirectTo) {
-        this.navigate(result.redirectTo);
+        // Use 'replace' so the user cannot Back-button back to the protected route
+        this.navigate(result.redirectTo, 'replace');
         return;
       }
     }
 
     // Update browser history
-    if (pushState) {
+    if (historyMode === 'push') {
+      this.isInternalNavigating = true;
       window.history.pushState({}, '', path);
+      this.isInternalNavigating = false;
+    } else if (historyMode === 'replace') {
+      this.isInternalNavigating = true;
+      window.history.replaceState({}, '', path);
+      this.isInternalNavigating = false;
     }
+    // 'none': URL already correct (popstate, Navigation API intercept, initial load)
 
     // Render page
     await this.renderPage(route);
