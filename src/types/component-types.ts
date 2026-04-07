@@ -8,15 +8,8 @@ export interface ComponentLifecycle {
   onDestroy?(): void;
 }
 
-export interface BaseComponentState {
+export interface ComponentState {
   [key: string]: any;
-}
-
-// Alias for backward compatibility
-export type ComponentState = BaseComponentState;
-
-export interface ComponentEventHandler<T = Event> {
-  (event: T): void;
 }
 
 export interface ViewportContext {
