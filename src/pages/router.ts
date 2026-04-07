@@ -8,19 +8,29 @@ import { OAuthCallbackPage } from './oauth-callback.js';
 import { DashboardPage } from './dashboard.js';
 import { protectRoute, canAccessPublicRoute } from '../auth/auth-guard.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
-import { isAuthenticated } from '../state/auth-state.js';
-import { getRoutes, Routes } from './routes.js';
-import { type PageConstructor, type Route } from './routes.js';
+
+interface Route {
+  path: string;
+  component: typeof LoginPage | typeof OAuthCallbackPage | typeof DashboardPage;
+  protected: boolean;
+  public?: boolean;
+}
 
 /**
  * Simple client-side router
  */
 export class Router {
-  private currentPage: InstanceType<PageConstructor> | null = null;
+  private routes: Route[] = [
+    { path: '/', component: DashboardPage, protected: true },
+    { path: '/dashboard', component: DashboardPage, protected: true },
+    { path: '/login', component: LoginPage, protected: false, public: true },
+    { path: '/auth/callback', component: OAuthCallbackPage, protected: false, public: true },
+  ];
+
+  private currentPage: LoginPage | OAuthCallbackPage | DashboardPage | null = null;
   private appRoot: HTMLElement;
   /** Guards against pushState/replaceState re-triggering the Navigation API 'navigate' event */
   private isInternalNavigating = false;
-  private routes = getRoutes();
 
   constructor(appRoot: HTMLElement) {
     this.appRoot = appRoot;
@@ -78,7 +88,13 @@ export class Router {
    */
   async navigate(path: string, historyMode: 'push' | 'replace' | 'none' = 'push'): Promise<void> {
     // Find matching route
-    const route = this.routes.findRoute(path);
+    const route = this.findRoute(path);
+
+    if (!route) {
+      console.warn('Route not found:', path);
+      this.navigate('/dashboard', 'push');
+      return;
+    }
 
     // Check authentication
     if (route.protected) {
@@ -116,6 +132,22 @@ export class Router {
   }
 
   /**
+   * Find route by path
+   */
+  private findRoute(path: string): Route | undefined {
+    // Exact match
+    let route = this.routes.find(r => r.path === path);
+
+    if (route) {
+      return route;
+    }
+
+    // Default to dashboard for authenticated users, login otherwise
+    // Note: This is synchronous check, async check happens in navigate()
+    return this.routes.find(r => r.path === '/login');
+  }
+
+  /**
    * Render page component
    */
   private async renderPage(route: Route): Promise<void> {
@@ -134,9 +166,16 @@ export class Router {
     this.appRoot.appendChild(pageContainer);
 
     // Create and mount new page
-    const PageComponent = route.component();
+    const PageComponent = route.component as any;
     this.currentPage = new PageComponent(pageContainer);
     this.currentPage!.mount();
+  }
+
+  /**
+   * Get current path
+   */
+  getCurrentPath(): string {
+    return window.location.pathname;
   }
 }
 

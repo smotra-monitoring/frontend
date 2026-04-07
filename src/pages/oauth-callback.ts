@@ -23,10 +23,10 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
       message: 'Completing authentication...',
     });
   }
-
+  
   render(): void {
     const { status, message } = this.state;
-
+    
     this.root.innerHTML = `
       <div class="oauth-callback">
         <div class="oauth-callback__card">
@@ -58,7 +58,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
       </div>
     `;
   }
-
+  
   private getStatusIcon(status: OAuthCallbackPageState['status']): string {
     switch (status) {
       case 'processing':
@@ -69,7 +69,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
         return '<i class="fas fa-times-circle"></i>';
     }
   }
-
+  
   private getStatusTitle(status: OAuthCallbackPageState['status']): string {
     switch (status) {
       case 'processing':
@@ -80,26 +80,26 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
         return 'Authentication Failed';
     }
   }
-
+  
   async onMount(): Promise<void> {
     // Process OAuth callback
     await this.processCallback();
   }
-
+  
   private async processCallback(): Promise<void> {
     try {
       // Handle login callback
       const success = await handleLoginCallback();
-
+      
       if (success) {
         this.setState({
           status: 'success',
           message: 'Redirecting to dashboard...',
         });
-
+        
         // Redirect to original destination or dashboard
-        const redirectUrl = getRedirectAfterLogin() || "/dashboard";
-
+        const redirectUrl = getRedirectAfterLogin() || '/dashboard';
+        
         setTimeout(() => {
           window.location.href = redirectUrl;
         }, 1000);
@@ -117,7 +117,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
       });
     }
   }
-
+  
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;

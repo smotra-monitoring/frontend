@@ -5,7 +5,6 @@
 import type { AuthGuardResult } from '../types/auth-types.js';
 import { isAuthenticated } from '../state/auth-state.js';
 import { getValidAccessToken } from './token-manager.js';
-import { getRoutes } from '../pages/routes.js';
 
 /**
  * Check if user can access protected route
@@ -19,7 +18,7 @@ async function canAccessRoute(requireAuth: boolean = true): Promise<AuthGuardRes
   if (!isAuthenticated()) {
     return {
       allowed: false,
-      redirectTo: getRoutes().defaultUnauthenticated().path,
+      redirectTo: '/login',
     };
   }
 
@@ -29,7 +28,7 @@ async function canAccessRoute(requireAuth: boolean = true): Promise<AuthGuardRes
   if (!token) {
     return {
       allowed: false,
-      redirectTo: getRoutes().defaultUnauthenticated().path,
+      redirectTo: '/login',
     };
   }
 
@@ -64,7 +63,7 @@ export function canAccessPublicRoute(): AuthGuardResult {
   if (isAuthenticated()) {
     return {
       allowed: false,
-      redirectTo: getRoutes().defaultAuthenticated().path,
+      redirectTo: '/dashboard',
     };
   }
 
@@ -77,7 +76,7 @@ export function canAccessPublicRoute(): AuthGuardResult {
 export function getRedirectAfterLogin(): string {
   const stored = sessionStorage.getItem('redirect_after_login');
   sessionStorage.removeItem('redirect_after_login');
-  return stored || getRoutes().defaultAuthenticated().path;
+  return stored || '/dashboard';
 }
 
 /**
