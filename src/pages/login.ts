@@ -32,23 +32,23 @@ export class LoginPage extends BaseComponent<LoginPageState> {
     { id: 'google', name: 'Google', icon: 'fa-google', color: '#4285f4' },
     { id: 'oidc', name: 'OpenID Connect', icon: 'fa-id-card', color: '#666' },
   ];
-  
+
   constructor(root: HTMLElement) {
     super(root, {
       loading: false,
       error: null,
     });
   }
-  
+
   render(): void {
     // Redirect to dashboard if already authenticated
     if (isAuthenticated()) {
-      window.location.href = '/dashboard';
+      window.location.href = "/dashboard";
       return;
     }
-    
+
     const { loading, error } = this.state;
-    
+
     this.root.innerHTML = `
       <div class="login-page">
         <div class="login-card">
@@ -83,10 +83,10 @@ export class LoginPage extends BaseComponent<LoginPageState> {
         </div>
       </div>
     `;
-    
+
     this.attachEventListeners();
   }
-  
+
   private renderProvider(provider: OAuthProviderOption, disabled: boolean): string {
     return `
       <button 
@@ -105,7 +105,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       </button>
     `;
   }
-  
+
   private attachEventListeners(): void {
     // Provider buttons
     this.queryAll('.login-provider').forEach(button => {
@@ -114,7 +114,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
         await this.handleLogin(provider);
       });
     });
-    
+
     // Clear error button
     const clearErrorButton = this.query('[data-action="clear-error"]');
     if (clearErrorButton) {
@@ -123,10 +123,10 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       });
     }
   }
-  
+
   private async handleLogin(provider: OAuth2Provider): Promise<void> {
     this.setState({ loading: true, error: null });
-    
+
     try {
       await login(provider);
       // login() redirects to OAuth provider, so we won't reach here
@@ -138,7 +138,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       });
     }
   }
-  
+
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;
