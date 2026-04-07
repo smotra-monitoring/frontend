@@ -17,8 +17,8 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
 
     protected root: HTMLElement;
     protected state: TState;
-    protected mounted: boolean = false;
-    protected destroyed: boolean = false;
+    private mounted: boolean = false;
+    private destroyed: boolean = false;
 
     // Event listeners for cleanup
     private eventListeners: Array<{
@@ -31,7 +31,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
     private subscriptions: Array<() => void> = [];
 
     // Current viewport breakpoint
-    protected viewport: BreakpointName = getBreakpointName();
+    private breakpointName: BreakpointName = getBreakpointName();
 
     constructor(root: HTMLElement, initialState: TState) {
         this.root = root;
@@ -40,12 +40,12 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         // Subscribe to viewport changes for responsive rendering
         this.subscriptions.push(
             subscribeToViewportChanges((viewport: ViewportState) => {
-                const prevViewport = this.viewport;
-                this.viewport = viewport.breakpoint;
+                const prevBreakpoint = this.breakpointName;
+                this.breakpointName = viewport.breakpoint;
 
                 // Trigger responsive update if breakpoint changed
-                if (prevViewport !== viewport.breakpoint) {
-                    this.onViewportChange?.(prevViewport, viewport.breakpoint);
+                if (prevBreakpoint !== viewport.breakpoint) {
+                    this.onViewportChange?.(prevBreakpoint, viewport.breakpoint);
                 }
             })
         );
@@ -233,27 +233,27 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
      * Get current viewport breakpoint
      */
     protected getViewport(): BreakpointName {
-        return this.viewport;
+        return this.breakpointName;
     }
 
     /**
      * Check if currently in mobile viewport
      */
     protected isMobile(): boolean {
-        return this.viewport === 'mobile';
+        return this.breakpointName === 'mobile';
     }
 
     /**
      * Check if currently in tablet viewport
      */
     protected isTablet(): boolean {
-        return this.viewport === 'tablet';
+        return this.breakpointName === 'tablet';
     }
 
     /**
      * Check if currently in desktop viewport or larger
      */
     protected isDesktop(): boolean {
-        return ['desktop', 'wide', 'ultrawide'].includes(this.viewport);
+        return ['desktop', 'wide', 'ultrawide'].includes(this.breakpointName);
     }
 }
