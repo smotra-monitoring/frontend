@@ -40,12 +40,12 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         // Subscribe to viewport changes for responsive rendering
         this.subscriptions.push(
             subscribeToViewportChanges((viewport: ViewportState) => {
-                const prevBreakpoint = this.breakpointName;
+                const prevBreakpointName = this.breakpointName;
                 this.breakpointName = viewport.breakpoint;
 
                 // Trigger responsive update if breakpoint changed
-                if (prevBreakpoint !== viewport.breakpoint) {
-                    this.onViewportChange?.(prevBreakpoint, viewport.breakpoint);
+                if (prevBreakpointName !== viewport.breakpoint) {
+                    this.onViewportChange?.(prevBreakpointName, viewport.breakpoint);
                 }
             })
         );
