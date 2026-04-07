@@ -8,6 +8,7 @@ import { OAuthCallbackPage } from './oauth-callback.js';
 import { DashboardPage } from './dashboard.js';
 import { protectRoute, canAccessPublicRoute } from '../auth/auth-guard.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
+import { isAuthenticated } from '../state/auth-state.js';
 
 interface Route {
   path: string;
@@ -39,7 +40,7 @@ export class Router {
   /**
    * Initialize router
    */
-  init(): void {
+  async init(): Promise<void> {
     // 1. The Modern Way: Handle ALL navigations (links, back/forward, location.href)
     if (window.navigation) {
       window.navigation.addEventListener('navigate', (event: any) => {
@@ -70,17 +71,17 @@ export class Router {
         this.navigate(window.location.pathname, 'none');
       });
 
-      document.addEventListener('click', (e) => {
+      document.addEventListener('click', async (e) => {
         const link = (e.target as HTMLElement).closest('a');
         if (link && link.href && link.origin === window.location.origin) {
           e.preventDefault();
-          this.navigate(link.pathname, 'push');
+          await this.navigate(link.pathname, 'push');
         }
       });
     }
 
     // Initial load — URL is already correct, no history manipulation needed
-    this.navigate(window.location.pathname, 'none');
+    await this.navigate(window.location.pathname, 'replace');
   }
 
   /**
@@ -92,7 +93,14 @@ export class Router {
 
     if (!route) {
       console.warn('Route not found:', path);
-      this.navigate('/dashboard', 'push');
+
+      let fallback = isAuthenticated() ? this.routes.find(r => r.path === '/dashboard') : this.routes.find(r => r.path === '/login');
+      if (!fallback) {
+        console.error('No fallback route found (authenticated:', isAuthenticated(), ')');
+        return;
+      }
+
+      await this.navigate(fallback!.path, 'replace');
       return;
     }
 
@@ -107,7 +115,7 @@ export class Router {
       const result = canAccessPublicRoute();
       if (!result.allowed && result.redirectTo) {
         // Use 'replace' so the user cannot Back-button back to the protected route
-        this.navigate(result.redirectTo, 'replace');
+        await this.navigate(result.redirectTo, 'replace');
         return;
       }
     }
@@ -120,6 +128,8 @@ export class Router {
     } else if (historyMode === 'replace') {
       this.isInternalNavigating = true;
       window.history.replaceState({}, '', path);
+      console.log('Replacing history state with:', path);
+      console.log('current path in address bar:', window.location.pathname);
       this.isInternalNavigating = false;
     }
     // 'none': URL already correct (popstate, Navigation API intercept, initial load)
@@ -138,13 +148,11 @@ export class Router {
     // Exact match
     let route = this.routes.find(r => r.path === path);
 
-    if (route) {
-      return route;
+    if (!route) {
+      console.warn('Route not found:', path);
     }
 
-    // Default to dashboard for authenticated users, login otherwise
-    // Note: This is synchronous check, async check happens in navigate()
-    return this.routes.find(r => r.path === '/login');
+    return route ? route : undefined;
   }
 
   /**
@@ -166,7 +174,7 @@ export class Router {
     this.appRoot.appendChild(pageContainer);
 
     // Create and mount new page
-    const PageComponent = route.component as any;
+    const PageComponent = route.component;
     this.currentPage = new PageComponent(pageContainer);
     this.currentPage!.mount();
   }
@@ -187,14 +195,14 @@ let routerInstance: Router | null = null;
 /**
  * Initialize router
  */
-export function initializeRouter(appRoot: HTMLElement): Router {
+export async function initializeRouter(appRoot: HTMLElement): Promise<Router> {
   if (routerInstance) {
     console.warn('Router already initialized');
     return routerInstance;
   }
 
   routerInstance = new Router(appRoot);
-  routerInstance.init();
+  await routerInstance.init();
 
   return routerInstance;
 }
@@ -213,7 +221,7 @@ function getRouter(): Router {
 /**
  * Navigate to route
  */
-export function navigate(path: string): void {
+export async function navigate(path: string): Promise<void> {
   const router = getRouter();
-  router.navigate(path);
+  await router.navigate(path);
 }
