@@ -14,8 +14,6 @@ import { initializeRouter } from './pages/router.js';
  */
 async function bootstrap(): Promise<void> {
   try {
-    debugger;
-
     console.log('🚀 Bootstrapping Smotra...');
 
     // 1. Initialize theme FIRST (prevent FOUC)

@@ -26,37 +26,35 @@ interface OAuthProviderOption {
  */
 export class LoginPage extends BaseComponent<LoginPageState> {
   private providers: OAuthProviderOption[] = [
-    { id: 'okta', name: 'Okta', icon: 'fa-shield-alt', color: '#007dc1' },
-    { id: 'auth0', name: 'Auth0', icon: 'fa-lock', color: '#eb5424' },
-    { id: 'azure', name: 'Azure AD', icon: 'fa-microsoft', color: '#0078d4' },
-    { id: 'google', name: 'Google', icon: 'fa-google', color: '#4285f4' },
-    { id: 'oidc', name: 'OpenID Connect', icon: 'fa-id-card', color: '#666' },
+    { id: 'okta', name: 'Okta', icon: 'fas fa-shield-alt', color: '#007dc1' },
+    { id: 'auth0', name: 'Auth0', icon: 'fas fa-lock', color: '#eb5424' },
+    { id: 'azure', name: 'Azure AD', icon: 'fab fa-microsoft', color: '#0078d4' },
+    { id: 'google', name: 'Google', icon: 'fab fa-google', color: '#4285f4' },
+    { id: 'oidc', name: 'OpenID Connect', icon: 'fas fa-id-card', color: '#666' },
   ];
-  
+
   constructor(root: HTMLElement) {
     super(root, {
       loading: false,
       error: null,
     });
   }
-  
+
   render(): void {
     // Redirect to dashboard if already authenticated
     if (isAuthenticated()) {
+      console.error('This code is unreachable, if you see this message, something went wrong with authentication check. Please reach out to support.');
       window.location.href = '/dashboard';
       return;
     }
-    
+
     const { loading, error } = this.state;
-    
+
     this.root.innerHTML = `
       <div class="login-page">
         <div class="login-card">
           <div class="login-card__header">
-            <div class="login-card__logo">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <h1 class="login-card__title">Smotra</h1>
+            <h1 class="login-card__title"><i class="fas fa-chart-line"></i> Smotra</h1>
             <p class="login-card__subtitle">Distributed Monitoring System</p>
           </div>
           
@@ -83,20 +81,20 @@ export class LoginPage extends BaseComponent<LoginPageState> {
         </div>
       </div>
     `;
-    
+
     this.attachEventListeners();
   }
-  
-  private renderProvider(provider: OAuthProviderOption, disabled: boolean): string {
+
+  private renderProvider(provider: OAuthProviderOption, loading: boolean): string {
     return `
       <button 
         class="login-provider"
         data-provider="${provider.id}"
-        ${disabled ? 'disabled' : ''}
+        ${loading ? 'disabled' : ''}
         aria-label="Sign in with ${provider.name}"
       >
         <span class="login-provider__icon" style="color: ${provider.color};">
-          <i class="fab ${provider.icon}"></i>
+          <i class="${provider.icon}"></i>
         </span>
         <span class="login-provider__name">${provider.name}</span>
         <span class="icon">
@@ -105,7 +103,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       </button>
     `;
   }
-  
+
   private attachEventListeners(): void {
     // Provider buttons
     this.queryAll('.login-provider').forEach(button => {
@@ -114,7 +112,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
         await this.handleLogin(provider);
       });
     });
-    
+
     // Clear error button
     const clearErrorButton = this.query('[data-action="clear-error"]');
     if (clearErrorButton) {
@@ -123,10 +121,10 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       });
     }
   }
-  
+
   private async handleLogin(provider: OAuth2Provider): Promise<void> {
     this.setState({ loading: true, error: null });
-    
+
     try {
       await login(provider);
       // login() redirects to OAuth provider, so we won't reach here
@@ -138,7 +136,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       });
     }
   }
-  
+
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;
