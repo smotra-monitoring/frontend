@@ -9,9 +9,10 @@ import { getBreakpointName } from '../utils/viewport-utils.js';
 import { subscribeToViewportChanges } from '../state/viewport-state.js';
 
 interface ComponentLifecycle {
-    onMount?(): void;
-    onUpdate?(prevState: any): void;
-    onDestroy?(): void;
+    onMount(): void;
+    onUpdate(prevState: any): void;
+    onDestroy(): void;
+    onViewportChange(prev: BreakpointName, current: BreakpointName): void;
 }
 
 /**
@@ -51,7 +52,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
 
                 // Trigger responsive update if breakpoint changed
                 if (prevBreakpointName !== viewport.breakpoint) {
-                    this.onViewportChange?.(prevBreakpointName, viewport.breakpoint);
+                    this.onViewportChange(prevBreakpointName, viewport.breakpoint);
                 }
             })
         );
@@ -67,25 +68,25 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
      * Lifecycle: Component mounted to DOM
      * Override to add initialization logic
      */
-    onMount?(): void;
+    onMount(): void { }
 
     /**
      * Lifecycle: State updated
      * Override to respond to state changes
      */
-    onUpdate?(prevState: TState): void;
+    onUpdate(prevState: TState): void { }
 
     /**
      * Lifecycle: Component being destroyed
      * Override to add cleanup logic
      */
-    onDestroy?(): void;
+    onDestroy(): void { }
 
     /**
      * Lifecycle: Viewport breakpoint changed
      * Override to handle responsive changes
      */
-    onViewportChange?(prevBreakpoint: BreakpointName, newBreakpoint: BreakpointName): void;
+    onViewportChange(prevBreakpoint: BreakpointName, newBreakpoint: BreakpointName): void { }
 
     /**
      * Mount component to DOM
@@ -97,7 +98,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
 
         this.mounted = true;
         this.render();
-        this.onMount?.();
+        this.onMount();
     }
 
     /**
@@ -115,7 +116,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         // Re-render if mounted
         if (this.mounted) {
             this.render();
-            this.onUpdate?.(prevState);
+            this.onUpdate(prevState);
         }
     }
 
@@ -137,7 +138,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         this.destroyed = true;
 
         // Call lifecycle hook
-        this.onDestroy?.();
+        this.onDestroy();
 
         // Remove all event listeners
         this.removeAllEventListeners();
