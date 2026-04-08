@@ -71,6 +71,7 @@ describe('Theme Switching (Integration)', () => {
     const nextTheme3 = getNextThemePreference_ForTests(getThemePreference());
     setTheme(nextTheme3);
     expect(getThemePreference()).toBe('system');
+    expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
   });
 
   it('updates when system preference changes (while on system mode)', () => {
@@ -81,7 +82,7 @@ describe('Theme Switching (Integration)', () => {
 
     // Simulate system theme change to dark
     mediaQueryList = mockMatchMedia(true);
-    initializeTheme(); // Re-initialize to pick up system change
+    setTheme('system');
 
     expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
   });
@@ -133,12 +134,12 @@ describe('Theme Switching (Integration)', () => {
 
   it('applies correct theme class immediately without FOUC', () => {
     // Store preference
-    localStorage.setItem('theme_preference', JSON.stringify('dark'));
+    localStorage.setItem('theme', JSON.stringify('light'));
 
     // Simulate script execution before page render
     initializeTheme();
 
     // Theme class should be applied immediately
-    expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-light')).toBe(true);
   });
 });

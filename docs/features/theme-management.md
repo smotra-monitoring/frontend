@@ -78,7 +78,7 @@ Flash of Unstyled Content (FOUC) is prevented by initializing theme **before** C
 <script>
   // Inline script executes immediately before CSS loads
   (function() {
-    const stored = localStorage.getItem('theme_preference') || 'system';
+    const stored = localStorage.getItem('theme') || 'system';
     const isDark = stored === 'dark' || 
                    (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.add(isDark ? 'theme-dark' : 'theme-light');
@@ -319,7 +319,7 @@ Theme preference stored in localStorage:
 
 ```typescript
 {
-  "theme_preference": "dark"
+  "theme": "dark"
 }
 ```
 
