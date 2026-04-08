@@ -51,7 +51,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
     const { loading, error } = this.state;
 
     this.root.innerHTML = `
-      <div class="login-page">
+      <div class="login-container">
         <div class="login-card">
           <div class="login-card__header">
             <p class="login-card__subtitle has-text-centered"><i class="fas fa-chart-line"></i> Smotra - Distributed Monitoring System</p>

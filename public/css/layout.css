@@ -53,7 +53,7 @@
   .mobile-nav {
     display: none;
   }
-  
+
   .hamburger-btn {
     display: block;
   }
@@ -64,7 +64,7 @@
   .app-layout {
     flex-direction: row;
   }
-  
+
   .sidebar {
     display: flex;
     flex-direction: column;
@@ -76,12 +76,12 @@
     top: 0;
     padding: var(--spacing-lg);
   }
-  
+
   .main-content {
     width: calc(100vw - var(--sidebar-width));
     padding: var(--spacing-xl);
   }
-  
+
   .hamburger-btn {
     display: none;
   }
@@ -101,12 +101,17 @@
   justify-content: center;
   min-height: 100vh;
   padding: var(--spacing-base);
+  background-color: var(--color-bg);
 }
 
 .login-card {
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   padding: var(--spacing-xl);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-medium);
 }
 
 /* Command palette */
@@ -158,7 +163,7 @@
   pointer-events: none;
 }
 
-.toast-container > * {
+.toast-container>* {
   pointer-events: auto;
 }
 

@@ -356,3 +356,127 @@
 .button:active {
   transform: translateY(0);
 }
+
+/* ============================================
+   Login page
+   ============================================ */
+
+.login-card__header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.login-card__subtitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.login-card__prompt {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+}
+
+.login-card__body {
+  padding: var(--spacing-base) 0;
+}
+
+.login-card__footer {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+/* Provider button list */
+.login-providers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+/* Individual provider button */
+.login-provider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-height: var(--touch-target-comfortable);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.login-provider:hover:not(:disabled) {
+  border-color: var(--color-info);
+  box-shadow: 0 0 0 3px rgba(62, 142, 208, 0.15);
+  background-color: var(--color-surface);
+  transform: translateY(-1px);
+}
+
+.login-provider:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.login-provider:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.login-provider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-provider__icon {
+  width: 24px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.login-provider__name {
+  flex: 1;
+  font-weight: 500;
+}
+
+/* Push arrow to the far right */
+.login-provider > .icon {
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  transition: transform var(--transition-fast);
+}
+
+.login-provider:hover:not(:disabled) > .icon {
+  transform: translateX(3px);
+  color: var(--color-info);
+}
+
+/* Mobile: larger touch targets */
+.login-providers--mobile .login-provider {
+  min-height: var(--touch-target-large);
+  font-size: var(--font-size-lg);
+}
+
+/* Dark theme: swap surface/bg for the card and buttons */
+.theme-dark .login-provider {
+  background-color: var(--color-surface);
+}
+
+.theme-dark .login-provider:hover:not(:disabled) {
+  background-color: #222736;
+}
