@@ -11,11 +11,3 @@ export interface ComponentLifecycle {
 export interface ComponentState {
   [key: string]: any;
 }
-
-export type BreakpointName = 'mobile' | 'tablet' | 'desktop' | 'wide' | 'ultrawide';
-
-export interface ComponentEvent {
-  type: string;
-  payload?: any;
-  timestamp: number;
-}
