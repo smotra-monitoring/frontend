@@ -3,10 +3,16 @@
  * Provides lifecycle hooks, state management, and event handling
  */
 
-import type { ComponentLifecycle, ComponentState } from '../types/component-types.js';
+import type { ComponentState } from '../types/component-types.js';
 import type { BreakpointName, ViewportState } from '../types/viewport-types.js';
 import { getBreakpointName } from '../utils/viewport-utils.js';
 import { subscribeToViewportChanges } from '../state/viewport-state.js';
+
+interface ComponentLifecycle {
+    onMount?(): void;
+    onUpdate?(prevState: any): void;
+    onDestroy?(): void;
+}
 
 /**
  * Abstract base component class
