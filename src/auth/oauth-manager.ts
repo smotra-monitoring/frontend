@@ -9,6 +9,7 @@ import { buildUrl, parseOAuthCallback } from '../utils/url-utils.js';
 
 const PKCE_STORAGE_KEY = 'oauth_pkce';
 const STATE_STORAGE_KEY = 'oauth_state';
+const OAUTH_PROVIDER_STORAGE_KEY = 'oauth_provider';
 
 /**
  * Generate random string for code verifier
@@ -116,6 +117,16 @@ function validateState(receivedState: string): boolean {
   return storedState === receivedState;
 }
 
+function storeAuthenticationProvider(provider: OAuth2Provider): void {
+  Storage.set(OAUTH_PROVIDER_STORAGE_KEY, provider);
+}
+
+export function retrieveAuthenticationProvider(): OAuth2Provider | null {
+  const provider = Storage.get<OAuth2Provider>(OAUTH_PROVIDER_STORAGE_KEY);
+  Storage.remove(OAUTH_PROVIDER_STORAGE_KEY);
+  return provider;
+}
+
 /**
  * Build full authorization URL for OAuth2 flow (with PKCE generation)
  */
@@ -125,6 +136,8 @@ async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
 
   // Generate state
   const state = generateAndStoreState();
+
+  storeAuthenticationProvider(config.provider);
 
   // Build authorization request parameters
   const params: Record<string, string> = {
@@ -196,33 +209,48 @@ export function handleOAuthCallback(): {
  * Get OAuth2 provider configuration
  * In production, these would come from environment variables
  */
-export function getProviderConfig(provider: OAuth2Provider): Partial<OAuth2Config> {
+export function getProviderConfig(provider: OAuth2Provider): OAuth2Config {
   // These are example configurations - should be loaded from environment
-  const configs: Record<OAuth2Provider, Partial<OAuth2Config>> = {
+  const configs: Record<OAuth2Provider, OAuth2Config> = {
     okta: {
       authorizationEndpoint: 'https://your-domain.okta.com/oauth2/v1/authorize',
       tokenEndpoint: 'https://your-domain.okta.com/oauth2/v1/token',
+      redirectUri: `${window.location.origin}/auth/callback`,
+      provider: "okta",
+      clientId: 'your-client-id',
       scopes: ['openid', 'profile', 'email'],
     },
     auth0: {
       authorizationEndpoint: 'https://your-domain.auth0.com/authorize',
       tokenEndpoint: 'https://your-domain.auth0.com/oauth/token',
+      provider: "auth0",
+      redirectUri: `${window.location.origin}/auth/callback`,
+      clientId: 'your-client-id',
       scopes: ['openid', 'profile', 'email'],
     },
     azure: {
       authorizationEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
       tokenEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      provider: "azure",
+      redirectUri: `${window.location.origin}/auth/callback`,
+      clientId: 'your-client-id',
       scopes: ['openid', 'profile', 'email'],
     },
     google: {
       authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
       tokenEndpoint: 'https://oauth2.googleapis.com/token',
+      provider: "google",
+      redirectUri: `${window.location.origin}/auth/callback`,
+      clientId: 'your-client-id',
       scopes: ['openid', 'profile', 'email'],
     },
     oidc: {
       // Generic OIDC - endpoints should be discovered from .well-known/openid-configuration
       authorizationEndpoint: '',
       tokenEndpoint: '',
+      provider: "oidc",
+      redirectUri: `${window.location.origin}/auth/callback`,
+      clientId: 'your-client-id',
       scopes: ['openid', 'profile', 'email'],
     },
   };

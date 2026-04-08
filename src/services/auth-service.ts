@@ -4,7 +4,7 @@
  */
 
 import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types/auth-types.js';
-import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig } from '../auth/oauth-manager.js';
+import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig, retrieveAuthenticationProvider } from '../auth/oauth-manager.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 
@@ -32,18 +32,10 @@ export async function login(provider: OAuth2Provider): Promise<void> {
         setAuthLoading(true);
 
         // Get provider configuration
-        const partialProviderConfig = getProviderConfig(provider);
-
-        // In production, these would come from environment variables
-        const config = {
-            provider,
-            clientId: 'your-client-id',
-            redirectUri: `${window.location.origin}/auth/callback`,
-            ...partialProviderConfig,
-        } as OAuth2Config;
+        const providerConfig = getProviderConfig(provider);
 
         // Initiate OAuth flow (redirects user to provider)
-        await initiateOAuthFlow(config);
+        await initiateOAuthFlow(providerConfig);
     } catch (error) {
         console.error('Login error:', error);
         setAuthError(error instanceof Error ? error.message : 'Login failed');
@@ -73,8 +65,15 @@ export async function handleLoginCallback(): Promise<boolean> {
             return false;
         }
 
+        const providerConfig = getProviderConfig(retrieveAuthenticationProvider()!);
+
+        if (!providerConfig) {
+            setAuthError('Authentication provider not found');
+            return false;
+        }
+
         // Exchange authorization code for tokens
-        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier);
+        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier, providerConfig);
 
         if (!tokens) {
             setAuthError('Token exchange failed');
@@ -106,7 +105,7 @@ export async function handleLoginCallback(): Promise<boolean> {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenData | null> {
+async function exchangeCodeForTokens(code: string, codeVerifier: string, providerConfig: OAuth2Config): Promise<TokenData | null> {
     try {
         // TODO: This would use the generated SDK function
         // import { oauth2Token } from '../api/sdk.gen.js';
@@ -120,7 +119,7 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
-                redirect_uri: `${window.location.origin}/auth/callback`,
+                redirect_uri: providerConfig.redirectUri,
             }),
         });
 

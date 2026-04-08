@@ -54,8 +54,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
       <div class="login-page">
         <div class="login-card">
           <div class="login-card__header">
-            <h1 class="login-card__title"><i class="fas fa-chart-line"></i> Smotra</h1>
-            <p class="login-card__subtitle">Distributed Monitoring System</p>
+            <p class="login-card__subtitle has-text-centered"><i class="fas fa-chart-line"></i> Smotra - Distributed Monitoring System</p>
           </div>
           
           ${error ? `
@@ -66,7 +65,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
           ` : ''}
           
           <div class="login-card__body">
-            <h2 class="login-card__prompt">Sign in to continue</h2>
+            <h2 class="login-card__prompt has-text-centered">Sign in to continue</h2>
             
             <div class="login-providers ${this.isMobile() ? 'login-providers--mobile' : ''}">
               ${this.providers.map(provider => this.renderProvider(provider, loading)).join('')}
