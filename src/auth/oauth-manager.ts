@@ -221,11 +221,11 @@ export function getProviderConfig(provider: OAuth2Provider): OAuth2Config {
       scopes: ['openid', 'profile', 'email'],
     },
     auth0: {
-      authorizationEndpoint: 'https://your-domain.auth0.com/authorize',
-      tokenEndpoint: 'https://your-domain.auth0.com/oauth/token',
+      authorizationEndpoint: 'https://dev-66c3w4hb34p1ajnk.us.auth0.com/authorize',
+      tokenEndpoint: 'https://dev-66c3w4hb34p1ajnk.us.auth0.com/oauth/token',
       provider: "auth0",
       redirectUri: `${window.location.origin}/auth/callback`,
-      clientId: 'your-client-id',
+      clientId: 'orsIdxADC6Dfnk0mqG5Q1GtCeAW4u2NS',
       scopes: ['openid', 'profile', 'email'],
     },
     azure: {
