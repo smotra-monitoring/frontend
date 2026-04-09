@@ -81,7 +81,7 @@ export class Router {
     }
 
     // Initial load — URL is already correct, no history manipulation needed
-    await this.navigate(window.location.pathname, 'replace');
+    await this.navigate(window.location.pathname, 'none');
   }
 
   /**
@@ -128,8 +128,6 @@ export class Router {
     } else if (historyMode === 'replace') {
       this.isInternalNavigating = true;
       window.history.replaceState({}, '', path);
-      console.log('Replacing history state with:', path);
-      console.log('current path in address bar:', window.location.pathname);
       this.isInternalNavigating = false;
     }
     // 'none': URL already correct (popstate, Navigation API intercept, initial load)
