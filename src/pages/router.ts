@@ -13,19 +13,19 @@ import { isAuthenticated } from '../state/auth-state.js';
 interface Route {
   path: string;
   component: typeof LoginPage | typeof OAuthCallbackPage | typeof DashboardPage;
-  protected: boolean;
-  public?: boolean;
+  strategy: Strategy;
 }
 
 /**
  * Simple client-side router
  */
-export class Router {
+type Strategy = 'private' | 'guest-only' | 'anyone';
+class Router {
   private routes: Route[] = [
-    { path: '/', component: DashboardPage, protected: true },
-    { path: '/dashboard', component: DashboardPage, protected: true },
-    { path: '/login', component: LoginPage, protected: false, public: true },
-    { path: '/auth/callback', component: OAuthCallbackPage, protected: false, public: true },
+    { path: '/', component: DashboardPage, strategy: 'private' },
+    { path: '/dashboard', component: DashboardPage, strategy: 'private' },
+    { path: '/login', component: LoginPage, strategy: 'guest-only' },
+    { path: '/auth/callback', component: OAuthCallbackPage, strategy: 'guest-only' },
   ];
 
   private currentPage: LoginPage | OAuthCallbackPage | DashboardPage | null = null;
@@ -105,13 +105,13 @@ export class Router {
     }
 
     // Check authentication
-    if (route.protected) {
+    if (route.strategy === 'private') {
       const allowed = await protectRoute(path);
       if (!allowed) return;
     }
 
-    // Redirect authenticated users away from public-only pages (login/callback)
-    if (route.public) {
+    // Redirect authenticated users away from guest-only pages (login/callback)
+    if (route.strategy === 'guest-only') {
       const result = canAccessPublicRoute();
       if (!result.allowed && result.redirectTo) {
         // Use 'replace' so the user cannot Back-button back to the protected route
@@ -119,6 +119,8 @@ export class Router {
         return;
       }
     }
+
+    // If strategy is 'anyone', it simply skips both blocks and renders. Perfect.
 
     // Update browser history
     if (historyMode === 'push') {
@@ -130,9 +132,8 @@ export class Router {
       window.history.replaceState({}, '', path);
       this.isInternalNavigating = false;
     }
-    // 'none': URL already correct (popstate, Navigation API intercept, initial load)
 
-    // Render page
+    // 'none': URL already correct (popstate, Navigation API intercept, initial load)
     await this.renderPage(route);
 
     // Scroll to top
