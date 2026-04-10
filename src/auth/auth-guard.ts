@@ -73,10 +73,10 @@ export function canAccessPublicRoute(): AuthGuardResult {
 /**
  * Get redirect destination after login
  */
-export function getRedirectAfterLogin(): string {
+export function getRedirectAfterLogin(): string | null {
   const stored = sessionStorage.getItem('redirect_after_login');
   sessionStorage.removeItem('redirect_after_login');
-  return stored || '/dashboard';
+  return stored;
 }
 
 /**
