@@ -45,7 +45,7 @@ export async function login(provider: OAuth2Provider): Promise<void> {
 /**
  * Handle OAuth callback and complete login
  */
-export async function handleLoginCallback(): Promise<boolean> {
+export async function handleLoginCallback(): Promise<[boolean, string?]> {
     try {
         setAuthLoading(true);
 
@@ -53,39 +53,44 @@ export async function handleLoginCallback(): Promise<boolean> {
         const callbackResult = handleOAuthCallback();
 
         if (!callbackResult.valid || callbackResult.error) {
-            setAuthError(callbackResult.error || 'Authentication failed');
-            return false;
+            const errorMessage = callbackResult.error || 'Authentication failed';
+            setAuthError(errorMessage);
+            return [false, errorMessage];
         }
 
         // Retrieve PKCE verifier
         const pkce = retrievePKCE();
 
         if (!pkce) {
-            setAuthError('PKCE verification failed');
-            return false;
+            const errorMessage = 'PKCE verification failed';
+            setAuthError(errorMessage);
+            return [false, errorMessage];
         }
 
         const providerConfig = getProviderConfig(retrieveAuthenticationProvider()!);
 
         if (!providerConfig) {
-            setAuthError('Authentication provider not found');
-            return false;
+            const errorMessage = 'Authentication provider not found';
+            setAuthError(errorMessage);
+            return [false, errorMessage];
         }
 
         // Exchange authorization code for tokens
         const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier, providerConfig);
 
         if (!tokens) {
-            setAuthError('Token exchange failed');
-            return false;
+            const errorMessage = 'Token exchange failed';
+            setAuthError(errorMessage);
+            return [false, errorMessage];
         }
 
         // Fetch user info
         const userInfo = await fetchUserInfo(tokens.access_token);
 
         if (!userInfo) {
-            setAuthError('Failed to fetch user information');
-            return false;
+            const errorMessage = 'Failed to fetch user information';
+            setAuthError(errorMessage);
+            return [false, errorMessage];
         }
 
         // Save authentication state
@@ -94,11 +99,12 @@ export async function handleLoginCallback(): Promise<boolean> {
         // Schedule automatic token refresh (self-rescheduling cycle)
         scheduleRefreshCycle(tokens);
 
-        return true;
+        return [true];
     } catch (error) {
         console.error('Callback handling error:', error);
-        setAuthError(error instanceof Error ? error.message : 'Authentication failed');
-        return false;
+        const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+        setAuthError(errorMessage);
+        return [false, errorMessage];
     }
 }
 

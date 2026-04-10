@@ -89,7 +89,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
   private async processCallback(): Promise<void> {
     try {
       // Handle login callback
-      const success = await handleLoginCallback();
+      const [success, errorMessage] = await handleLoginCallback();
 
       if (success) {
         this.setState({
@@ -106,7 +106,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
       } else {
         this.setState({
           status: 'error',
-          message: 'Authentication failed. Please try again.',
+          message: errorMessage || 'Authentication failed. Please try again.',
         });
       }
     } catch (error) {
