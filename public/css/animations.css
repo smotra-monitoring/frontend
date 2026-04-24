@@ -58,18 +58,13 @@
   }
 }
 
-/* Spinner rotation */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
 /* Fade-in for callback card */
 @keyframes fade-in-up {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -78,6 +73,7 @@
 
 /* Reduced motion: disable all animations */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
