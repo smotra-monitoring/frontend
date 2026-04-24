@@ -33,6 +33,9 @@ export interface OAuth2Config {
   redirectUri: string;
   authorizationEndpoint: string;
   tokenEndpoint: string;
+  revokeEndpoint: string;
+  userinfoEndpoint: string;
+  logoutEndpoint: string;
   scopes: string[];
 }
 

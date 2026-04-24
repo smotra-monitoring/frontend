@@ -12,6 +12,66 @@ const PKCE_STORAGE_KEY = 'oauth_pkce';
 const STATE_STORAGE_KEY = 'oauth_state';
 const OAUTH_PROVIDER_STORAGE_KEY = 'oauth_provider';
 
+const providers_config: Record<OAuth2Provider, OAuth2Config> = {
+  okta: {
+    provider: "okta",
+    scopes: ['openid', 'profile', 'email'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  },
+  auth0: {
+    provider: "auth0",
+    scopes: ['openid', 'profile', 'email'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  },
+  azure: {
+    provider: "azure",
+    scopes: ['openid', 'profile', 'email'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  },
+  google: {
+    provider: "google",
+    scopes: ['openid', 'profile', 'email'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  },
+  oidc: {
+    // Generic OIDC - endpoints should be discovered from .well-known/openid-configuration
+    provider: "oidc",
+    scopes: ['openid', 'profile', 'email'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  },
+};
+
+
 /**
  * Generate random string for code verifier
  */
@@ -142,6 +202,7 @@ async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
 
   // Build authorization request parameters
   const params: Record<string, string> = {
+    provider: config.provider,
     client_id: config.clientId,
     redirect_uri: config.redirectUri,
     response_type: 'code',
@@ -211,6 +272,5 @@ export function handleOAuthCallback(): {
  * In production, these would come from environment variables
  */
 export function getProviderConfig(provider: OAuth2Provider): OAuth2Config {
-  const configs = getEnvironmentConfig().auth.providers;
-  return configs[provider];
+  return providers_config[provider];
 }
