@@ -23,7 +23,7 @@ describe('Dashboard (Integration)', () => {
   describe('Agent list management', () => {
     it('loads and displays agents', () => {
       setAgents(mockAgents);
-      
+
       const agents = getAgents();
       expect(agents).toHaveLength(mockAgents.length);
       expect(agents).toEqual(mockAgents);
@@ -31,12 +31,12 @@ describe('Dashboard (Integration)', () => {
 
     it('calculates status counts', () => {
       setAgents(mockAgents);
-      
+
       const counts = getAgentCountByStatus();
       expect(counts.online).toBeGreaterThan(0);
       expect(counts.offline).toBeGreaterThan(0);
       expect(counts.warning).toBeGreaterThan(0);
-      
+
       const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
       expect(total).toBe(mockAgents.length);
     });
@@ -49,34 +49,34 @@ describe('Dashboard (Integration)', () => {
 
     it('filters agents by status and sorts by name', () => {
       // Filter online agents
-      const online = filterAgents({ status: 'online' });
+      const online = filterAgents(mockAgents, { status: 'online' });
       expect(online.every(a => a.status === 'online')).toBe(true);
-      
+
       // Sort by name
       const sorted = sortAgents(online, { field: 'name', direction: 'asc' });
-      
+
       for (let i = 1; i < sorted.length; i++) {
         expect(sorted[i - 1].name.localeCompare(sorted[i].name)).toBeLessThanOrEqual(0);
       }
     });
 
     it('filters by tag and sorts by latency', () => {
-      const production = filterAgents({ tags: ['production'] });
+      const production = filterAgents(mockAgents, { tags: ['production'] });
       expect(production.every(a => a.tags.includes('production'))).toBe(true);
-      
+
       const sorted = sortAgents(production, { field: 'latency', direction: 'asc' });
-      
+
       for (let i = 1; i < sorted.length; i++) {
         expect(sorted[i - 1].metrics.latency).toBeLessThanOrEqual(sorted[i].metrics.latency);
       }
     });
 
     it('searches agents by name and hostname', () => {
-      const results = filterAgents({ search: 'Agent 2' });
+      const results = filterAgents(mockAgents, { search: 'Agent 2' });
       expect(results).toHaveLength(1);
       expect(results[0].name).toContain('Agent 2');
-      
-      const results2 = filterAgents({ search: 'test-host-1' });
+
+      const results2 = filterAgents(mockAgents, { search: 'test-host-1' });
       expect(results2).toHaveLength(1);
       expect(results2[0].hostname).toBe('test-host-1');
     });
@@ -101,11 +101,11 @@ describe('Dashboard (Integration)', () => {
       // Process update
       setTimeout(() => {
         updateAgent(mockAgentUpdateMessage.payload);
-        
+
         const updatedAgent = getAgents().find(a => a.id === agentId);
         expect(updatedAgent!.metrics.latency).not.toBe(initialLatency);
         expect(updatedAgent!.metrics.latency).toBe(mockAgentUpdateMessage.payload.metrics!.latency);
-        
+
         done();
       }, 20);
     });
@@ -117,11 +117,11 @@ describe('Dashboard (Integration)', () => {
 
       setTimeout(() => {
         addAgent(mockAgentAddedMessage.payload);
-        
+
         const agents = getAgents();
         expect(agents).toHaveLength(initialCount + 1);
         expect(agents.some(a => a.id === mockAgentAddedMessage.payload.id)).toBe(true);
-        
+
         done();
       }, 20);
     });
@@ -134,11 +134,11 @@ describe('Dashboard (Integration)', () => {
 
       setTimeout(() => {
         removeAgent(mockAgentRemovedMessage.payload.id);
-        
+
         const agents = getAgents();
         expect(agents).toHaveLength(initialCount - 1);
         expect(agents.some(a => a.id === agentToRemove)).toBe(false);
-        
+
         done();
       }, 20);
     });

@@ -2,8 +2,8 @@
  * Agent monitoring data state management
  */
 
-import { createState } from './global-state.js';
-import type { Agent, DashboardState, FilterOptions, SortOptions, AgentUpdate } from '../types/dashboard-types.js';
+import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
+import type { Agent, DashboardState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
 
 // Initial dashboard state
 const initialDashboardState: DashboardState = {
@@ -13,7 +13,7 @@ const initialDashboardState: DashboardState = {
     field: 'name',
     direction: 'asc',
   },
-  viewMode: 'grid',
+  viewMode: 'grid' as ViewMode,
   selectedAgent: null,
   loading: false
 };
@@ -33,7 +33,15 @@ export function setAgents(agents: Agent[]): void {
  */
 export function addAgent(agent: Agent): void {
   const current = dashboardState.getState();
-  const agents = [...current.agents, agent];
+  const agents = [...current.agents];
+  const existingIndex = agents.findIndex(a => a.id === agent.id);
+
+  if (existingIndex !== -1) {
+    agents[existingIndex] = agent;
+  } else {
+    agents.push(agent);
+  }
+
   dashboardState.setState({ agents });
 }
 
@@ -89,7 +97,7 @@ export function setSort(sort: SortOptions): void {
 /**
  * Set view mode
  */
-export function setViewMode(viewMode: 'grid' | 'list' | 'table'): void {
+export function setViewMode(viewMode: ViewMode): void {
   dashboardState.setState({ viewMode });
 }
 
@@ -98,79 +106,6 @@ export function setViewMode(viewMode: 'grid' | 'list' | 'table'): void {
  */
 export function selectAgent(agentId: string | null): void {
   dashboardState.setState({ selectedAgent: agentId });
-}
-
-/**
- * Get filtered and sorted agents
- */
-export function getFilteredAgents(): Agent[] {
-  const { agents, filter, sort } = dashboardState.getState();
-
-  let filtered = [...agents];
-
-  // Apply status filter
-  if (filter.status && filter.status.length > 0) {
-    filtered = filtered.filter(agent => filter.status!.includes(agent.status));
-  }
-
-  // Apply tags filter
-  if (filter.tags && filter.tags.length > 0) {
-    filtered = filtered.filter(agent =>
-      filter.tags!.some((tag: string) => agent.tags.includes(tag))
-    );
-  }
-
-  // Apply search filter
-  if (filter.search) {
-    const searchLower = filter.search.toLowerCase();
-    filtered = filtered.filter(agent =>
-      agent.name.toLowerCase().includes(searchLower) ||
-      agent.hostname.toLowerCase().includes(searchLower) ||
-      agent.ip.includes(searchLower)
-    );
-  }
-
-  // Apply sorting
-  filtered.sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
-
-    switch (sort.field) {
-      case 'name':
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-        break;
-      case 'status':
-        aValue = a.status;
-        bValue = b.status;
-        break;
-      case 'latency':
-        aValue = a.metrics.latency;
-        bValue = b.metrics.latency;
-        break;
-      case 'uptime':
-        aValue = a.metrics.uptime;
-        bValue = b.metrics.uptime;
-        break;
-      case 'lastSeen':
-        aValue = a.lastSeen;
-        bValue = b.lastSeen;
-        break;
-      default:
-        aValue = a.name;
-        bValue = b.name;
-    }
-
-    if (aValue < bValue) {
-      return sort.direction === 'asc' ? -1 : 1;
-    }
-    if (aValue > bValue) {
-      return sort.direction === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
-
-  return filtered;
 }
 
 /**
@@ -183,8 +118,7 @@ export function getAgents(): Agent[] {
 /**
  * Filter agents by criteria
  */
-export function filterAgents(filter: FilterOptions): Agent[] {
-  const agents = dashboardState.getState().agents;
+export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
   let filtered = [...agents];
 
   // Apply status filter
@@ -300,7 +234,7 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
  * // Later: unsubscribe();
  * ```
  */
-export function subscribeToAgents(callback: (state: DashboardState) => void): () => void {
+export function subscribeToAgents(callback: Subscriber<DashboardState>): UnsubscribeFn {
   return dashboardState.subscribe(callback);
 }
 

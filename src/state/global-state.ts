@@ -3,8 +3,8 @@
  * No frameworks needed - vanilla TypeScript implementation
  */
 
-type Subscriber<T> = (state: T) => void;
-type UnsubscribeFn = () => void;
+export type Subscriber<T> = (state: T) => void;
+export type UnsubscribeFn = () => void;
 
 export class GlobalState<T = any> {
   private state: T;
