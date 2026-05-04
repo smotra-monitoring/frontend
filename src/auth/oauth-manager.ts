@@ -235,6 +235,7 @@ export function handleOAuthCallback(): {
 
   // Check for error
   if (callbackParams.error) {
+    console.error('OAuth callback error:', callbackParams.error, callbackParams.error_description);
     return {
       code: null,
       error: callbackParams.error_description || callbackParams.error,
@@ -244,6 +245,7 @@ export function handleOAuthCallback(): {
 
   // Validate state (CSRF protection)
   if (!callbackParams.state || !validateState(callbackParams.state)) {
+    console.error('Invalid state parameter in OAuth callback. Possible CSRF attack. (Received:', callbackParams.state, ')');
     return {
       code: null,
       error: 'Invalid state parameter. Possible CSRF attack.',
@@ -253,6 +255,7 @@ export function handleOAuthCallback(): {
 
   // Check for authorization code
   if (!callbackParams.code) {
+    console.error('No authorization code found in OAuth callback.');
     return {
       code: null,
       error: 'No authorization code received',

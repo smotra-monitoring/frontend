@@ -56,7 +56,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
         const result = await handleLoginCallback();
 
-        expect(result).toBe(true);
+        expect(result[0]).toBe(true);
         expect(isAuthenticated()).toBe(true);
         expect(getStoredUserInfo()?.email).toBe(mockUserInfo.email);
     });
@@ -70,7 +70,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
         const result = await handleLoginCallback();
 
-        expect(result).toBe(false);
+        expect(result[0]).toBe(false);
         expect(isAuthenticated()).toBe(false);
     });
 
@@ -81,7 +81,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
         const result = await handleLoginCallback();
 
-        expect(result).toBe(false);
+        expect(result[0]).toBe(false);
         expect(isAuthenticated()).toBe(false);
     });
 
@@ -100,7 +100,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
         const result = await handleLoginCallback();
 
-        expect(result).toBe(false);
+        expect(result[0]).toBe(false);
         expect(isAuthenticated()).toBe(false);
     });
 

@@ -85,7 +85,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
         }
 
         // Fetch user info
-        const userInfo = await fetchUserInfo(tokens.access_token);
+        const userInfo = await fetchUserInfo(tokens.access_token, providerConfig);
 
         if (!userInfo) {
             const errorMessage = 'Failed to fetch user information';
@@ -116,7 +116,7 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string, provide
         // TODO: This would use the generated SDK function
         // import { oauth2Token } from '../api/sdk.gen.js';
 
-        const response = await fetch('/auth/oauth2/token', {
+        const response = await fetch(providerConfig.tokenEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -153,12 +153,12 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string, provide
 /**
  * Fetch user information from API
  */
-async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
+async function fetchUserInfo(accessToken: string, providerConfig: OAuth2Config): Promise<UserInfo | null> {
     try {
         // TODO: This would use the generated SDK function
         // import { getUserInfo } from '../api/sdk.gen.js';
 
-        const response = await fetch('/auth/userinfo', {
+        const response = await fetch(providerConfig.userinfoEndpoint, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
