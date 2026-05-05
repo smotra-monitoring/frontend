@@ -59,9 +59,9 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
     const response = await fetch('/auth/oauth2/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: tokens.refresh_token,
       }),
@@ -121,9 +121,9 @@ export async function revokeTokens(): Promise<boolean> {
       await fetch('/auth/oauth2/revoke', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
+        body: new URLSearchParams({
           token: tokens.access_token,
           token_type_hint: 'access_token',
         }),
@@ -137,9 +137,9 @@ export async function revokeTokens(): Promise<boolean> {
       await fetch('/auth/oauth2/revoke', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
+        body: new URLSearchParams({
           token: tokens.refresh_token,
           token_type_hint: 'refresh_token',
         }),

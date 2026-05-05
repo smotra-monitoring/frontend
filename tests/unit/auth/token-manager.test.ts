@@ -88,13 +88,13 @@ describe('token-manager', () => {
 
             expect(result.success).toBe(true);
             expect(result.tokens?.access_token).toBe(mockRefreshTokenResponse.access_token);
-            expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/token'),
-                expect.objectContaining({
-                    method: 'POST',
-                    body: expect.stringContaining('refresh_token'),
-                })
-            );
+            const [url, options] = (fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
+            expect(url).toContain('/token');
+            expect(options.method).toBe('POST');
+            expect(options.headers).toMatchObject({ 'Content-Type': 'application/x-www-form-urlencoded' });
+            expect(options.body).toBeInstanceOf(URLSearchParams);
+            expect((options.body as URLSearchParams).get('grant_type')).toBe('refresh_token');
+            expect((options.body as URLSearchParams).get('refresh_token')).toBeTruthy();
         });
 
         it('throws error on failed refresh', async () => {

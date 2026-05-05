@@ -10,7 +10,7 @@ import type {
     AgentUpdateMessage,
     SystemNotificationMessage,
 } from '../types/websocket-types.js';
-import { createState } from '../state/global-state.js';
+import { createState, type Subscriber, type UnsubscribeFn } from '../state/global-state.js';
 import { updateAgent, addAgent, removeAgent } from '../state/agent-state.js';
 import { getValidAccessToken } from '../auth/token-manager.js';
 
@@ -332,7 +332,7 @@ export function getWebSocketState(): WebSocketState {
 /**
  * Subscribe to WebSocket state changes
  */
-export function subscribeToState(callback: (state: WebSocketState) => void): () => void {
+export function subscribeToState(callback: Subscriber<WebSocketState>): UnsubscribeFn {
     return wsState.subscribe(callback);
 }
 
