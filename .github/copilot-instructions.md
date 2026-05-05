@@ -23,6 +23,10 @@ The frontend provides a dashboard that visualizes the collected data in an intui
 
 Visually site should be simple, clean and modern with a focus on usability and clarity. The use of Bulma CSS framework ensures that the design is responsive and works well across different devices and screen sizes.
 
+**Motion:** Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states.
+
+**Backgrounds & Visual Details:** Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, layered transparencies, smooth shadows.
+
 ## The "Bento-Box" Dashboard
 
 For a monitoring system, "Bento" layouts are king. Instead of a long list of agents, group them into rounded, distinct cards.
