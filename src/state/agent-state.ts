@@ -36,10 +36,10 @@ export function addAgent(agent: Agent): void {
   const agents = [...current.agents];
   const existingIndex = agents.findIndex(a => a.id === agent.id);
 
-  if (existingIndex !== -1) {
-    agents[existingIndex] = agent;
-  } else {
+  if (existingIndex === -1) {
     agents.push(agent);
+  } else {
+    agents[existingIndex] = agent;
   }
 
   dashboardState.setState({ agents });
