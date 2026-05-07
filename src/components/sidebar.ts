@@ -7,6 +7,7 @@ import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import { isAuthenticated, getUserInfo } from '../state/auth-state.js';
 import { logout } from '../services/auth-service.js';
+import { navigate } from '../pages/router.js';
 
 interface SidebarState extends ComponentState {
   expanded: boolean;
@@ -207,7 +208,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
       this.addEventListener(link, 'click', (e) => {
         e.preventDefault();
         const route = (link as HTMLAnchorElement).dataset.route!;
-        this.navigate(route);
+        this.sidebar_navigate(route);
       });
     });
 
@@ -220,7 +221,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
     }
   }
 
-  private navigate(route: string): void {
+  private async sidebar_navigate(route: string): Promise<void> {
     // Close sidebar on mobile
     if (this.isMobile() || this.isTablet()) {
       this.close();
@@ -230,8 +231,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
     this.setState({ activeRoute: route });
 
     // Dispatch navigation event (will be handled by router)
-    const event = new CustomEvent('navigate', { detail: { route } });
-    window.dispatchEvent(event);
+    await navigate(route);
   }
 
   /**
