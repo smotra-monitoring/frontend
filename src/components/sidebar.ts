@@ -29,18 +29,18 @@ export class Sidebar extends BaseComponent<SidebarState> {
     { id: 'agents', label: 'Agents', icon: 'fa-server', route: '/agents' },
     { id: 'settings', label: 'Settings', icon: 'fa-cog', route: '/settings' },
   ];
-  
+
   constructor(root: HTMLElement) {
     super(root, {
       expanded: false,
       activeRoute: window.location.pathname,
     });
   }
-  
+
   render(): void {
     const { expanded } = this.state;
     const isMobileOrTablet = this.isMobile() || this.isTablet();
-    
+
     this.root.innerHTML = `
       ${isMobileOrTablet ? this.renderMobileHeader() : ''}
       
@@ -75,10 +75,10 @@ export class Sidebar extends BaseComponent<SidebarState> {
       
       ${isMobileOrTablet && expanded ? this.renderOverlay() : ''}
     `;
-    
+
     this.attachEventListeners();
   }
-  
+
   private renderMobileHeader(): string {
     return `
       <div class="mobile-header">
@@ -100,7 +100,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
       </div>
     `;
   }
-  
+
   private renderNavItems(): string {
     return `
       <ul class="sidebar__menu">
@@ -108,10 +108,10 @@ export class Sidebar extends BaseComponent<SidebarState> {
       </ul>
     `;
   }
-  
+
   private renderNavItem(item: NavItem): string {
     const isActive = this.state.activeRoute === item.route;
-    
+
     return `
       <li>
         <a 
@@ -128,18 +128,18 @@ export class Sidebar extends BaseComponent<SidebarState> {
       </li>
     `;
   }
-  
+
   private renderUserInfo(): string {
     if (!isAuthenticated()) {
       return '';
     }
-    
+
     const userInfo = getUserInfo();
-    
+
     if (!userInfo) {
       return '';
     }
-    
+
     return `
       <div class="sidebar__user">
         ${userInfo.picture ? `
@@ -160,12 +160,12 @@ export class Sidebar extends BaseComponent<SidebarState> {
       </div>
     `;
   }
-  
+
   private renderLogoutButton(): string {
     if (!isAuthenticated()) {
       return '';
     }
-    
+
     return `
       <button 
         class="sidebar__logout button is-ghost is-fullwidth"
@@ -178,30 +178,30 @@ export class Sidebar extends BaseComponent<SidebarState> {
       </button>
     `;
   }
-  
+
   private renderOverlay(): string {
     return `<div class="sidebar-overlay"></div>`;
   }
-  
+
   private attachEventListeners(): void {
     // Menu toggle (mobile/tablet)
     const menuButton = document.querySelector('.mobile-header__menu');
     if (menuButton) {
       this.addEventListener(menuButton, 'click', () => this.toggle());
     }
-    
+
     // Close button (mobile/tablet)
     const closeButton = this.query('.sidebar__close');
     if (closeButton) {
       this.addEventListener(closeButton, 'click', () => this.close());
     }
-    
+
     // Overlay click (mobile/tablet)
     const overlay = document.querySelector('.sidebar-overlay');
     if (overlay) {
       this.addEventListener(overlay, 'click', () => this.close());
     }
-    
+
     // Nav links
     this.queryAll('.sidebar__link').forEach(link => {
       this.addEventListener(link, 'click', (e) => {
@@ -210,7 +210,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
         this.navigate(route);
       });
     });
-    
+
     // Logout button
     const logoutButton = this.query('.sidebar__logout');
     if (logoutButton) {
@@ -219,56 +219,56 @@ export class Sidebar extends BaseComponent<SidebarState> {
       });
     }
   }
-  
+
   private navigate(route: string): void {
     // Close sidebar on mobile
     if (this.isMobile() || this.isTablet()) {
       this.close();
     }
-    
+
     // Update active route
     this.setState({ activeRoute: route });
-    
+
     // Dispatch navigation event (will be handled by router)
     const event = new CustomEvent('navigate', { detail: { route } });
     window.dispatchEvent(event);
   }
-  
+
   /**
    * Open sidebar
    */
   open(): void {
     this.setState({ expanded: true });
   }
-  
+
   /**
    * Close sidebar
    */
   close(): void {
     this.setState({ expanded: false });
   }
-  
+
   /**
    * Toggle sidebar
    */
   toggle(): void {
     this.setState({ expanded: !this.state.expanded });
   }
-  
+
   /**
    * Set active route
    */
   setActiveRoute(route: string): void {
     this.setState({ activeRoute: route });
   }
-  
+
   onViewportChange(): void {
     // Close sidebar when switching from mobile to desktop
     if (this.isDesktop() && this.state.expanded) {
       this.close();
     }
   }
-  
+
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;
