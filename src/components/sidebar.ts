@@ -204,10 +204,10 @@ export class Sidebar extends BaseComponent<SidebarState> {
 
     // Nav links
     this.queryAll('.sidebar__link').forEach(link => {
-      this.addEventListener(link, 'click', (e) => {
+      this.addEventListener(link, 'click', async (e) => {
         e.preventDefault();
         const route = (link as HTMLAnchorElement).dataset.route!;
-        this.sidebar_navigation(route);
+        await navigate(route);
       });
     });
 
@@ -218,19 +218,6 @@ export class Sidebar extends BaseComponent<SidebarState> {
         await logout();
       });
     }
-  }
-
-  private async sidebar_navigation(route: string): Promise<void> {
-    // Close sidebar on mobile
-    if (this.isMobile() || this.isTablet()) {
-      this.close();
-    }
-
-    // Update active route
-    this.setState({ activeRoute: route });
-
-    // Dispatch navigation event (will be handled by router)
-    await navigate(route);
   }
 
   /**
