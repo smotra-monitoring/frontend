@@ -177,13 +177,6 @@ class Router {
     this.currentPage = new PageComponent(pageContainer);
     this.currentPage!.mount();
   }
-
-  /**
-   * Get current path
-   */
-  getCurrentPath(): string {
-    return window.location.pathname;
-  }
 }
 
 /**
