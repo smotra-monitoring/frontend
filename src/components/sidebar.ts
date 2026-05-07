@@ -156,7 +156,6 @@ export class Sidebar extends BaseComponent<SidebarState> {
         `}
         <div class="sidebar__user-info">
           <div class="sidebar__user-name">${this.escapeHtml(userInfo.name)}</div>
-          <div class="sidebar__user-email">${this.escapeHtml(userInfo.email)}</div>
         </div>
       </div>
     `;
