@@ -207,7 +207,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
       this.addEventListener(link, 'click', (e) => {
         e.preventDefault();
         const route = (link as HTMLAnchorElement).dataset.route!;
-        this.sidebar_navigate(route);
+        this.sidebar_navigation(route);
       });
     });
 
@@ -220,7 +220,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
     }
   }
 
-  private async sidebar_navigate(route: string): Promise<void> {
+  private async sidebar_navigation(route: string): Promise<void> {
     // Close sidebar on mobile
     if (this.isMobile() || this.isTablet()) {
       this.close();
