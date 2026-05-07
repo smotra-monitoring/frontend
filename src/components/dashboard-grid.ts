@@ -21,13 +21,13 @@ interface DashboardGridState extends ComponentState {
 export class DashboardGrid extends BaseComponent<DashboardGridState> {
   private agentCards: Map<string, AgentCard> = new Map();
   private intersectionObserver: IntersectionObserver | null = null;
-  
+
   constructor(root: HTMLElement) {
     super(root, {
       agents: [],
       loading: true,
     });
-    
+
     // Subscribe to agent updates
     this.addSubscription(
       subscribeToAgents((agentState) => {
@@ -38,34 +38,34 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       })
     );
   }
-  
+
   render(): void {
     // Calculate optimal column count
     const columns = getOptimalColumns();
-    
+
     // Clear existing content
     this.root.innerHTML = '';
     this.root.className = 'dashboard-grid';
-    
+
     // Set CSS Grid properties
     this.root.style.display = 'grid';
     this.root.style.gridTemplateColumns = `repeat(auto-fit, minmax(300px, 1fr))`;
     this.root.style.gap = '1.5rem';
-    
+
     if (this.state.loading && this.state.agents.length === 0) {
       this.renderLoading();
       return;
     }
-    
+
     if (this.state.agents.length === 0) {
       this.renderEmpty();
       return;
     }
-    
+
     // Render agent cards
     this.renderAgentCards();
   }
-  
+
   private renderLoading(): void {
     this.root.innerHTML = `
       <div class="dashboard-grid__loading">
@@ -74,7 +74,7 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       </div>
     `;
   }
-  
+
   private renderEmpty(): void {
     this.root.innerHTML = `
       <div class="dashboard-grid__empty">
@@ -83,13 +83,13 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       </div>
     `;
   }
-  
+
   private renderAgentCards(): void {
     const currentCardIds = new Set<string>();
-    
+
     this.state.agents.forEach(agent => {
       currentCardIds.add(agent.id);
-      
+
       // Check if card already exists
       if (this.agentCards.has(agent.id)) {
         const card = this.agentCards.get(agent.id)!;
@@ -100,18 +100,18 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
         cardElement.className = 'agent-card-container';
         cardElement.dataset.agentId = agent.id;
         this.root.appendChild(cardElement);
-        
+
         const card = new AgentCard(cardElement, agent);
         this.agentCards.set(agent.id, card);
         card.mount();
-        
+
         // Lazy load if observer is available
         if (this.intersectionObserver) {
           this.intersectionObserver.observe(cardElement);
         }
       }
     });
-    
+
     // Remove cards for agents that no longer exist
     this.agentCards.forEach((card, agentId) => {
       if (!currentCardIds.has(agentId)) {
@@ -120,7 +120,7 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       }
     });
   }
-  
+
   onMount(): void {
     // Setup Intersection Observer for lazy loading
     if ('IntersectionObserver' in window) {
@@ -140,19 +140,19 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       );
     }
   }
-  
+
   onViewportChange(): void {
     // Re-render on viewport changes for optimal column layout
     this.render();
   }
-  
+
   onDestroy(): void {
     // Disconnect Intersection Observer
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
       this.intersectionObserver = null;
     }
-    
+
     // Destroy all agent cards
     this.agentCards.forEach(card => card.destroy());
     this.agentCards.clear();
