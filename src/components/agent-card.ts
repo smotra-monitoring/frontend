@@ -22,7 +22,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       agent,
       expanded: false,
     });
-    
+
     // Subscribe to WebSocket updates for this agent
     this.addSubscription(
       onWebSocket(`agent:${agent.id}`, (message) => {
@@ -32,10 +32,10 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       })
     );
   }
-  
+
   render(): void {
     const { agent, expanded } = this.state;
-    
+
     this.root.innerHTML = `
       <article class="agent-card" data-status="${agent.status}">
         <div class="agent-card__header">
@@ -56,11 +56,11 @@ export class AgentCard extends BaseComponent<AgentCardState> {
         ${expanded ? this.renderDetails() : ''}
       </article>
     `;
-    
+
     // Attach event listeners
     this.attachEventListeners();
   }
-  
+
   private renderActions(): string {
     return `
       <div class="agent-card__actions">
@@ -77,15 +77,15 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       </div>
     `;
   }
-  
+
   private renderMetrics(): string {
     const { agent } = this.state;
     const { metrics } = agent;
-    
+
     if (!metrics) {
       return '<p class="has-text-grey">No metrics available</p>';
     }
-    
+
     return `
       <div class="agent-card__metric">
         <span class="agent-card__metric-label">Latency</span>
@@ -113,10 +113,10 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       ` : ''}
     `;
   }
-  
+
   private renderDetails(): string {
     const { agent } = this.state;
-    
+
     return `
       <div class="agent-card__details">
         <dl class="agent-card__details-list">
@@ -141,28 +141,28 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       </div>
     `;
   }
-  
+
   private attachEventListeners(): void {
     const toggleButton = this.query('[data-action="toggle-details"]');
-    
+
     if (toggleButton) {
       this.addEventListener(toggleButton, 'click', () => {
         this.toggleDetails();
       });
     }
   }
-  
+
   private toggleDetails(): void {
     this.setState({ expanded: !this.state.expanded });
   }
-  
+
   /**
    * Update agent data (from WebSocket or parent)
    */
   updateAgent(agent: Agent): void {
     this.setState({ agent });
   }
-  
+
   private getStatusLabel(status: AgentStatus): string {
     const labels: Record<AgentStatus, string> = {
       online: 'Online',
@@ -173,36 +173,36 @@ export class AgentCard extends BaseComponent<AgentCardState> {
     };
     return labels[status] || 'Unknown';
   }
-  
+
   private getLatencyClass(latency: number): string {
     if (latency < 50) return 'has-text-success';
     if (latency < 150) return 'has-text-warning';
     return 'has-text-danger';
   }
-  
+
   private formatUptime(seconds: number): string {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
-    
+
     if (days > 0) {
       return `${days}d ${hours}h`;
     }
-    
+
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
   }
-  
+
   private formatRelativeTime(timestamp: number): string {
     const now = Date.now();
     const diff = now - timestamp;
     const seconds = Math.floor(diff / 1000);
-    
+
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
     return `${Math.floor(seconds / 86400)}d ago`;
   }
-  
+
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;
