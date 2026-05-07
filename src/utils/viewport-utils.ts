@@ -2,6 +2,7 @@
  * Viewport detection and responsive utilities
  */
 
+import type { UnsubscribeFn } from '../state/global-state.js';
 import type { Breakpoint, BreakpointName, ViewportState } from '../types/viewport-types.js';
 import { BREAKPOINTS } from '../types/viewport-types.js';
 
@@ -31,7 +32,7 @@ export function getViewportState(): ViewportState {
 export function watchViewport(
   callback: (state: ViewportState) => void,
   debounceMs: number = 150
-): () => void {
+): UnsubscribeFn {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
   const handler = () => {

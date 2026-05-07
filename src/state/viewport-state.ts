@@ -9,7 +9,7 @@ import { getViewportState, watchViewport } from '../utils/viewport-utils.js';
 // Create viewport state instance
 const viewportState = createState<ViewportState>(getViewportState());
 
-let viewportUnwatch: (() => void) | null = null;
+let viewportUnwatch: UnsubscribeFn | null = null;
 
 /**
  * Initialize viewport tracking
