@@ -97,6 +97,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         }
 
         this.mounted = true;
+        this.removeAllEventListeners(); // Ensure no duplicate listeners
         this.render();
         this.onMount();
     }
@@ -115,6 +116,7 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
 
         // Re-render if mounted
         if (this.mounted) {
+            this.removeAllEventListeners(); // Clean up old listeners before re-rendering
             this.render();
             this.onUpdate(prevState);
         }
