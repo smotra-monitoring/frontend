@@ -7,6 +7,7 @@ import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types
 import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig, retrieveAuthenticationProvider } from '../auth/oauth-manager.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
+import { navigateTo } from '../utils/navigation.js';
 
 // Token refresh cleanup function (tracks the current pending scheduled timeout)
 let tokenRefreshCleanup: (() => void) | null = null;
@@ -199,13 +200,13 @@ export async function logout(): Promise<void> {
         // Clear local authentication state
         clearAuthState();
 
-        // Redirect to login page
-        window.location.href = '/login';
+        // Navigate to login via the SPA router — no full page reload
+        await navigateTo('/login', 'replace');
     } catch (error) {
         console.error('Logout error:', error);
         // Clear state anyway
         clearAuthState();
-        window.location.href = '/login';
+        await navigateTo('/login', 'replace');
     }
 }
 

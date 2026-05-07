@@ -5,6 +5,7 @@
 import type { AuthGuardResult } from '../types/auth-types.js';
 import { isAuthenticated } from '../state/auth-state.js';
 import { getValidAccessToken } from './token-manager.js';
+import { navigateTo } from '../utils/navigation.js';
 
 /**
  * Check if user can access protected route
@@ -47,8 +48,8 @@ export async function protectRoute(currentPath: string = window.location.pathnam
     // Store intended destination for redirect after login
     sessionStorage.setItem('redirect_after_login', currentPath);
 
-    // Redirect to login
-    window.location.href = result.redirectTo;
+    // Navigate via the SPA router — no full page reload
+    await navigateTo(result.redirectTo, 'replace');
     return false;
   }
 
@@ -92,7 +93,7 @@ export function withAuthGuard(
     if (result.allowed) {
       await handler();
     } else if (result.redirectTo) {
-      window.location.href = result.redirectTo;
+      await navigateTo(result.redirectTo, 'replace');
     }
   };
 }

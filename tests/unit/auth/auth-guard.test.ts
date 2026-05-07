@@ -5,12 +5,19 @@
 import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
+import { navigateTo } from '../../../src/utils/navigation.js';
+
+jest.mock('../../../src/utils/navigation.js', () => ({
+    navigateTo: jest.fn().mockResolvedValue(undefined),
+    registerNavigate: jest.fn(),
+}));
+
+const mockNavigateTo = navigateTo as jest.MockedFunction<typeof navigateTo>;
 
 describe('auth-guard', () => {
     beforeEach(() => {
         clearAuthState();
-        delete (window as any).location;
-        (window as any).location = { href: '' };
+        mockNavigateTo.mockClear();
     });
 
     describe('canAccessRoute', () => {
@@ -65,7 +72,7 @@ describe('auth-guard', () => {
             const currentPath = '/dashboard';
             await protectRoute(currentPath);
 
-            expect(window.location.href).toContain('/login');
+            expect(mockNavigateTo).toHaveBeenCalledWith('/login', 'replace');
             expect(sessionStorage.getItem('redirect_after_login')).toContain(`${currentPath}`);
         });
 

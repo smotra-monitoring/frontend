@@ -9,6 +9,7 @@ import { DashboardPage } from './dashboard.js';
 import { protectRoute, canAccessPublicRoute } from '../auth/auth-guard.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
 import { isAuthenticated } from '../state/auth-state.js';
+import { registerNavigate } from '../utils/navigation.js';
 
 interface Route {
   path: string;
@@ -41,6 +42,11 @@ class Router {
    * Initialize router
    */
   async init(): Promise<void> {
+    // Register this router's navigate function so auth modules can trigger
+    // SPA navigation without importing the router (avoiding circular deps)
+    // This is needed for auth-guard redirects and post-login redirect handling
+    registerNavigate(this.navigate.bind(this));
+
     // 1. The Modern Way: Handle ALL navigations (links, back/forward, location.href)
     if (window.navigation) {
       window.navigation.addEventListener('navigate', (event: any) => {
