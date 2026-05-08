@@ -46,10 +46,7 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
     `;
 
     // Attach event listener
-    const button = this.query('.theme-toggle');
-    if (button) {
-      this.addEventListener(button, 'click', () => this.cycleTheme());
-    }
+    this.attachEventListeners();
   }
 
   private cycleTheme(): void {
@@ -85,4 +82,12 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
         return 'Auto';
     }
   }
+
+  private attachEventListeners(): void {
+    const button = this.query('.theme-toggle');
+    if (button) {
+      this.addEventListener(button, 'click', () => this.cycleTheme());
+    }
+  }
+
 }
