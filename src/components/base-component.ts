@@ -19,8 +19,7 @@ interface ComponentLifecycle {
  * Abstract base component class
  * All UI components should extend this class
  */
-export abstract class BaseComponent<TState extends ComponentState = ComponentState>
-    implements ComponentLifecycle {
+export abstract class BaseComponent<TState extends ComponentState = ComponentState> implements ComponentLifecycle {
 
     protected root: HTMLElement;
     protected state: TState;
