@@ -22,10 +22,10 @@ export class StatusIndicator extends BaseComponent<StatusIndicatorState> {
       pulsing,
     });
   }
-  
+
   render(): void {
     const { status, pulsing } = this.state;
-    
+
     this.root.innerHTML = `
       <span 
         class="status-indicator status-indicator--${status} ${pulsing ? 'status-indicator--pulsing' : ''}"
@@ -35,7 +35,7 @@ export class StatusIndicator extends BaseComponent<StatusIndicatorState> {
       ></span>
     `;
   }
-  
+
   /**
    * Update status
    */
@@ -45,7 +45,7 @@ export class StatusIndicator extends BaseComponent<StatusIndicatorState> {
       ...(pulsing !== undefined && { pulsing }),
     });
   }
-  
+
   private getStatusLabel(status: AgentStatus): string {
     const labels: Record<AgentStatus, string> = {
       online: 'Online - Agent is reachable',

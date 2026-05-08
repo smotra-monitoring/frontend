@@ -20,7 +20,7 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
     super(root, {
       theme: getThemePreference(),
     });
-    
+
     // Subscribe to theme changes (from other sources)
     this.addSubscription(
       subscribeToThemeChanges((themeState: ThemeState) => {
@@ -28,10 +28,10 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
       })
     );
   }
-  
+
   render(): void {
     const { theme } = this.state;
-    
+
     this.root.innerHTML = `
       <button 
         class="theme-toggle button is-ghost"
@@ -44,26 +44,26 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
         ${!this.isMobile() ? `<span class="theme-toggle__label">${this.getThemeLabel(theme)}</span>` : ''}
       </button>
     `;
-    
+
     // Attach event listener
     const button = this.query('.theme-toggle');
     if (button) {
       this.addEventListener(button, 'click', () => this.cycleTheme());
     }
   }
-  
+
   private cycleTheme(): void {
     const { theme } = this.state;
-    
+
     // Cycle through: system → light → dark → system
-    const nextTheme: ThemePreference = 
+    const nextTheme: ThemePreference =
       theme === 'system' ? 'light' :
-      theme === 'light' ? 'dark' :
-      'system';
-    
+        theme === 'light' ? 'dark' :
+          'system';
+
     setTheme(nextTheme);
   }
-  
+
   private getThemeIcon(theme: ThemePreference): string {
     switch (theme) {
       case 'light':
@@ -74,7 +74,7 @@ export class ThemeToggle extends BaseComponent<ThemeToggleState> {
         return '<i class="fas fa-circle-half-stroke"></i>';
     }
   }
-  
+
   private getThemeLabel(theme: ThemePreference): string {
     switch (theme) {
       case 'light':
