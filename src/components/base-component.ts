@@ -97,7 +97,6 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         }
 
         this.mounted = true;
-        this.removeAllEventListeners(); // Ensure no duplicate listeners
         this.render();
         this.onMount();
     }
