@@ -57,7 +57,16 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         );
     }
 
-    /** Returns the root DOM element of this component */
+    /** Returns the root DOM element of this component 
+     * The use case for this getter is when you need to append this component 
+     * to another component's DOM, without recreating the entire component. 
+     * For example:
+     * ```ts
+     * const dashboard = new Dashboard(rootElement);
+     * dashboard.mount();
+     * anotherComponentRoot.appendChild(dashboard.rootElement);
+     * ```
+    */
     get rootElement(): HTMLElement {
         return this.root;
     }
