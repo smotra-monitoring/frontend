@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smotra - Distributed Monitoring System">
+    <title>Smotra - Monitoring Dashboard</title>
+
+    <!-- Theme initialization - must run before CSS loads to prevent FOUC -->
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const theme = stored || 'system';
+
+            if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('theme-dark');
+            } else {
+                document.documentElement.classList.add('theme-light');
+            }
+        })();
+    </script>
+
+    <!-- CSS files loaded in order -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme-dark.css">
+    <link rel="stylesheet" href="/css/theme-light.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/animations.css">
+    <link rel="stylesheet" href="/css/utilities.css">
+</head>
+
+<body>
+    <!-- Main application container -->
+    <div id="app"></div>
+
+    <!-- TypeScript bundle will be loaded here -->
+    <script type="module" src="/dist/index.js" defer></script>
+</body>
+
+</html>
