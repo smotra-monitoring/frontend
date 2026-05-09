@@ -94,6 +94,7 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
       if (this.agentCards.has(agent.id)) {
         const card = this.agentCards.get(agent.id)!;
         card.updateAgent(agent);
+        this.root.appendChild(card.rootElement);
       } else {
         // Create new card
         const cardElement = document.createElement('article');

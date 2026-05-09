@@ -57,6 +57,11 @@ export abstract class BaseComponent<TState extends ComponentState = ComponentSta
         );
     }
 
+    /** Returns the root DOM element of this component */
+    get rootElement(): HTMLElement {
+        return this.root;
+    }
+
     /**
      * Abstract render method
      * Must be implemented by derived classes
