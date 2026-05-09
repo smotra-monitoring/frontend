@@ -336,7 +336,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
   }
 
   onMount(): void {
-    // Register global keyboard shortcut (Cmd+_ / Ctrl+_)
+    // Register global keyboard shortcut (Cmd+K / Ctrl+K)
     this.addEventListener(window, 'keydown', (e) => {
       const event = e as KeyboardEvent;
 
