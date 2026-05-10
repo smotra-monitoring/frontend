@@ -28,7 +28,6 @@ export interface UserInfo {
 export type OAuth2Provider = 'okta' | 'auth0' | 'azure' | 'google' | 'oidc';
 
 export interface OAuth2Config {
-  provider: OAuth2Provider;
   clientId: string;
   redirectUri: string;
   authorizationEndpoint: string;

@@ -4,7 +4,7 @@
  */
 
 import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types/auth-types.js';
-import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig, retrieveAuthenticationProvider } from '../auth/oauth-manager.js';
+import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getOAuth2Config } from '../auth/oauth-manager.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
@@ -32,11 +32,8 @@ export async function login(provider: OAuth2Provider): Promise<void> {
     try {
         setAuthLoading(true);
 
-        // Get provider configuration
-        const providerConfig = getProviderConfig(provider);
-
         // Initiate OAuth flow (redirects user to provider)
-        await initiateOAuthFlow(providerConfig);
+        await initiateOAuthFlow(provider);
     } catch (error) {
         console.error('Login error:', error);
         setAuthError(error instanceof Error ? error.message : 'Login failed');
@@ -68,16 +65,8 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
             return [false, errorMessage];
         }
 
-        const providerConfig = getProviderConfig(retrieveAuthenticationProvider()!);
-
-        if (!providerConfig) {
-            const errorMessage = 'Authentication provider not found';
-            setAuthError(errorMessage);
-            return [false, errorMessage];
-        }
-
         // Exchange authorization code for tokens
-        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier, providerConfig);
+        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier);
 
         if (!tokens) {
             const errorMessage = 'Token exchange failed';
@@ -85,8 +74,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
             return [false, errorMessage];
         }
 
-        // Fetch user info
-        const userInfo = await fetchUserInfo(tokens.access_token, providerConfig);
+        const userInfo = await fetchUserInfo(tokens.access_token);
 
         if (!userInfo) {
             const errorMessage = 'Failed to fetch user information';
@@ -112,10 +100,12 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(code: string, codeVerifier: string, providerConfig: OAuth2Config): Promise<TokenData | null> {
+async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenData | null> {
     try {
         // TODO: This would use the generated SDK function
         // import { oauth2Token } from '../api/sdk.gen.js';
+
+        const providerConfig = getOAuth2Config();
 
         const response = await fetch(providerConfig.tokenEndpoint, {
             method: 'POST',
@@ -131,7 +121,15 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string, provide
         });
 
         if (!response.ok) {
-            throw new Error('Token exchange failed');
+            let errorMessage = 'Token exchange failed';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorData.error_description || errorData.error || errorMessage;
+            } catch {
+                // Ignore JSON parsing errors and use generic message
+            }
+
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -154,10 +152,13 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string, provide
 /**
  * Fetch user information from API
  */
-async function fetchUserInfo(accessToken: string, providerConfig: OAuth2Config): Promise<UserInfo | null> {
+async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
+
     try {
         // TODO: This would use the generated SDK function
         // import { getUserInfo } from '../api/sdk.gen.js';
+
+        const providerConfig = getOAuth2Config();
 
         const response = await fetch(providerConfig.userinfoEndpoint, {
             headers: {

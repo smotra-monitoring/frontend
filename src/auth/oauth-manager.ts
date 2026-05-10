@@ -3,80 +3,13 @@
  * Handles OAuth authorization flow with multiple providers
  */
 
-import { getEnvironmentConfig } from '../config.js';
 import type { OAuth2Config, OAuth2Provider, PKCEChallenge } from '../types/auth-types.js';
 import { Storage } from '../utils/storage.js';
 import { buildUrl, parseOAuthCallback } from '../utils/url-utils.js';
+import { getEnvironmentConfig } from '../config.js';
 
 const PKCE_STORAGE_KEY = 'oauth_pkce';
 const STATE_STORAGE_KEY = 'oauth_state';
-const OAUTH_PROVIDER_STORAGE_KEY = 'oauth_provider';
-
-const BACKEND_ENDPOINT_AUTHORIZE = getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize';
-const BACKEND_ENDPOINT_TOKEN = getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token';
-const BACKEND_ENDPOINT_REVOKE = getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke';
-const BACKEND_ENDPOINT_USERINFO = getEnvironmentConfig().apiBaseUrl + '/auth/userinfo';
-const BACKEND_ENDPOINT_LOGOUT = getEnvironmentConfig().apiBaseUrl + '/auth/logout';
-
-const providers_config: Record<OAuth2Provider, OAuth2Config> = {
-  okta: {
-    provider: "okta",
-    scopes: ['openid', 'profile', 'email'],
-    authorizationEndpoint: BACKEND_ENDPOINT_AUTHORIZE,
-    tokenEndpoint: BACKEND_ENDPOINT_TOKEN,
-    revokeEndpoint: BACKEND_ENDPOINT_REVOKE,
-    userinfoEndpoint: BACKEND_ENDPOINT_USERINFO,
-    logoutEndpoint: BACKEND_ENDPOINT_LOGOUT,
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  },
-  auth0: {
-    provider: "auth0",
-    scopes: ['openid', 'profile', 'email'],
-    authorizationEndpoint: BACKEND_ENDPOINT_AUTHORIZE,
-    tokenEndpoint: BACKEND_ENDPOINT_TOKEN,
-    revokeEndpoint: BACKEND_ENDPOINT_REVOKE,
-    userinfoEndpoint: BACKEND_ENDPOINT_USERINFO,
-    logoutEndpoint: BACKEND_ENDPOINT_LOGOUT,
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  },
-  azure: {
-    provider: "azure",
-    scopes: ['openid', 'profile', 'email'],
-    authorizationEndpoint: BACKEND_ENDPOINT_AUTHORIZE,
-    tokenEndpoint: BACKEND_ENDPOINT_TOKEN,
-    revokeEndpoint: BACKEND_ENDPOINT_REVOKE,
-    userinfoEndpoint: BACKEND_ENDPOINT_USERINFO,
-    logoutEndpoint: BACKEND_ENDPOINT_LOGOUT,
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  },
-  google: {
-    provider: "google",
-    scopes: ['openid', 'profile', 'email'],
-    authorizationEndpoint: BACKEND_ENDPOINT_AUTHORIZE,
-    tokenEndpoint: BACKEND_ENDPOINT_TOKEN,
-    revokeEndpoint: BACKEND_ENDPOINT_REVOKE,
-    userinfoEndpoint: BACKEND_ENDPOINT_USERINFO,
-    logoutEndpoint: BACKEND_ENDPOINT_LOGOUT,
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  },
-  oidc: {
-    // Generic OIDC - endpoints should be discovered from .well-known/openid-configuration
-    provider: "oidc",
-    scopes: ['openid', 'profile', 'email'],
-    authorizationEndpoint: BACKEND_ENDPOINT_AUTHORIZE,
-    tokenEndpoint: BACKEND_ENDPOINT_TOKEN,
-    revokeEndpoint: BACKEND_ENDPOINT_REVOKE,
-    userinfoEndpoint: BACKEND_ENDPOINT_USERINFO,
-    logoutEndpoint: BACKEND_ENDPOINT_LOGOUT,
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  },
-};
-
 
 /**
  * Generate random string for code verifier
@@ -184,48 +117,36 @@ function validateState(receivedState: string): boolean {
   return storedState === receivedState;
 }
 
-function storeAuthenticationProvider(provider: OAuth2Provider): void {
-  Storage.set(OAUTH_PROVIDER_STORAGE_KEY, provider);
-}
-
-export function retrieveAuthenticationProvider(): OAuth2Provider | null {
-  const provider = Storage.get<OAuth2Provider>(OAUTH_PROVIDER_STORAGE_KEY);
-  Storage.remove(OAUTH_PROVIDER_STORAGE_KEY);
-  return provider;
-}
-
 /**
  * Build full authorization URL for OAuth2 flow (with PKCE generation)
  */
-async function buildAuthorizationUrl(config: OAuth2Config): Promise<string> {
+async function buildAuthorizationUrl(provider: OAuth2Provider): Promise<string> {
   // Generate PKCE challenge
   const pkce = await generateAndStorePKCEChallenge();
 
   // Generate state
   const state = generateAndStoreState();
 
-  storeAuthenticationProvider(config.provider);
-
   // Build authorization request parameters
   const params: Record<string, string> = {
-    provider: config.provider,
-    client_id: config.clientId,
-    redirect_uri: config.redirectUri,
+    provider: provider,
+    client_id: "defined on server",
+    redirect_uri: "defined on server",
     response_type: 'code',
-    scope: config.scopes.join(' '),
+    scope: "defined on server",
     state,
     code_challenge: pkce.code_challenge,
     code_challenge_method: pkce.code_challenge_method,
   };
 
-  return buildUrl(config.authorizationEndpoint, params);
+  return buildUrl(getOAuth2Config().authorizationEndpoint, params);
 }
 
 /**
  * Initiate OAuth2 authorization flow
  */
-export async function initiateOAuthFlow(config: OAuth2Config): Promise<void> {
-  const authUrl = await buildAuthorizationUrl(config);
+export async function initiateOAuthFlow(provider: OAuth2Provider): Promise<void> {
+  const authUrl = await buildAuthorizationUrl(provider);
   window.location.href = authUrl;
 }
 
@@ -280,6 +201,15 @@ export function handleOAuthCallback(): {
  * Get OAuth2 provider configuration
  * In production, these would come from environment variables
  */
-export function getProviderConfig(provider: OAuth2Provider): OAuth2Config {
-  return providers_config[provider];
+export function getOAuth2Config(): OAuth2Config {
+  return {
+    scopes: ['defined on server'],
+    authorizationEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/authorize',
+    tokenEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/token',
+    revokeEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/oauth2/revoke',
+    userinfoEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/userinfo',
+    logoutEndpoint: getEnvironmentConfig().apiBaseUrl + '/auth/logout',
+    redirectUri: `defined on the server`,
+    clientId: 'defined on the server',
+  }
 }

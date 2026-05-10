@@ -46,21 +46,19 @@ describe('oauth-manager', () => {
     });
 
     it('redirects to the provider authorization endpoint', async () => {
-      await initiateOAuthFlow(mockOAuthProvider as any);
+      await initiateOAuthFlow("oidc" as any);
 
-      expect(window.location.href).toContain(mockOAuthProvider.authorizationEndpoint);
+      expect(window.location.href).toContain("/auth/oauth2/authorize");
     });
 
     it('includes required OAuth parameters in the redirect URL', async () => {
       await initiateOAuthFlow(mockOAuthProvider as any);
 
       const url = new URL(window.location.href);
-      expect(url.searchParams.get('client_id')).toBe(mockOAuthProvider.clientId);
       expect(url.searchParams.get('response_type')).toBe('code');
       expect(url.searchParams.get('code_challenge_method')).toBe('S256');
       expect(url.searchParams.get('code_challenge')).toBeTruthy();
       expect(url.searchParams.get('state')).toBeTruthy();
-      expect(url.searchParams.get('redirect_uri')).toBe(mockOAuthProvider.redirectUri);
     });
 
     it('uses the stored state value in the redirect URL', async () => {
