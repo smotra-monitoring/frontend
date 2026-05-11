@@ -97,7 +97,7 @@ describe('storage utility', () => {
     it('handles storage exceptions', () => {
       // Mock localStorage.setItem to throw
       const originalSetItem = Storage.prototype.setItem;
-      Storage.prototype.setItem = jest.fn(() => {
+      Storage.prototype.setItem = vi.fn(() => {
         throw new Error('QuotaExceededError');
       });
 
@@ -108,8 +108,8 @@ describe('storage utility', () => {
     });
 
     it('handles storage exceptions by spying on an error', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
-      const setItemSpy = jest.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+      const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('QuotaExceededError');
       });
 

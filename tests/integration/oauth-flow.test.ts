@@ -11,7 +11,7 @@ import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStore
 describe('OAuth Authentication Flow (Integration)', () => {
     beforeEach(() => {
         clearAuthState();
-        jest.resetAllMocks();
+        vi.resetAllMocks();
         delete (window as any).location;
         (window as any).location = { href: '', search: '', origin: 'http://localhost:3000' };
     });
@@ -31,7 +31,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
      *   2. GET  /auth/userinfo      — user profile  (backend)
      */
     function mockBackendCalls(): void {
-        global.fetch = jest.fn()
+        global.fetch = vi.fn()
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
@@ -92,7 +92,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
             `http://localhost:3000/auth/callback?code=${mockAuthorizationCode}&state=${storedState}`;
 
         // Backend rejects the token exchange
-        global.fetch = jest.fn().mockResolvedValueOnce({
+        global.fetch = vi.fn().mockResolvedValueOnce({
             ok: false,
             status: 400,
             json: async () => ({ error: 'invalid_grant' }),

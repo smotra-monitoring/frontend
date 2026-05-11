@@ -7,12 +7,12 @@ import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js'
 import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
 import { navigateTo } from '../../../src/utils/navigation.js';
 
-jest.mock('../../../src/utils/navigation.js', () => ({
-    navigateTo: jest.fn().mockResolvedValue(undefined),
-    registerNavigate: jest.fn(),
+vi.mock('../../../src/utils/navigation.js', () => ({
+    navigateTo: vi.fn().mockResolvedValue(undefined),
+    registerNavigate: vi.fn(),
 }));
 
-const mockNavigateTo = navigateTo as jest.MockedFunction<typeof navigateTo>;
+const mockNavigateTo = navigateTo as vi.MockedFunction<typeof navigateTo>;
 
 describe('auth-guard', () => {
     beforeEach(() => {

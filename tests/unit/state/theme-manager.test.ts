@@ -74,7 +74,7 @@ describe('theme-manager', () => {
 
   describe('subscribeToThemeChanges', () => {
     it('notifies on theme changes', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const unsubscribe = subscribeToThemeChanges(callback);
 
       setTheme('dark');
@@ -84,7 +84,7 @@ describe('theme-manager', () => {
     });
 
     it('can unsubscribe', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const unsubscribe = subscribeToThemeChanges(callback);
 
       unsubscribe();

@@ -732,7 +732,7 @@ Based on 4px unit:
     - `responsive-testing.md`: Responsive testing matrix
 - `package.json`: Project metadata and dependencies
 - `tsconfig.json`: TypeScript configuration
-- `jest.config.js`: Jest testing configuration
+- `vi.config.js`: Jest testing configuration
 
 # OpenAPI Specification
 

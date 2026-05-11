@@ -58,7 +58,7 @@ export const mockAuthState = {
 };
 
 export function mockFetchSuccess(response: any): void {
-  global.fetch = jest.fn(() =>
+  global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
       json: async () => response,
@@ -69,7 +69,7 @@ export function mockFetchSuccess(response: any): void {
 }
 
 export function mockFetchError(status: number, message: string): void {
-  global.fetch = jest.fn(() =>
+  global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: false,
       json: async () => ({ error: message }),

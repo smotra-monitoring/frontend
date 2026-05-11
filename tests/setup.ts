@@ -1,143 +1,80 @@
 /**
- * Jest test setup
- * Runs before all tests
+ * Vitest test setup
  */
-
-// 1. Explicitly import jest and lifecycle hooks for ESM
-import { jest, beforeEach } from '@jest/globals';
-
-// 2. TextEncoder/TextDecoder are needed by SubtleCrypto (PKCE code challenge generation)
+import { vi, beforeEach } from 'vitest';
+// Note: You no longer need to import TextEncoder from 'util' in many Node environments 
+// as Vitest/Vite provide modern globals, but keeping it for safety:
 import { TextEncoder, TextDecoder } from 'util';
+
 global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
 
-// Mock localStorage
-const localStorageMock = (() => {
+// Mock localStorage/sessionStorage
+const createStorageMock = () => {
   let store: Record<string, string> = {};
-
   return {
     getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    },
+    setItem: (key: string, value: string) => { store[key] = value.toString(); },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+    get length() { return Object.keys(store).length; },
+    key: (index: number) => Object.keys(store)[index] || null,
   };
-})();
+};
 
-// Mock localStorage
-const sessionStorageMock = (() => {
-  let store: Record<string, string> = {};
+const localStorageMock = createStorageMock();
+const sessionStorageMock = createStorageMock();
 
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    },
-  };
-})();
-
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock,
-});
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
+Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
+Object.defineProperty(globalThis, 'sessionStorage', { value: sessionStorageMock });
 
 // Mock matchMedia
-// Define the return type for clarity (optional but helpful)
-interface MockMedia {
-  matches: boolean;
-  media: string;
-  onchange: null;
-  addListener: any;
-  removeListener: any;
-  addEventListener: any;
-  removeEventListener: any;
-  dispatchEvent: any;
-}
-
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
-  // Pass the function signature as a generic to jest.fn
-  value: jest.fn<(query: string) => MockMedia>().mockImplementation((query: string) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() { }
-  disconnect() { }
-  observe() { }
-  takeRecords() {
-    return [];
-  }
-  unobserve() { }
-} as any;
+// Mock Observers (Vitest handles class mocks very easily)
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+  takeRecords: vi.fn().mockReturnValue([]),
+}));
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  constructor() { }
-  disconnect() { }
-  observe() { }
-  unobserve() { }
-} as any;
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
 
 // Mock crypto.subtle
 Object.defineProperty(global, 'crypto', {
   value: {
     subtle: {
-      digest: jest.fn<(algorithm: string, data: BufferSource) => Promise<ArrayBuffer>>()
-        .mockResolvedValue(new ArrayBuffer(32)),
+      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
     },
-    getRandomValues: <T extends ArrayBufferView | null>(arr: T): T => {
+    getRandomValues: (arr: any) => {
       if (arr) {
         const uint8 = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
-        for (let i = 0; i < uint8.length; i++) {
-          uint8[i] = Math.floor(Math.random() * 256);
-        }
+        for (let i = 0; i < uint8.length; i++) uint8[i] = Math.floor(Math.random() * 256);
       }
       return arr;
     },
   },
 });
 
-// Clear mocks before each test
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   localStorageMock.clear();
   sessionStorageMock.clear();
 });

@@ -102,8 +102,8 @@ describe('Theme Switching (Integration)', () => {
   });
 
   it('notifies all subscribers when theme changes', () => {
-    const callback1 = jest.fn();
-    const callback2 = jest.fn();
+    const callback1 = vi.fn();
+    const callback2 = vi.fn();
 
     subscribeToThemeChanges(callback1);
     subscribeToThemeChanges(callback2);

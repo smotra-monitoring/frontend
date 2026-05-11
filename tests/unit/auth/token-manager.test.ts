@@ -8,7 +8,7 @@ import {
 } from '../../../src/auth/token-manager.js';
 
 /** Drain the microtask queue fully (handles chained async/await in mocked fetch).
- *  Cannot use process.nextTick here because jest.useFakeTimers() fakes it. */
+ *  Cannot use process.nextTick here because vi.useFakeTimers() fakes it. */
 const flushPromises = async () => {
     // 4 rounds covers: await fetch → await json() → refreshAccessToken resolves → .then/.await callback
     await Promise.resolve();
@@ -27,12 +27,12 @@ import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess, mockFetchError 
 describe('token-manager', () => {
     beforeEach(() => {
         clearAuthState();
-        jest.clearAllTimers();
-        jest.useFakeTimers();
+        vi.clearAllTimers();
+        vi.useFakeTimers();
     });
 
     afterEach(() => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     describe('isTokenExpired (auth-state)', () => {
@@ -50,7 +50,7 @@ describe('token-manager', () => {
             updateTokensInState(mockTokens);
 
             // Advance time past expiration
-            jest.advanceTimersByTime(mockTokens.expires_at - Date.now() + 1000);
+            vi.advanceTimersByTime(mockTokens.expires_at - Date.now() + 1000);
             expect(isTokenExpiredInState()).toBe(true);
         });
 
@@ -59,7 +59,7 @@ describe('token-manager', () => {
 
             // Advance to within buffer time (default 60 seconds)
             const bufferTime = 50 * 1000; // 50 seconds
-            jest.advanceTimersByTime(mockTokens.expires_at - Date.now() - bufferTime);
+            vi.advanceTimersByTime(mockTokens.expires_at - Date.now() - bufferTime);
 
             expect(isTokenExpiredInState()).toBe(true);
         });
@@ -69,7 +69,7 @@ describe('token-manager', () => {
 
             // Advance to within 2 minutes of expiration
             const twoMinutesBeforeExpiration = (mockTokens.expires_at - 2 * 60 * 1000) - Date.now();
-            jest.advanceTimersByTime(twoMinutesBeforeExpiration);
+            vi.advanceTimersByTime(twoMinutesBeforeExpiration);
 
             // Should be expired with 121 second buffer
             expect(isTokenExpiredInState(121)).toBe(true);
@@ -88,7 +88,7 @@ describe('token-manager', () => {
 
             expect(result.success).toBe(true);
             expect(result.tokens?.access_token).toBe(mockRefreshTokenResponse.access_token);
-            const [url, options] = (fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
+            const [url, options] = (fetch as vi.Mock).mock.calls[0] as [string, RequestInit];
             expect(url).toContain('/token');
             expect(options.method).toBe('POST');
             expect(options.headers).toMatchObject({ 'Content-Type': 'application/x-www-form-urlencoded' });
@@ -112,7 +112,7 @@ describe('token-manager', () => {
             const cleanup = scheduleTokenRefresh(mockTokens);
 
             // Timer should be scheduled
-            expect(jest.getTimerCount()).toBeGreaterThan(0);
+            expect(vi.getTimerCount()).toBeGreaterThan(0);
 
             cleanup();
         });
@@ -124,9 +124,9 @@ describe('token-manager', () => {
             const cleanup = scheduleTokenRefresh(getTokensFromState()!);
 
             // Fast-forward to refresh time (5 minutes before expiration)
-            // jest.advanceTimersByTime((mockTokens.expires_in - 300) * 1000);
+            // vi.advanceTimersByTime((mockTokens.expires_in - 300) * 1000);
             const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
 
             // Wait for async operations
             await Promise.resolve();
@@ -139,23 +139,23 @@ describe('token-manager', () => {
 
         it('cleanup function cancels scheduled refresh', () => {
             const cleanup = scheduleTokenRefresh(mockTokens);
-            const timerCount = jest.getTimerCount();
+            const timerCount = vi.getTimerCount();
 
             cleanup();
 
-            expect(jest.getTimerCount()).toBeLessThan(timerCount);
+            expect(vi.getTimerCount()).toBeLessThan(timerCount);
         });
 
         it('invokes onRefreshComplete callback with new tokens after successful refresh', async () => {
             mockFetchSuccess(mockRefreshTokenResponse);
             updateTokensInState(mockTokens);
 
-            const onRefreshComplete = jest.fn();
+            const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
             // Advance to the scheduled refresh time
             const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
 
             // Drain all pending microtasks from the fetch → json() → callback chain
             await flushPromises();
@@ -173,11 +173,11 @@ describe('token-manager', () => {
             mockFetchError(401, 'Unauthorized');
             updateTokensInState(mockTokens);
 
-            const onRefreshComplete = jest.fn();
+            const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
             const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            jest.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
 
             await flushPromises();
 
@@ -193,7 +193,7 @@ describe('token-manager', () => {
             const expiringTokens = { ...mockTokens, expires_at: Date.now() + 2 * 60 * 1000 };
             updateTokensInState(expiringTokens);
 
-            const onRefreshComplete = jest.fn();
+            const onRefreshComplete = vi.fn();
             scheduleTokenRefresh(expiringTokens, onRefreshComplete);
 
             // Drain microtasks from the immediate .then() path

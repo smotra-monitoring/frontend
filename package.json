@@ -39,20 +39,19 @@
     "start": "browser-sync start --server 'public' --files 'public' --single",
     "dev": "browser-sync start --server 'public' --files 'public' --single --port 3000 --no-notify",
     "openapi-ts": "openapi-ts -f ./api/openapi-ts.config.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:unit": "jest --testPathPattern=tests/unit",
-    "test:integration": "jest --testPathPattern=tests/integration"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0",
-    "@types/jest": "^30",
     "@types/node": "^25",
-    "jest": "^30",
-    "jest-environment-jsdom": "^30",
-    "ts-jest": "^29",
     "typescript": "^6",
-    "browser-sync": "^3"
+    "browser-sync": "^3",
+    "vitest": "^4",
+    "@vitest/coverage-v8": "^4",
+    "jsdom": "^25"
   }
 }
