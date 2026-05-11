@@ -2,6 +2,8 @@
  * Tests for authentication guards
  */
 
+import { vi, type MockedFunction } from 'vitest';
+
 import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
@@ -12,7 +14,7 @@ vi.mock('../../../src/utils/navigation.js', () => ({
     registerNavigate: vi.fn(),
 }));
 
-const mockNavigateTo = navigateTo as vi.MockedFunction<typeof navigateTo>;
+const mockNavigateTo = navigateTo as MockedFunction<typeof navigateTo>;
 
 describe('auth-guard', () => {
     beforeEach(() => {

@@ -1,14 +1,14 @@
 /**
  * Mock viewport utilities for testing responsive behavior
  */
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 
 interface MockMediaQueryList {
   matches: boolean;
   media: string;
-  addEventListener: vi.Mock;
-  removeEventListener: vi.Mock;
-  dispatchEvent: vi.Mock;
+  addEventListener: Mock;
+  removeEventListener: Mock;
+  dispatchEvent: Mock;
 }
 
 export function mockViewport(width: number, height: number): void {

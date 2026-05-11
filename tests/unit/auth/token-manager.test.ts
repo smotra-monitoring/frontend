@@ -7,6 +7,8 @@ import {
     refreshAccessToken,
 } from '../../../src/auth/token-manager.js';
 
+import { vi, type Mock } from 'vitest';
+
 /** Drain the microtask queue fully (handles chained async/await in mocked fetch).
  *  Cannot use process.nextTick here because vi.useFakeTimers() fakes it. */
 const flushPromises = async () => {
@@ -88,7 +90,7 @@ describe('token-manager', () => {
 
             expect(result.success).toBe(true);
             expect(result.tokens?.access_token).toBe(mockRefreshTokenResponse.access_token);
-            const [url, options] = (fetch as vi.Mock).mock.calls[0] as [string, RequestInit];
+            const [url, options] = (fetch as Mock).mock.calls[0] as [string, RequestInit];
             expect(url).toContain('/token');
             expect(options.method).toBe('POST');
             expect(options.headers).toMatchObject({ 'Content-Type': 'application/x-www-form-urlencoded' });
