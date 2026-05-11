@@ -3,7 +3,7 @@
 > Modern, responsive web interface for distributed infrastructure monitoring
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-blue)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-175%20passing-brightgreen)](tests/)
 
 ## What is Smotra?
@@ -59,9 +59,9 @@ For detailed setup instructions, see **[Getting Started Guide](docs/GETTING_STAR
 ## Technology
 
 Built with modern web standards:
-- **TypeScript** 5.9 - Type-safe JavaScript
+- **TypeScript** 6.x - Type-safe JavaScript
 - **Bulma CSS** - Clean, responsive styling
-- **Jest** - Comprehensive testing
+- **Vitest** - Fast, modern testing
 - **Browser-sync** - Live reload development
 
 No heavy frameworks needed! Pure TypeScript with native ES modules for maximum performance and minimal bundle size.

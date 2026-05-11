@@ -508,11 +508,12 @@ Each test file mirrors the `src/` structure for easy navigation.
 - **Customizable**: Easy to override with CSS variables
 - **No JavaScript**: Pure CSS framework
 
-### Why Jest?
+### Why Vitest?
 
-- **Fast**: Parallel test execution
+- **Fast**: Native ESM support, parallel test execution
+- **Modern**: Built for Vite, optimized for TypeScript
 - **Complete**: Mocking, coverage, snapshots built-in
-- **Standard**: Industry-standard testing framework
+- **Compatible**: Jest-compatible API, easy migration
 - **jsdom**: Browser environment simulation
 
 ### Why localStorage?

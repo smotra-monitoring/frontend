@@ -624,7 +624,7 @@ Based on 4px unit:
 - Data Storage: In-memory storage for real-time data, with potential for future integration with databases
 - Communication Protocol: HTTP/HTTPS for communcation with api and WebSocket for real-time updates
 - Deployment: Docker for containerization and ease of deployment
-- Testing: Jest for unit testing and integration testing
+- Testing: Vitest for unit testing and integration testing
 - Linting and Formatting: ESLint and Prettier for code quality and consistency
 
 
@@ -718,7 +718,7 @@ Based on 4px unit:
   - `integration/`: End-to-end flow tests
   - `integration/responsive/`: Responsive layout tests
   - `mocks/`: Mock data (agents, OAuth, WebSocket, viewport)
-  - `setup.ts`: Jest configuration
+  - `setup.ts`: Vitest configuration
 - `api/`: OpenAPI specification and configuration
   - `openapi/api/spec.yaml`: API specification
   - `openapi-ts.config.ts`: OpenAPI client generator config
@@ -732,7 +732,7 @@ Based on 4px unit:
     - `responsive-testing.md`: Responsive testing matrix
 - `package.json`: Project metadata and dependencies
 - `tsconfig.json`: TypeScript configuration
-- `vi.config.js`: Jest testing configuration
+- `vitest.config.js`: Vitest testing configuration
 
 # OpenAPI Specification
 
@@ -758,7 +758,7 @@ All API interactions in the frontend should utilize the generated TypeScript cli
 
 # Testing
 
-The project uses **Jest** for unit and integration testing with **jsdom** for DOM mocking.
+The project uses **Vitest** for unit and integration testing with **jsdom** for DOM mocking.
 
 ## Testing Principles
 

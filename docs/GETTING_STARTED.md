@@ -25,7 +25,7 @@ npm install
 
 This will install:
 - TypeScript compiler
-- Jest testing framework
+- Vitest testing framework
 - Browser-sync for development
 - OpenAPI client generator
 - Type definitions
@@ -206,7 +206,7 @@ node --version  # Should be v18.0.0 or higher
 - **TypeScript** (built-in)
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
-- **Jest** - Test runner integration
+- **Vitest** - Test runner integration
 - **CSS Variable Autocomplete** - For CSS custom properties
 
 ## Scripts Reference
@@ -248,7 +248,7 @@ frontend/
 - `public/index.html` - HTML shell
 - `public/css/` - Stylesheets
 - `tsconfig.json` - TypeScript configuration
-- `jest.config.js` - Test configuration
+- `vitest.config.js` - Test configuration
 
 ---
 

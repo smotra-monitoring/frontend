@@ -10,12 +10,12 @@
 
 ### Phase 1: Foundation & Architecture ✅
 - [x] Project structure setup
-- [x] TypeScript configuration with ES modules
+- [x] TypeScript configuration with ES modules (upgraded to v6.x)
 - [x] Component architecture (BaseComponent pattern)
 - [x] State management system (pub/sub)
 - [x] CSS architecture (mobile-first, 8 files)
 - [x] OpenAPI client generation setup
-- [x] Jest testing infrastructure
+- [x] Vitest testing infrastructure (migrated from Jest)
 
 ### Phase 2: Authentication & Security ✅
 - [x] OAuth2 with PKCE implementation
