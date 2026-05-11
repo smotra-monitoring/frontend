@@ -61,11 +61,10 @@ describe('theme-manager', () => {
       expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
     });
 
-    it('notifies subscribers on theme change', (done) => {
+    it('notifies subscribers on theme change', async () => {
       const unsubscribe = subscribeToThemeChanges((state) => {
         expect(state.preference).toBe('dark');
         unsubscribe();
-        done();
       });
 
       setTheme('dark');

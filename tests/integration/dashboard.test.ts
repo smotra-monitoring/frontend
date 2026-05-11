@@ -90,7 +90,7 @@ describe('Dashboard (Integration)', () => {
       ws = new MockWebSocket('ws://localhost:8080/ws');
     });
 
-    it('updates agent metrics on WebSocket message', (done) => {
+    it('updates agent metrics on WebSocket message', async () => {
       const agentId = mockAgents[0].id;
       const initialAgent = getAgents().find(a => a.id === agentId);
       const initialLatency = initialAgent!.metrics.latency;
@@ -106,11 +106,10 @@ describe('Dashboard (Integration)', () => {
         expect(updatedAgent!.metrics.latency).not.toBe(initialLatency);
         expect(updatedAgent!.metrics.latency).toBe(mockAgentUpdateMessage.payload.metrics!.latency);
 
-        done();
       }, 20);
     });
 
-    it('adds new agent via WebSocket', (done) => {
+    it('adds new agent via WebSocket', async () => {
       const initialCount = getAgents().length;
 
       ws.simulateMessage(mockAgentAddedMessage);
@@ -122,11 +121,10 @@ describe('Dashboard (Integration)', () => {
         expect(agents).toHaveLength(initialCount + 1);
         expect(agents.some(a => a.id === mockAgentAddedMessage.payload.id)).toBe(true);
 
-        done();
       }, 20);
     });
 
-    it('removes agent via WebSocket', (done) => {
+    it('removes agent via WebSocket', async () => {
       const initialCount = getAgents().length;
       const agentToRemove = mockAgents[0].id;
 
@@ -139,7 +137,6 @@ describe('Dashboard (Integration)', () => {
         expect(agents).toHaveLength(initialCount - 1);
         expect(agents.some(a => a.id === agentToRemove)).toBe(false);
 
-        done();
       }, 20);
     });
   });

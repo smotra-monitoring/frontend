@@ -1,6 +1,7 @@
 /**
  * Mock viewport utilities for testing responsive behavior
  */
+import { vi } from 'vitest';
 
 interface MockMediaQueryList {
   matches: boolean;
