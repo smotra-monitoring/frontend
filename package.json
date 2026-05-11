@@ -1,16 +1,39 @@
 {
-  "name": "frontend",
+  "name": "@smotra/frontend",
   "version": "0.0.1",
-  "description": "Web frontend UI for smotra monitoring system",
+  "description": "Web frontend UI for Smotra distributed monitoring system - Single-page application with OAuth2, real-time updates, and responsive design",
   "keywords": [
     "smotra",
-    "distributed monitoring system",
-    "frontend"
+    "monitoring",
+    "distributed-system",
+    "frontend",
+    "spa",
+    "typescript",
+    "oauth2",
+    "websocket",
+    "responsive-design",
+    "bulma"
   ],
+  "homepage": "https://github.com/smotra-monitoring/frontend#readme",
+  "bugs": {
+    "url": "https://github.com/smotra-monitoring/frontend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smotra-monitoring/frontend.git"
+  },
   "license": "Apache-2.0",
-  "author": "Ivan Kuchin",
+  "author": {
+    "name": "Ivan Kuchin",
+    "email": "ikuchin@smotra.dev"
+  },
+  "contributors": [],
   "type": "module",
-  "main": "index.js",
+  "main": "public/index.html",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "browser-sync start --server 'public' --files 'public' --single",
@@ -23,13 +46,13 @@
     "test:integration": "jest --testPathPattern=tests/integration"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.92.4",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^25.2.3",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "typescript": "^5.9.3",
+    "@hey-api/openapi-ts": "^0",
+    "@types/jest": "^30",
+    "@types/node": "^25",
+    "jest": "^30",
+    "jest-environment-jsdom": "^30",
+    "ts-jest": "^29",
+    "typescript": "^6",
     "browser-sync": "^3"
   }
 }

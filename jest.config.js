@@ -10,11 +10,7 @@ export default {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       useESM: true,
-      tsconfig: {
-        module: 'ESNext',
-        moduleResolution: 'node',
-        esModuleInterop: true,
-      },
+      tsconfig: 'tsconfig.json',
     }],
   },
   extensionsToTreatAsEsm: ['.ts'],
