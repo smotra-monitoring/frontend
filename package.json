@@ -52,6 +52,6 @@
     "browser-sync": "^3",
     "vitest": "^4",
     "@vitest/coverage-v8": "^4",
-    "jsdom": "^25"
+    "jsdom": "^29"
   }
 }
