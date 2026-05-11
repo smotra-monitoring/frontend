@@ -24,7 +24,9 @@ We deliberately chose **vanilla TypeScript** over frameworks (React, Vue, Angula
 2. **Full Control**: Direct DOM manipulation without virtual DOM abstractions
 3. **Learning Opportunity**: Understand web fundamentals deeply
 4. **Performance**: Optimize exactly what we need, when we need it
-5. **Simplicity**: No build complexity, just TypeScript compiler
+5. **Simplicity**: Minimal build complexity, just TypeScript compiler
+
+> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for details on our three-config setup (IDE, build, test).
 
 ### Mobile-First Responsive
 

@@ -150,6 +150,13 @@ Fixes #456
   export default MyComponent; // Avoid
   ```
 
+> **Note**: The project uses three TypeScript configurations:
+> - `tsconfig.json` - IDE and general type-checking
+> - `tsconfig.build.json` - Production builds
+> - `tsconfig.test.json` - Test environment
+>
+> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for complete details.
+
 ### Naming Conventions
 
 - **Classes**: PascalCase - `AgentCard`, `ThemeManager`

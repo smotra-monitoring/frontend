@@ -22,6 +22,13 @@ Welcome to the Smotra Frontend documentation! This guide will help you navigate 
   - Performance optimizations
   - Testing strategy
 
+- **[TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md)** - Multi-config TypeScript setup
+  - Three-config strategy (IDE, build, test)
+  - Configuration file details
+  - Usage patterns and commands
+  - Troubleshooting guide
+  - Best practices
+
 - **[Roadmap](ROADMAP.md)** - Development timeline and planned features
   - Current status (v0.0.1)
   - Completed milestones
@@ -83,6 +90,7 @@ Located in the [`testing/`](testing/) directory:
 ### For Developers
 
 - [Architecture](ARCHITECTURE.md) - Understand the system design
+- [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) - Build and type-checking setup
 - [OAuth Guide](features/oauth-authentication.md) - Authentication implementation
 - [Testing Summary](testing/TESTING_SUMMARY.md) - Testing approach
 - [Contributing](../CONTRIBUTING.md) - Code style and workflow

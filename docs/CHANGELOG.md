@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **TypeScript Configuration Documentation**: Comprehensive guide for multi-config setup
+  - Detailed explanation of three TypeScript configurations (tsconfig.json, tsconfig.build.json, tsconfig.test.json)
+  - Usage patterns and commands
+  - Troubleshooting guide
+  - Best practices and design rationale
+
 ### Changed
 - **Testing Framework**: Migrated from Jest to Vitest v4.x
   - Faster test execution with native ESM support

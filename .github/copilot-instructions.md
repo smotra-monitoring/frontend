@@ -730,8 +730,12 @@ Based on 4px unit:
     - `ui-design-system.md`: Design patterns, Bento-Box layouts
   - `testing/`: Testing guides
     - `responsive-testing.md`: Responsive testing matrix
+    - `TESTING_SUMMARY.md`: Test status and coverage
+  - `TYPESCRIPT_CONFIGURATION.md`: TypeScript multi-config strategy guide
 - `package.json`: Project metadata and dependencies
-- `tsconfig.json`: TypeScript configuration
+- `tsconfig.json`: TypeScript IDE configuration (type-checking only, noEmit: true)
+- `tsconfig.build.json`: TypeScript production build configuration (src/ only, emits JS)
+- `tsconfig.test.json`: TypeScript test configuration (extends base, includes tests/)
 - `vitest.config.js`: Vitest testing configuration
 
 # OpenAPI Specification
@@ -755,6 +759,51 @@ All API interactions in the frontend should utilize the generated TypeScript cli
 - Avoid using `any` type in TypeScript; prefer specific types or generics.
 - Write JSDoc comments for functions and classes to provide clear documentation.
 - Use ESLint and Prettier for code formatting and linting to maintain a consistent code style across the project. 
+
+# TypeScript Configuration
+
+The project uses a **three-config TypeScript setup** to separate concerns between IDE type-checking, production builds, and test environments.
+
+## Configuration Files
+
+| Configuration | Purpose | Emits JS | Includes | Used By |
+|--------------|---------|----------|----------|---------|
+| `tsconfig.json` | IDE type-checking | ❌ No | `src/` + `tests/` | VS Code, `tsc --noEmit` |
+| `tsconfig.build.json` | Production build | ✅ Yes | `src/` only | `npm run build` |
+| `tsconfig.test.json` | Test environment | ❌ No | `src/` + `tests/` | Vitest |
+
+## Key Points
+
+- **tsconfig.json**: Base configuration for VS Code IntelliSense and general type-checking
+  - `noEmit: true` for faster type-checking without file system writes
+  - Includes both `src/` and `tests/` for complete type coverage
+  - Types: `node` and `vitest/globals`
+
+- **tsconfig.build.json**: Production-only compilation
+  - `rootDir: "./src"` and `outDir: "./dist"` for clean output structure
+  - Generates source maps and declaration files
+  - Stricter rules: `noUncheckedIndexedAccess`, `noUncheckedSideEffectImports`
+  - Excludes tests from production build
+
+- **tsconfig.test.json**: Test-specific configuration
+  - Extends `tsconfig.json` for consistency
+  - `rootDir: "."` to allow imports from both `src/` and `tests/`
+  - Used automatically by Vitest via vitest.config.js
+
+## Commands
+
+```bash
+# Type-check everything without emitting files (fast)
+npx tsc --noEmit
+
+# Build production code (src → dist)
+npm run build  # Uses tsconfig.build.json
+
+# Run tests (uses tsconfig.test.json)
+npm test
+```
+
+For detailed information, see [docs/TYPESCRIPT_CONFIGURATION.md](docs/TYPESCRIPT_CONFIGURATION.md).
 
 # Testing
 

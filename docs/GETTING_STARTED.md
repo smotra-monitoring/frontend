@@ -36,7 +36,14 @@ This will install:
 npm run build
 ```
 
-This compiles TypeScript to JavaScript in the `public/` directory.
+This compiles TypeScript to JavaScript using `tsconfig.build.json` (production configuration) and outputs to the `dist/` directory.
+
+> **Note**: The project uses three TypeScript configurations:
+> - `tsconfig.json` - IDE type-checking (both src and tests)
+> - `tsconfig.build.json` - Production build (src only)
+> - `tsconfig.test.json` - Test environment
+> 
+> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for details.
 
 ## Running the Application
 
@@ -88,7 +95,11 @@ Ensure no compilation errors:
 npm run build
 ```
 
-You should see no errors in the output.
+You should see no errors in the output. The compiled JavaScript will be in the `dist/` directory.
+
+> **Tip**: To type-check without compiling (faster), use: `npx tsc --noEmit`
+> 
+> This uses `tsconfig.json` to check both `src/` and `tests/` without generating files.
 
 ## Configuration
 
@@ -152,9 +163,16 @@ Ensure your OAuth provider has `http://localhost:3000/oauth/callback` in its all
 Try cleaning and rebuilding:
 
 ```bash
-rm -rf public/src
+rm -rf dist
 npm run build
 ```
+
+If errors persist, verify your TypeScript version:
+```bash
+npx tsc --version  # Should be 6.x
+```
+
+See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for detailed troubleshooting.
 
 ### Tests Failing
 
@@ -206,15 +224,17 @@ node --version  # Should be v18.0.0 or higher
 - **TypeScript** (built-in)
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
-- **Vitest** - Test runner integration
-- **CSS Variable Autocomplete** - For CSS custom properties
-
-## Scripts Reference
-
-| Command | Description |
-|---------|-------------|
-| `npm run build` | Compile TypeScript to JavaScript |
+- **Vitest** - Test runner integration(production) |
 | `npm run dev` | Start development server with live reload |
+| `npm start` | Start static server (no live reload) |
+| `npm test` | Run all tests once |
+| `npm run test:watch` | Run tests in watch mode (TDD) |
+| `npm run test:coverage` | Generate coverage report |
+| `npm run test:unit` | Run only unit tests |
+| `npm run test:integration` | Run only integration tests |
+| `npm run openapi-ts` | Regenerate API client from OpenAPI spec |
+
+> **Type-checking tip**: Use `npx tsc --noEmit` to check types without compiling.
 | `npm start` | Start static server (no live reload) |
 | `npm test` | Run all tests once |
 | `npm run test:watch` | Run tests in watch mode (TDD) |
@@ -245,7 +265,9 @@ frontend/
 ### Key Files
 - `src/index.ts` - Application entry point
 - `src/config.ts` - Configuration
-- `public/index.html` - HTML shell
+- `public/index.html` - HTML template
+- `tsconfig.build.json` - TypeScript production build
+- `tsconfig.test.json` - TypeScript test configuration
 - `public/css/` - Stylesheets
 - `tsconfig.json` - TypeScript configuration
 - `vitest.config.js` - Test configuration
