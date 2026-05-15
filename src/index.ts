@@ -8,6 +8,8 @@ import { initializeViewport } from './state/viewport-state.js';
 import { initializeAuthService } from './services/auth-service.js';
 import { loadAuthState } from './state/auth-state.js';
 import { initializeRouter } from './pages/router.js';
+import { client } from './api/client.gen.js';
+import { getEnvironmentConfig } from './config.js';
 
 /**
  * Bootstrap application
@@ -15,6 +17,9 @@ import { initializeRouter } from './pages/router.js';
 async function bootstrap(): Promise<void> {
   try {
     console.log('🚀 Bootstrapping Smotra...');
+
+    // 0. Configure API client base URL (before anything else uses it)
+    client.setConfig({ baseUrl: getEnvironmentConfig().apiBaseUrl });
 
     // 1. Initialize theme FIRST (prevent FOUC)
     // This ensures correct theme is applied before rendering
