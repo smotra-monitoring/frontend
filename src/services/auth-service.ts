@@ -8,6 +8,7 @@ import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
+import { oauth2Token } from '../api/sdk.gen.js';
 
 // Token refresh cleanup function (tracks the current pending scheduled timeout)
 let tokenRefreshCleanup: (() => void) | null = null;
@@ -112,36 +113,29 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(code: string, codeVerifier: string, providerConfig: OAuth2Config): Promise<TokenData | null> {
+async function exchangeCodeForTokens(
+    code: string,
+    codeVerifier: string,
+    providerConfig: OAuth2Config
+): Promise<TokenData | null> {
     try {
-        // TODO: This would use the generated SDK function
-        // import { oauth2Token } from '../api/sdk.gen.js';
-
-        const response = await fetch(providerConfig.tokenEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+        const result = await oauth2Token({
+            body: {
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
                 redirect_uri: providerConfig.redirectUri,
-            }),
+                client_id: providerConfig.clientId,
+            },
+            throwOnError: true,
         });
 
-        if (!response.ok) {
-            throw new Error('Token exchange failed');
-        }
-
-        const data = await response.json();
-
-        // Calculate expiration timestamp
-        const expires_at = Date.now() + (data.expires_in * 1000);
+        const data = result.data!;
+        const expires_at = Date.now() + data.expires_in * 1000;
 
         return {
             access_token: data.access_token,
-            refresh_token: data.refresh_token,
+            refresh_token: data.refresh_token!,
             expires_at,
             token_type: data.token_type || 'Bearer',
         };
@@ -156,9 +150,6 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string, provide
  */
 async function fetchUserInfo(accessToken: string, providerConfig: OAuth2Config): Promise<UserInfo | null> {
     try {
-        // TODO: This would use the generated SDK function
-        // import { getUserInfo } from '../api/sdk.gen.js';
-
         const response = await fetch(providerConfig.userinfoEndpoint, {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
