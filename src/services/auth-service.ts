@@ -110,9 +110,9 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
         const response = await fetch(providerConfig.tokenEndpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({
+            body: new URLSearchParams({
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
