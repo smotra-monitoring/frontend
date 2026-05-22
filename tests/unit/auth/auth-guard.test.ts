@@ -73,13 +73,14 @@ describe('auth-guard', () => {
 
             const almostExpiredTokens: TokenResponse = {
                 ...mockToken,
-                absolute_expires_at: new Date(Date.now() + 60 * 1000), // Expires in 1 minute (within default buffer time)
+                absolute_expires_at: new Date(Date.now() + 59 * 1000), // Expires in 1 minute (within default buffer time)
             };
             saveAuthState(mockUserInfo, almostExpiredTokens);
 
             const result = await canAccessRoute_ForTest(true);
             // Should allow access after successful refresh
             expect(result.allowed).toBe(true);
+            expect(authRefresh).toHaveBeenCalled();
         });
     });
 
