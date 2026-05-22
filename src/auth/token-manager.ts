@@ -61,7 +61,7 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
 
     const newTokens: TokenResponse = {
       opaque_token: data.opaque_token,
-      absolute_expires_at: data.absolute_expires_at,
+      expires_at: data.expires_at,
     };
 
     // Update tokens in state and storage
@@ -116,7 +116,7 @@ export async function revokeTokens(): Promise<boolean> {
 /**
  * Schedule automatic token refresh at the half-life point of the token's
  * remaining lifetime. This ensures the client proactively refreshes well
- * before the hard expiry (absolute_expires_at) without waiting until the
+ * before the hard expiry (expires_at) without waiting until the
  * last minute.
  *
  * @param tokens - Current token data with expiration timestamp.
@@ -130,7 +130,7 @@ export function scheduleTokenRefresh(
   onRefreshComplete?: (newTokens: TokenResponse) => void,
 ): () => void {
   const now = Date.now();
-  const timeUntilExpiry = new Date(tokens.absolute_expires_at).getTime() - now;
+  const timeUntilExpiry = new Date(tokens.expires_at).getTime() - now;
 
   // Schedule at the midpoint (half-life)
   const refreshDelay = timeUntilExpiry / 2;

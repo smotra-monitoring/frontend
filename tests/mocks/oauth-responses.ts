@@ -22,12 +22,12 @@ export const mockCodeChallenge = 'mock-code-challenge-encoded';
 export const mockState = 'mock-state-random-string';
 
 /**
- * Raw JSON as the server returns it (absolute_expires_at as ISO string).
+ * Raw JSON as the server returns it (expires_at as ISO string).
  * Used when mocking global.fetch for the token exchange and refresh endpoints.
  */
 export const mockTokenResponse = {
   opaque_token: 'st_live_mock_token_abcdef123456',
-  absolute_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+  expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
 };
 
 /**
@@ -35,7 +35,7 @@ export const mockTokenResponse = {
  */
 export const mockRefreshTokenResponse = {
   opaque_token: 'st_live_mock_refreshed_token_xyz789',
-  absolute_expires_at: new Date(Date.now() + 7200 * 1000).toISOString(),
+  expires_at: new Date(Date.now() + 7200 * 1000).toISOString(),
 };
 
 export const mockUserInfo = {
@@ -53,7 +53,7 @@ export const mockUserInfo = {
  */
 export const mockToken: TokenResponse = {
   opaque_token: 'st_live_mock_token_abcdef123456',
-  absolute_expires_at: new Date(Date.now() + 3600 * 1000),
+  expires_at: new Date(Date.now() + 3600 * 1000),
 };
 
 export const mockAuthState = {

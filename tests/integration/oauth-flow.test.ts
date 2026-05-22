@@ -109,7 +109,7 @@ describe('OAuth Authentication Flow (Integration)', () => {
         // Seed complete auth state directly — no OAuth flow needed for this assertion
         const tokenData: TokenResponse = {
             opaque_token: mockTokenResponse.opaque_token,
-            absolute_expires_at: new Date(Date.now() + 3600 * 1000),
+            expires_at: new Date(Date.now() + 3600 * 1000),
         };
         saveAuthState(mockUserInfo, tokenData);
 

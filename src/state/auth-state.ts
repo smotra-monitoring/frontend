@@ -24,12 +24,12 @@ const authState = createState<AuthState>(initialAuthState);
  * Load authentication state from localStorage
  */
 export function loadAuthState(): void {
-  // absolute_expires_at is serialized as an ISO string in JSON; reconstruct as Date
+  // expires_at is serialized as an ISO string in JSON; reconstruct as Date
   const stored = Storage.get<{ user: UserInfo; tokens: TokenResponse }>(STORAGE_KEY);
 
   if (stored && stored.tokens) {
 
-    if (Date.now() < new Date(stored.tokens.absolute_expires_at).getTime()) {
+    if (Date.now() < new Date(stored.tokens.expires_at).getTime()) {
       authState.setState({
         isAuthenticated: true,
         user: stored.user,
@@ -155,7 +155,7 @@ export function isTokenExpiredInState(bufferSeconds: number = 60): boolean {
   }
 
   // Use new Date(...) to safely handle both Date objects and ISO strings (e.g. after localStorage round-trip)
-  const expiresAt = new Date(tokens.absolute_expires_at).getTime();
+  const expiresAt = new Date(tokens.expires_at).getTime();
 
   // Check if token expires within buffer period
   return expiresAt <= Date.now() + (bufferSeconds * 1000);

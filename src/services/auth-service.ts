@@ -129,7 +129,7 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
 
         return {
             opaque_token: data.opaque_token,
-            absolute_expires_at: data.absolute_expires_at,
+            expires_at: data.expires_at,
         };
     } catch (error) {
         console.error('Token exchange error:', error);

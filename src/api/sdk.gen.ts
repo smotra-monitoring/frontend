@@ -642,8 +642,8 @@ export const oauth2Revoke = <ThrowOnError extends boolean = false>(
  * The old token is revoked atomically. The server transparently refreshes the
  * underlying IdP token if needed.
  *
- * Clients should call this proactively before `absolute_expires_at` (e.g. at
- * the midpoint). Returns a new TokenResponse with a fresh absolute_expires_at.
+ * Clients should call this proactively before `expires_at` (e.g. at
+ * the midpoint). Returns a new TokenResponse with a fresh expires_at.
  *
  */
 export const authRefresh = <ThrowOnError extends boolean = false>(

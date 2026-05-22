@@ -725,7 +725,7 @@ export type TokenResponse = {
    * proactive re-login in the client (e.g. at the midpoint).
    *
    */
-  absolute_expires_at: Date;
+  expires_at: Date;
 };
 
 export type UserInfo = {

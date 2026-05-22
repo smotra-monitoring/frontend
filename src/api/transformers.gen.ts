@@ -175,7 +175,7 @@ export const acknowledgeAlertResponseTransformer = async (
 };
 
 const tokenResponseSchemaResponseTransformer = (data: any) => {
-  data.absolute_expires_at = new Date(data.absolute_expires_at);
+  data.expires_at = new Date(data.expires_at);
   return data;
 };
 

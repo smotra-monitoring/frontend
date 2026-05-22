@@ -1624,7 +1624,7 @@ export const NotificationChannelSchema = {
 
 export const TokenResponseSchema = {
   type: "object",
-  required: ["opaque_token", "absolute_expires_at"],
+  required: ["opaque_token", "expires_at"],
   properties: {
     opaque_token: {
       type: "string",
@@ -1632,7 +1632,7 @@ export const TokenResponseSchema = {
         "Server-managed opaque session token. Use as a Bearer token in the\nAuthorization header for all subsequent requests.\nFormat: st_live_<hex> (production) or st_test_<hex> (dev/test).\n",
       example: "st_live_..............................",
     },
-    absolute_expires_at: {
+    expires_at: {
       type: "string",
       format: "date-time",
       description:

@@ -53,7 +53,7 @@ describe('auth-guard', () => {
         it('denies access when token is expired', async () => {
             const expiredTokens: TokenResponse = {
                 ...mockToken,
-                absolute_expires_at: new Date(Date.now() - 1000), // Expired in the past
+                expires_at: new Date(Date.now() - 1000), // Expired in the past
             };
             saveAuthState(mockUserInfo, expiredTokens);
 
@@ -67,13 +67,13 @@ describe('auth-guard', () => {
             const refreshedTokens: TokenResponse = {
                 ...mockToken,
                 opaque_token: 'st_live_refreshed_token',
-                absolute_expires_at: new Date(Date.now() + 3600 * 1000),
+                expires_at: new Date(Date.now() + 3600 * 1000),
             };
             (authRefresh as Mock).mockResolvedValue({ data: refreshedTokens, error: null });
 
             const almostExpiredTokens: TokenResponse = {
                 ...mockToken,
-                absolute_expires_at: new Date(Date.now() + 59 * 1000), // Expires in 1 minute (within default buffer time)
+                expires_at: new Date(Date.now() + 59 * 1000), // Expires in 1 minute (within default buffer time)
             };
             saveAuthState(mockUserInfo, almostExpiredTokens);
 

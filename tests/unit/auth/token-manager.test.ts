@@ -36,7 +36,7 @@ vi.mock('../../../src/api/index.js', () => ({
 
 const REFRESHED_TOKEN: TokenResponse = {
     opaque_token: 'st_live_refreshed_token_xyz789',
-    absolute_expires_at: new Date(Date.now() + 7200 * 1000),
+    expires_at: new Date(Date.now() + 7200 * 1000),
 };
 
 describe('token-manager', () => {
@@ -66,7 +66,7 @@ describe('token-manager', () => {
             updateTokensInState(mockToken);
 
             // Advance time past expiration
-            vi.advanceTimersByTime(mockToken.absolute_expires_at.getTime() - Date.now() + 1000);
+            vi.advanceTimersByTime(mockToken.expires_at.getTime() - Date.now() + 1000);
             expect(isTokenExpiredInState()).toBe(true);
         });
 
@@ -75,7 +75,7 @@ describe('token-manager', () => {
 
             // Advance to within buffer time (default 60 seconds)
             const bufferTime = 50 * 1000; // 50 seconds before expiry
-            vi.advanceTimersByTime(mockToken.absolute_expires_at.getTime() - Date.now() - bufferTime);
+            vi.advanceTimersByTime(mockToken.expires_at.getTime() - Date.now() - bufferTime);
 
             expect(isTokenExpiredInState()).toBe(true);
         });
@@ -84,7 +84,7 @@ describe('token-manager', () => {
             updateTokensInState(mockToken);
 
             // Advance to within 2 minutes of expiration
-            const twoMinutesBeforeExpiration = mockToken.absolute_expires_at.getTime() - 2 * 60 * 1000 - Date.now();
+            const twoMinutesBeforeExpiration = mockToken.expires_at.getTime() - 2 * 60 * 1000 - Date.now();
             vi.advanceTimersByTime(twoMinutesBeforeExpiration);
 
             // Should be expired with 121 second buffer
@@ -104,7 +104,7 @@ describe('token-manager', () => {
 
             expect(result.success).toBe(true);
             expect(result.tokens?.opaque_token).toBe(REFRESHED_TOKEN.opaque_token);
-            expect(result.tokens?.absolute_expires_at).toEqual(REFRESHED_TOKEN.absolute_expires_at);
+            expect(result.tokens?.expires_at).toEqual(REFRESHED_TOKEN.expires_at);
 
             expect(authRefresh).toHaveBeenCalledWith({
                 headers: expect.objectContaining({
@@ -195,7 +195,7 @@ describe('token-manager', () => {
             updateTokensInState(mockToken);
             const cleanup = scheduleTokenRefresh(getTokensFromState()!);
 
-            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            const halfLife = Math.floor((mockToken.expires_at.getTime() - Date.now()) / 2);
             vi.advanceTimersByTime(halfLife);
 
             await flushPromises();
@@ -221,7 +221,7 @@ describe('token-manager', () => {
             const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
-            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            const halfLife = Math.floor((mockToken.expires_at.getTime() - Date.now()) / 2);
             vi.advanceTimersByTime(halfLife);
 
             await flushPromises();
@@ -241,7 +241,7 @@ describe('token-manager', () => {
             const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
-            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            const halfLife = Math.floor((mockToken.expires_at.getTime() - Date.now()) / 2);
             vi.advanceTimersByTime(halfLife);
 
             await flushPromises();
@@ -256,7 +256,7 @@ describe('token-manager', () => {
 
             const expiredTokens: TokenResponse = {
                 opaque_token: 'st_live_expired_token',
-                absolute_expires_at: new Date(Date.now() - 1000),
+                expires_at: new Date(Date.now() - 1000),
             };
             updateTokensInState(expiredTokens);
 
