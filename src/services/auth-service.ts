@@ -152,12 +152,7 @@ async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
             throw new Error('Failed to fetch user info');
         }
 
-        return {
-            id: data.sub,
-            email: data.email ?? '',
-            name: data.name || data.given_name || data.email || '',
-            picture: data.picture,
-        };
+        return data;
     } catch (error) {
         console.error('User info fetch error:', error);
         return null;

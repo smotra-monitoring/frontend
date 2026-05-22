@@ -146,16 +146,16 @@ export class Sidebar extends BaseComponent<SidebarState> {
         ${userInfo.picture ? `
           <img 
             src="${userInfo.picture}" 
-            alt="${userInfo.name}"
+            alt="${userInfo.name ?? ''}"
             class="sidebar__user-avatar"
           />
         ` : `
           <div class="sidebar__user-avatar sidebar__user-avatar--placeholder">
-            ${userInfo.name.charAt(0).toUpperCase()}
+            ${(userInfo.name ?? userInfo.email ?? '?').charAt(0).toUpperCase()}
           </div>
         `}
         <div class="sidebar__user-info">
-          <div class="sidebar__user-name">${this.escapeHtml(userInfo.name)}</div>
+          <div class="sidebar__user-name">${this.escapeHtml(userInfo.name ?? '')}</div>
           <div class="sidebar__user-email">${this.escapeHtml(userInfo.email ?? '')}</div>
         </div>
       </div>
