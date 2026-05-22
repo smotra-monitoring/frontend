@@ -5,8 +5,8 @@
 import type { UserInfo } from '../../src/types/auth-types.js';
 
 export const mockUserInfo: UserInfo = {
-    id: 'user-123',
-    //   sub: 'user-123',
+    // id: 'user-123',
+    sub: 'user-123',
     email: 'test@example.com',
     name: 'Test User',
     picture: 'https://example.com/avatar.jpg',
@@ -18,8 +18,8 @@ export const mockUserInfo: UserInfo = {
 };
 
 export const mockUserInfo2: UserInfo = {
-    id: 'user-456',
-    //   sub: 'user-456',
+    // id: 'user-456',
+    sub: 'user-456',
     email: 'admin@example.com',
     name: 'Admin User',
     picture: 'https://example.com/admin-avatar.jpg',

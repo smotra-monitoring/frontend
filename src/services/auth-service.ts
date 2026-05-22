@@ -4,7 +4,7 @@
  */
 
 import type { OAuth2Provider, UserInfo, TokenResponse } from '../types/auth-types.js';
-import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getOAuth2Config } from '../auth/oauth-manager.js';
+import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE } from '../auth/oauth-manager.js';
 import { oauth2Token, getUserInfo as apiGetUserInfo } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
@@ -106,14 +106,12 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
  */
 async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenResponse | null> {
     try {
-        const providerConfig = getOAuth2Config();
-
         const { data, error } = await oauth2Token({
             body: {
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
-                redirect_uri: providerConfig.redirectUri,
+                redirect_uri: "defined on the server",
             },
         });
 

@@ -139,7 +139,7 @@ async function buildAuthorizationUrl(provider: OAuth2Provider): Promise<string> 
     code_challenge_method: pkce.code_challenge_method,
   };
 
-  let authEndpoint = new URL(getOAuth2Config().authorizationEndpoint, getEnvironmentConfig().apiBaseUrl).toString();
+  let authEndpoint = new URL('/auth/oauth2/authorize', getEnvironmentConfig().apiBaseUrl).toString();
 
   return buildUrl(authEndpoint, params);
 }
@@ -197,21 +197,4 @@ export function handleOAuthCallback(): {
     error: null,
     valid: true,
   };
-}
-
-/**
- * Get OAuth2 provider configuration
- * In production, these would come from environment variables
- */
-export function getOAuth2Config(): OAuth2Config {
-  return {
-    scopes: ['defined on server'],
-    authorizationEndpoint: '/auth/oauth2/authorize',
-    tokenEndpoint: '/auth/oauth2/token',
-    revokeEndpoint: '/auth/oauth2/revoke',
-    userinfoEndpoint: '/auth/userinfo',
-    logoutEndpoint: '/auth/logout',
-    redirectUri: `defined on the server`,
-    clientId: 'defined on the server',
-  }
 }
