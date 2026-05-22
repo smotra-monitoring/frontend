@@ -143,9 +143,6 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
 async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
 
     try {
-        // TODO: This would use the generated SDK function
-        // import { getUserInfo } from '../api/sdk.gen.js';
-
         const providerConfig = getOAuth2Config();
 
         const response = await fetch(providerConfig.userinfoEndpoint, {
