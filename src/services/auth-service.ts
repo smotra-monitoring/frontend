@@ -5,7 +5,7 @@
 
 import type { OAuth2Provider, UserInfo, TokenResponse } from '../types/auth-types.js';
 import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getOAuth2Config } from '../auth/oauth-manager.js';
-import { oauth2Token } from '../api/index.js';
+import { oauth2Token, getUserInfo as apiGetUserInfo } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
@@ -141,26 +141,21 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
  * Fetch user information from API
  */
 async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
-
     try {
-        const providerConfig = getOAuth2Config();
-
-        const response = await fetch(providerConfig.userinfoEndpoint, {
+        const { data, error } = await apiGetUserInfo({
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        if (!response.ok) {
+        if (error || !data) {
             throw new Error('Failed to fetch user info');
         }
 
-        const data = await response.json();
-
         return {
-            id: data.sub || data.id,
-            email: data.email,
-            name: data.name || data.given_name || data.email,
+            id: data.sub,
+            email: data.email ?? '',
+            name: data.name || data.given_name || data.email || '',
             picture: data.picture,
         };
     } catch (error) {
