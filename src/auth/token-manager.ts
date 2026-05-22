@@ -6,7 +6,6 @@ import type { TokenRefreshResult } from '../types/auth-types.js';
 import type { TokenResponse } from '../api/index.js';
 import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpiredInState } from '../state/auth-state.js';
 import { authRefresh, oauth2Revoke } from '../api/index.js';
-import { clear } from 'node:console';
 
 /**
  * Get valid opaque session token, refreshing if necessary
