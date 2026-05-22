@@ -2,6 +2,7 @@
 
 import type {
   AcknowledgeAlertResponse,
+  AuthRefreshResponse,
   GetAgentConfigurationResponse,
   GetAlertResponse,
   GetMetricsResponse,
@@ -13,6 +14,7 @@ import type {
   ListAlertsResponse,
   ListOrganizationsResponse,
   ListUsersResponse,
+  Oauth2TokenResponse,
   PatchUserResponse,
   PostCreateOrganizationResponse,
   PostCreateUserResponse,
@@ -169,6 +171,25 @@ export const acknowledgeAlertResponseTransformer = async (
   data: any,
 ): Promise<AcknowledgeAlertResponse> => {
   data = alertSchemaResponseTransformer(data);
+  return data;
+};
+
+const tokenResponseSchemaResponseTransformer = (data: any) => {
+  data.absolute_expires_at = new Date(data.absolute_expires_at);
+  return data;
+};
+
+export const oauth2TokenResponseTransformer = async (
+  data: any,
+): Promise<Oauth2TokenResponse> => {
+  data = tokenResponseSchemaResponseTransformer(data);
+  return data;
+};
+
+export const authRefreshResponseTransformer = async (
+  data: any,
+): Promise<AuthRefreshResponse> => {
+  data = tokenResponseSchemaResponseTransformer(data);
   return data;
 };
 

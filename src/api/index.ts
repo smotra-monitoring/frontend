@@ -2,6 +2,7 @@
 
 export {
   acknowledgeAlert,
+  authRefresh,
   createAlert,
   deleteAlert,
   deleteUser,
@@ -63,6 +64,11 @@ export {
   type AlertRule,
   type AlertRuleWritable,
   AlertStatus,
+  type AuthRefreshData,
+  type AuthRefreshError,
+  type AuthRefreshErrors,
+  type AuthRefreshResponse,
+  type AuthRefreshResponses,
   type BatchMonitoringResults,
   type CheckType,
   type ClaimAgentRequest,

@@ -3,8 +3,9 @@
  * Orchestrates OAuth flow, token management,and user session
  */
 
-import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types/auth-types.js';
+import type { OAuth2Provider, UserInfo, TokenResponse } from '../types/auth-types.js';
 import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getOAuth2Config } from '../auth/oauth-manager.js';
+import { oauth2Token } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
@@ -17,7 +18,10 @@ let tokenRefreshCleanup: (() => void) | null = null;
  * each successful refresh, keeping the proactive refresh loop alive for the
  * entire session.
  */
-function scheduleRefreshCycle(tokens: TokenData): void {
+function scheduleRefreshCycle(tokens: TokenResponse): void {
+    if (tokenRefreshCleanup) {
+        tokenRefreshCleanup();
+    }
     tokenRefreshCleanup = scheduleTokenRefresh(tokens, (newTokens) => {
         // After a successful refresh, immediately schedule the next cycle using
         // the freshly issued tokens (which have a new expiration timestamp).
@@ -74,7 +78,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
             return [false, errorMessage];
         }
 
-        const userInfo = await fetchUserInfo(tokens.access_token);
+        const userInfo = await fetchUserInfo(tokens.opaque_token);
 
         if (!userInfo) {
             const errorMessage = 'Failed to fetch user information';
@@ -100,48 +104,32 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenData | null> {
+async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenResponse | null> {
     try {
-        // TODO: This would use the generated SDK function
-        // import { oauth2Token } from '../api/sdk.gen.js';
-
         const providerConfig = getOAuth2Config();
 
-        const response = await fetch(providerConfig.tokenEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
+        const { data, error } = await oauth2Token({
+            body: {
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
                 redirect_uri: providerConfig.redirectUri,
-            }),
+            },
         });
 
-        if (!response.ok) {
-            let errorMessage = 'Token exchange failed';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorData.error_description || errorData.error || errorMessage;
-            } catch {
-                // Ignore JSON parsing errors and use generic message
-            }
+        if (error || !data) {
+            const errorMessage =
+                (typeof error === 'object' && error && 'message' in error && typeof error.message === 'string'
+                    ? error.message
+                    : null) ||
+                'Token exchange failed';
 
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
-
-        // Calculate expiration timestamp
-        const expires_at = Date.now() + (data.expires_in * 1000);
-
         return {
-            access_token: data.access_token,
-            refresh_token: data.refresh_token,
-            expires_at,
-            token_type: data.token_type || 'Bearer',
+            opaque_token: data.opaque_token,
+            absolute_expires_at: data.absolute_expires_at,
         };
     } catch (error) {
         console.error('Token exchange error:', error);

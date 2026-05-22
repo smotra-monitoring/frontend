@@ -9,6 +9,7 @@ import {
 } from "./client/index.js";
 import {
   acknowledgeAlertResponseTransformer,
+  authRefreshResponseTransformer,
   getAgentConfigurationResponseTransformer,
   getAlertResponseTransformer,
   getMetricsResponseTransformer,
@@ -20,6 +21,7 @@ import {
   listAlertsResponseTransformer,
   listOrganizationsResponseTransformer,
   listUsersResponseTransformer,
+  oauth2TokenResponseTransformer,
   patchUserResponseTransformer,
   postCreateOrganizationResponseTransformer,
   postCreateUserResponseTransformer,
@@ -33,6 +35,9 @@ import type {
   AcknowledgeAlertData,
   AcknowledgeAlertErrors,
   AcknowledgeAlertResponses,
+  AuthRefreshData,
+  AuthRefreshErrors,
+  AuthRefreshResponses,
   CreateAlertData,
   CreateAlertErrors,
   CreateAlertResponses,
@@ -573,12 +578,16 @@ export const oauth2Callback = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Exchange authorization code or refresh token for tokens
+ * Exchange authorization code for a server-managed session token
  *
- * Proxies a token request to the identity provider configured on the server.
- * Supports authorization_code (PKCE) and refresh_token grant types.
+ * Completes the PKCE authorization_code flow. The server exchanges the code
+ * with the IdP, stores IdP tokens server-side, creates a session, and returns
+ * a server-managed opaque token.
  *
- * client_id and IDP token URL are resolved server-side from provider config.
+ * IdP tokens are never returned to the client. The provider is resolved
+ * server-side from the pending state (stored during /authorize).
+ *
+ * client_id and IdP token URL are resolved server-side from provider config.
  * client_secret is never used (PKCE-only flow).
  *
  */
@@ -591,6 +600,7 @@ export const oauth2Token = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     ...urlSearchParamsBodySerializer,
+    responseTransformer: oauth2TokenResponseTransformer,
     url: "/auth/oauth2/token",
     ...options,
     headers: {
@@ -600,12 +610,12 @@ export const oauth2Token = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Revoke access or refresh token
+ * Revoke a server-managed session token
  *
- * Revoke a previously issued token by proxying to the IDP revocation endpoint.
- *
- * If the provider does not support token revocation (e.g., GitHub), the server
- * returns 200 with a warning — revocation is treated as a no-op.
+ * Revokes the session associated with the provided opaque token.
+ * The token is immediately invalidated on the server. The server also
+ * attempts to revoke the underlying IdP token (best-effort; ignored if
+ * the provider does not support revocation).
  *
  */
 export const oauth2Revoke = <ThrowOnError extends boolean = false>(
@@ -616,27 +626,51 @@ export const oauth2Revoke = <ThrowOnError extends boolean = false>(
     Oauth2RevokeErrors,
     ThrowOnError
   >({
-    ...urlSearchParamsBodySerializer,
     security: [{ scheme: "bearer", type: "http" }],
     url: "/auth/oauth2/revoke",
     ...options,
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
       ...options.headers,
     },
   });
 
 /**
+ * Refresh a server-managed session token
+ *
+ * Issues a new opaque session token for the currently authenticated session.
+ * The old token is revoked atomically. The server transparently refreshes the
+ * underlying IdP token if needed.
+ *
+ * Clients should call this proactively before `absolute_expires_at` (e.g. at
+ * the midpoint). Returns a new TokenResponse with a fresh absolute_expires_at.
+ *
+ */
+export const authRefresh = <ThrowOnError extends boolean = false>(
+  options?: Options<AuthRefreshData, ThrowOnError>,
+) =>
+  (options?.client ?? client).post<
+    AuthRefreshResponses,
+    AuthRefreshErrors,
+    ThrowOnError
+  >({
+    responseTransformer: authRefreshResponseTransformer,
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/auth/refresh",
+    ...options,
+  });
+
+/**
  * Get current user information
  *
- * Retrieve information about the authenticated user by proxying to the IDP
- * userinfo endpoint. Requires a valid Bearer token in the Authorization header.
+ * Retrieve information about the authenticated user from the local database.
+ * Requires a valid opaque session token in the Authorization header.
  *
  */
 export const getUserInfo = <ThrowOnError extends boolean = false>(
-  options: Options<GetUserInfoData, ThrowOnError>,
+  options?: Options<GetUserInfoData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
+  (options?.client ?? client).get<
     GetUserInfoResponses,
     GetUserInfoErrors,
     ThrowOnError
@@ -649,8 +683,9 @@ export const getUserInfo = <ThrowOnError extends boolean = false>(
 /**
  * User logout
  *
- * Revoke the current token and redirect the browser to the IDP end-session
- * endpoint (if the provider supports it).
+ * Revokes the current session and redirects the browser to the IDP end-session
+ * endpoint (if the provider supports it). The provider is resolved server-side
+ * from the session — no provider parameter is needed from the client.
  *
  * For providers with an end-session endpoint (Okta, Auth0, Azure, Google),
  * the server responds with 302 to that endpoint.

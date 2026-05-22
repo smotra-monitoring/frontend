@@ -713,26 +713,19 @@ export type NotificationChannel = {
 
 export type TokenResponse = {
   /**
-   * JWT access token
+   * Server-managed opaque session token. Use as a Bearer token in the
+   * Authorization header for all subsequent requests.
+   * Format: st_live_<hex> (production) or st_test_<hex> (dev/test).
+   *
    */
-  access_token: string;
-  token_type: string;
+  opaque_token: string;
   /**
-   * Token lifetime in seconds
+   * Hard expiry time (ISO 8601). The session will never be valid after
+   * this timestamp regardless of activity. Use this to schedule a
+   * proactive re-login in the client (e.g. at the midpoint).
+   *
    */
-  expires_in: number;
-  /**
-   * Refresh token (only for authorization_code grant)
-   */
-  refresh_token?: string;
-  /**
-   * Space-separated list of granted scopes
-   */
-  scope?: string;
-  /**
-   * OpenID Connect ID token (if openid scope requested)
-   */
-  id_token?: string;
+  absolute_expires_at: Date;
 };
 
 export type UserInfo = {
@@ -1767,35 +1760,21 @@ export type Oauth2CallbackData = {
 export type Oauth2TokenData = {
   body: {
     /**
-     * Identity provider name. Must match a provider configured on the server.
-     * Built-in values: okta, auth0, azure, google, github.
-     *
+     * OAuth2 grant type (only authorization_code is supported here)
      */
-    provider: string;
+    grant_type: "authorization_code";
     /**
-     * OAuth2 grant type
+     * Authorization code returned by the IDP callback
      */
-    grant_type: "authorization_code" | "refresh_token";
+    code: string;
     /**
-     * Authorization code (required for authorization_code grant)
+     * Must exactly match the redirect_uri used in the authorization request
      */
-    code?: string;
+    redirect_uri: string;
     /**
-     * Must exactly match the redirect_uri used in the authorization request (required for authorization_code grant)
+     * PKCE code verifier corresponding to the code_challenge sent at /authorize
      */
-    redirect_uri?: string;
-    /**
-     * PKCE code verifier (required for authorization_code grant)
-     */
-    code_verifier?: string;
-    /**
-     * Refresh token (required for refresh_token grant)
-     */
-    refresh_token?: string;
-    /**
-     * Optional scope restriction (refresh_token grant only)
-     */
-    scope?: string;
+    code_verifier: string;
   };
   path?: never;
   query?: never;
@@ -1817,7 +1796,7 @@ export type Oauth2TokenError = Oauth2TokenErrors[keyof Oauth2TokenErrors];
 
 export type Oauth2TokenResponses = {
   /**
-   * Tokens issued successfully
+   * Session created; opaque token returned
    */
   200: TokenResponse;
 };
@@ -1828,19 +1807,9 @@ export type Oauth2TokenResponse =
 export type Oauth2RevokeData = {
   body: {
     /**
-     * Identity provider name. Must match a provider configured on the server.
-     * Built-in values: okta, auth0, azure, google, github.
-     *
+     * The opaque session token to revoke (as returned by /auth/oauth2/token or /auth/refresh)
      */
-    provider: string;
-    /**
-     * Token to revoke
-     */
-    token: string;
-    /**
-     * Optional hint about the token type
-     */
-    token_type_hint?: "access_token" | "refresh_token";
+    opaque_token: string;
   };
   path?: never;
   query?: never;
@@ -1862,12 +1831,11 @@ export type Oauth2RevokeError = Oauth2RevokeErrors[keyof Oauth2RevokeErrors];
 
 export type Oauth2RevokeResponses = {
   /**
-   * Token revoked (or acknowledged as no-op for providers without revocation support).
-   *
+   * Session revoked successfully.
    */
   200: {
     /**
-     * Present if revocation was not performed (provider limitation)
+     * Present if IdP revocation was skipped (provider limitation)
      */
     warning?: string;
   };
@@ -1876,17 +1844,36 @@ export type Oauth2RevokeResponses = {
 export type Oauth2RevokeResponse =
   Oauth2RevokeResponses[keyof Oauth2RevokeResponses];
 
+export type AuthRefreshData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/auth/refresh";
+};
+
+export type AuthRefreshErrors = {
+  /**
+   * Unauthorized - Invalid or missing authentication
+   */
+  401: Error;
+};
+
+export type AuthRefreshError = AuthRefreshErrors[keyof AuthRefreshErrors];
+
+export type AuthRefreshResponses = {
+  /**
+   * New session token issued
+   */
+  200: TokenResponse;
+};
+
+export type AuthRefreshResponse =
+  AuthRefreshResponses[keyof AuthRefreshResponses];
+
 export type GetUserInfoData = {
   body?: never;
   path?: never;
-  query: {
-    /**
-     * Identity provider name. Must match a provider configured on the server.
-     * Built-in values: okta, auth0, azure, google, github.
-     *
-     */
-    provider: string;
-  };
+  query?: never;
   url: "/auth/userinfo";
 };
 
@@ -1915,12 +1902,6 @@ export type GetUserInfoResponse =
 
 export type LogoutData = {
   body?: {
-    /**
-     * Identity provider name. Must match a provider configured on the server.
-     * Built-in values: okta, auth0, azure, google, github.
-     *
-     */
-    provider: string;
     /**
      * Optional URI to redirect to after IDP logout completes.
      * Forwarded to the IDP end-session endpoint as post_logout_redirect_uri.

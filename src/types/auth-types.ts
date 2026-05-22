@@ -3,19 +3,17 @@
  * Extends the generated OpenAPI types with application-specific auth types
  */
 
+import type { TokenResponse } from '../api/index.js';
+
+// Re-export the generated TokenResponse as the canonical token type
+export type { TokenResponse };
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: UserInfo | null;
-  tokens: TokenData | null;
+  tokens: TokenResponse | null;
   loading: boolean;
   error: string | null;
-}
-
-export interface TokenData {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number; // Unix timestamp
-  token_type: string;
 }
 
 export interface UserInfo {
@@ -56,7 +54,7 @@ export interface AuthorizationRequest {
 
 export interface TokenRefreshResult {
   success: boolean;
-  tokens?: TokenData;
+  tokens?: TokenResponse;
   error?: string;
 }
 

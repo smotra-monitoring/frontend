@@ -1624,35 +1624,20 @@ export const NotificationChannelSchema = {
 
 export const TokenResponseSchema = {
   type: "object",
-  required: ["access_token", "token_type", "expires_in"],
+  required: ["opaque_token", "absolute_expires_at"],
   properties: {
-    access_token: {
+    opaque_token: {
       type: "string",
-      description: "JWT access token",
-      example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+      description:
+        "Server-managed opaque session token. Use as a Bearer token in the\nAuthorization header for all subsequent requests.\nFormat: st_live_<hex> (production) or st_test_<hex> (dev/test).\n",
+      example: "st_live_..............................",
     },
-    token_type: {
+    absolute_expires_at: {
       type: "string",
-      example: "Bearer",
-    },
-    expires_in: {
-      type: "integer",
-      description: "Token lifetime in seconds",
-      example: 3600,
-    },
-    refresh_token: {
-      type: "string",
-      description: "Refresh token (only for authorization_code grant)",
-      example: "rt_1234567890abcdef",
-    },
-    scope: {
-      type: "string",
-      description: "Space-separated list of granted scopes",
-      example: "openid profile email metrics:read",
-    },
-    id_token: {
-      type: "string",
-      description: "OpenID Connect ID token (if openid scope requested)",
+      format: "date-time",
+      description:
+        "Hard expiry time (ISO 8601). The session will never be valid after\nthis timestamp regardless of activity. Use this to schedule a\nproactive re-login in the client (e.g. at the midpoint).\n",
+      example: "2025-10-15T12:00:00Z",
     },
   },
 } as const;

@@ -5,12 +5,13 @@
 import {
     scheduleTokenRefresh,
     refreshAccessToken,
+    revokeTokens,
 } from '../../../src/auth/token-manager.js';
 
 import { vi, type Mock } from 'vitest';
+import type { TokenResponse } from '../../../src/api/index.js';
 
-/** Drain the microtask queue fully (handles chained async/await in mocked fetch).
- *  Cannot use process.nextTick here because vi.useFakeTimers() fakes it. */
+/** Drain the microtask queue fully (handles chained async/await in mocked SDK calls). */
 const flushPromises = async () => {
     // 4 rounds covers: await fetch → await json() → refreshAccessToken resolves → .then/.await callback
     await Promise.resolve();
@@ -18,17 +19,30 @@ const flushPromises = async () => {
     await Promise.resolve();
     await Promise.resolve();
 };
+
 import {
     getTokensFromState,
     updateTokensInState,
     isTokenExpiredInState,
     clearAuthState,
 } from '../../../src/state/auth-state.js';
-import { mockTokens, mockRefreshTokenResponse, mockFetchSuccess, mockFetchError } from '../../mocks/oauth-responses.js';
+import { mockToken } from '../../mocks/oauth-responses.js';
+import { authRefresh, oauth2Revoke } from '../../../src/api/index.js';
+
+vi.mock('../../../src/api/index.js', () => ({
+    authRefresh: vi.fn(),
+    oauth2Revoke: vi.fn(),
+}));
+
+const REFRESHED_TOKEN: TokenResponse = {
+    opaque_token: 'st_live_refreshed_token_xyz789',
+    absolute_expires_at: new Date(Date.now() + 7200 * 1000),
+};
 
 describe('token-manager', () => {
     beforeEach(() => {
         clearAuthState();
+        vi.clearAllMocks();
         vi.clearAllTimers();
         vi.useFakeTimers();
     });
@@ -39,7 +53,7 @@ describe('token-manager', () => {
 
     describe('isTokenExpired (auth-state)', () => {
         it('returns false for valid tokens', () => {
-            updateTokensInState(mockTokens);
+            updateTokensInState(mockToken);
 
             expect(isTokenExpiredInState()).toBe(false);
         });
@@ -49,28 +63,28 @@ describe('token-manager', () => {
         });
 
         it('returns true for expired tokens', () => {
-            updateTokensInState(mockTokens);
+            updateTokensInState(mockToken);
 
             // Advance time past expiration
-            vi.advanceTimersByTime(mockTokens.expires_at - Date.now() + 1000);
+            vi.advanceTimersByTime(mockToken.absolute_expires_at.getTime() - Date.now() + 1000);
             expect(isTokenExpiredInState()).toBe(true);
         });
 
         it('returns true with buffer time before actual expiration', () => {
-            updateTokensInState(mockTokens);
+            updateTokensInState(mockToken);
 
             // Advance to within buffer time (default 60 seconds)
-            const bufferTime = 50 * 1000; // 50 seconds
-            vi.advanceTimersByTime(mockTokens.expires_at - Date.now() - bufferTime);
+            const bufferTime = 50 * 1000; // 50 seconds before expiry
+            vi.advanceTimersByTime(mockToken.absolute_expires_at.getTime() - Date.now() - bufferTime);
 
             expect(isTokenExpiredInState()).toBe(true);
         });
 
         it('respects custom buffer time', () => {
-            updateTokensInState(mockTokens);
+            updateTokensInState(mockToken);
 
             // Advance to within 2 minutes of expiration
-            const twoMinutesBeforeExpiration = (mockTokens.expires_at - 2 * 60 * 1000) - Date.now();
+            const twoMinutesBeforeExpiration = mockToken.absolute_expires_at.getTime() - 2 * 60 * 1000 - Date.now();
             vi.advanceTimersByTime(twoMinutesBeforeExpiration);
 
             // Should be expired with 121 second buffer
@@ -82,36 +96,88 @@ describe('token-manager', () => {
     });
 
     describe('refreshAccessToken', () => {
-        it('refreshes access token using refresh token', async () => {
-            updateTokensInState(mockTokens);
-            mockFetchSuccess(mockRefreshTokenResponse);
+        it('calls authRefresh SDK with Bearer token and returns new TokenResponse', async () => {
+            updateTokensInState(mockToken);
+            (authRefresh as Mock).mockResolvedValue({ data: REFRESHED_TOKEN, error: null });
 
             const result = await refreshAccessToken();
 
             expect(result.success).toBe(true);
-            expect(result.tokens?.access_token).toBe(mockRefreshTokenResponse.access_token);
-            const [url, options] = (fetch as Mock).mock.calls[0] as [string, RequestInit];
-            expect(url).toContain('/token');
-            expect(options.method).toBe('POST');
-            expect(options.headers).toMatchObject({ 'Content-Type': 'application/x-www-form-urlencoded' });
-            expect(options.body).toBeInstanceOf(URLSearchParams);
-            expect((options.body as URLSearchParams).get('grant_type')).toBe('refresh_token');
-            expect((options.body as URLSearchParams).get('refresh_token')).toBeTruthy();
+            expect(result.tokens?.opaque_token).toBe(REFRESHED_TOKEN.opaque_token);
+            expect(result.tokens?.absolute_expires_at).toEqual(REFRESHED_TOKEN.absolute_expires_at);
+
+            expect(authRefresh).toHaveBeenCalledWith({
+                headers: expect.objectContaining({
+                    Authorization: `Bearer ${mockToken.opaque_token}`,
+                }),
+            });
         });
 
-        it('throws error on failed refresh', async () => {
-            updateTokensInState(mockTokens);
-            mockFetchError(401, 'Unauthorized');
+        it('returns error when no opaque token is available', async () => {
+            // No state set
+            const result = await refreshAccessToken();
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBeDefined();
+            expect(authRefresh).not.toHaveBeenCalled();
+        });
+
+        it('clears auth state and returns error when SDK reports failure', async () => {
+            updateTokensInState(mockToken);
+            (authRefresh as Mock).mockResolvedValue({ data: null, error: { message: 'Unauthorized' } });
 
             const result = await refreshAccessToken();
 
             expect(result.success).toBe(false);
+            expect(getTokensFromState()).toBeNull();
+        });
+
+        it('updates state with new tokens on success', async () => {
+            updateTokensInState(mockToken);
+            (authRefresh as Mock).mockResolvedValue({ data: REFRESHED_TOKEN, error: null });
+
+            await refreshAccessToken();
+
+            const stored = getTokensFromState();
+            expect(stored?.opaque_token).toBe(REFRESHED_TOKEN.opaque_token);
+        });
+    });
+
+    describe('revokeTokens', () => {
+        it('calls oauth2Revoke SDK with the opaque token', async () => {
+            updateTokensInState(mockToken);
+            (oauth2Revoke as Mock).mockResolvedValue({ data: {}, error: null });
+
+            const result = await revokeTokens();
+
+            expect(result).toBe(true);
+            expect(oauth2Revoke).toHaveBeenCalledWith({
+                body: { opaque_token: mockToken.opaque_token },
+                headers: expect.objectContaining({
+                    Authorization: `Bearer ${mockToken.opaque_token}`,
+                }),
+            });
+        });
+
+        it('returns true when no tokens present (nothing to revoke)', async () => {
+            const result = await revokeTokens();
+            expect(result).toBe(true);
+            expect(oauth2Revoke).not.toHaveBeenCalled();
+        });
+
+        it('returns false on revocation error', async () => {
+            updateTokensInState(mockToken);
+            (oauth2Revoke as Mock).mockRejectedValue(new Error('Network error'));
+
+            const result = await revokeTokens();
+
+            expect(result).toBe(false);
         });
     });
 
     describe('scheduleTokenRefresh', () => {
-        it('schedules refresh before token expiration', () => {
-            const cleanup = scheduleTokenRefresh(mockTokens);
+        it('schedules refresh at the half-life point', () => {
+            const cleanup = scheduleTokenRefresh(mockToken);
 
             // Timer should be scheduled
             expect(vi.getTimerCount()).toBeGreaterThan(0);
@@ -119,28 +185,24 @@ describe('token-manager', () => {
             cleanup();
         });
 
-        it('calls refresh function at scheduled time', async () => {
-            mockFetchSuccess(mockRefreshTokenResponse);
+        it('fires refresh callback at the half-life of remaining lifetime', async () => {
+            (authRefresh as Mock).mockResolvedValue({ data: REFRESHED_TOKEN, error: null });
 
-            updateTokensInState(mockTokens);
+            updateTokensInState(mockToken);
             const cleanup = scheduleTokenRefresh(getTokensFromState()!);
 
-            // Fast-forward to refresh time (5 minutes before expiration)
-            // vi.advanceTimersByTime((mockTokens.expires_in - 300) * 1000);
-            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            vi.advanceTimersByTime(halfLife);
 
-            // Wait for async operations
-            await Promise.resolve();
+            await flushPromises();
 
-            // Should have made refresh request
-            expect(fetch).toHaveBeenCalled();
+            expect(authRefresh).toHaveBeenCalled();
 
             cleanup();
         });
 
         it('cleanup function cancels scheduled refresh', () => {
-            const cleanup = scheduleTokenRefresh(mockTokens);
+            const cleanup = scheduleTokenRefresh(mockToken);
             const timerCount = vi.getTimerCount();
 
             cleanup();
@@ -148,38 +210,35 @@ describe('token-manager', () => {
             expect(vi.getTimerCount()).toBeLessThan(timerCount);
         });
 
-        it('invokes onRefreshComplete callback with new tokens after successful refresh', async () => {
-            mockFetchSuccess(mockRefreshTokenResponse);
-            updateTokensInState(mockTokens);
+        it('invokes onRefreshComplete with new TokenResponse after successful refresh', async () => {
+            (authRefresh as Mock).mockResolvedValue({ data: REFRESHED_TOKEN, error: null });
+            updateTokensInState(mockToken);
 
             const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
-            // Advance to the scheduled refresh time
-            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            vi.advanceTimersByTime(halfLife);
 
-            // Drain all pending microtasks from the fetch → json() → callback chain
             await flushPromises();
 
-            expect(fetch).toHaveBeenCalled();
             expect(onRefreshComplete).toHaveBeenCalledTimes(1);
             expect(onRefreshComplete).toHaveBeenCalledWith(
-                expect.objectContaining({ access_token: mockRefreshTokenResponse.access_token }),
+                expect.objectContaining({ opaque_token: REFRESHED_TOKEN.opaque_token }),
             );
 
             cleanup();
         });
 
         it('does not invoke onRefreshComplete when refresh fails', async () => {
-            mockFetchError(401, 'Unauthorized');
-            updateTokensInState(mockTokens);
+            (authRefresh as Mock).mockResolvedValue({ data: null, error: { message: 'Unauthorized' } });
+            updateTokensInState(mockToken);
 
             const onRefreshComplete = vi.fn();
             const cleanup = scheduleTokenRefresh(getTokensFromState()!, onRefreshComplete);
 
-            const fiveMinutesBeforeExpiration = (mockTokens.expires_at - 5 * 60 * 1000) - Date.now();
-            vi.advanceTimersByTime(fiveMinutesBeforeExpiration);
+            const halfLife = Math.floor((mockToken.absolute_expires_at.getTime() - Date.now()) / 2);
+            vi.advanceTimersByTime(halfLife);
 
             await flushPromises();
 
@@ -188,20 +247,21 @@ describe('token-manager', () => {
             cleanup();
         });
 
-        it('immediately refreshes and invokes callback when token is already expiring', async () => {
-            mockFetchSuccess(mockRefreshTokenResponse);
+        it('immediately refreshes when token has zero or negative remaining lifetime', async () => {
+            (authRefresh as Mock).mockResolvedValue({ data: REFRESHED_TOKEN, error: null });
 
-            // Token that expires in less than the 5-minute buffer
-            const expiringTokens = { ...mockTokens, expires_at: Date.now() + 2 * 60 * 1000 };
-            updateTokensInState(expiringTokens);
+            const expiredTokens: TokenResponse = {
+                opaque_token: 'st_live_expired_token',
+                absolute_expires_at: new Date(Date.now() - 1000),
+            };
+            updateTokensInState(expiredTokens);
 
             const onRefreshComplete = vi.fn();
-            scheduleTokenRefresh(expiringTokens, onRefreshComplete);
+            scheduleTokenRefresh(expiredTokens, onRefreshComplete);
 
-            // Drain microtasks from the immediate .then() path
+            // No timer advance needed — should fire immediately as a microtask
             await flushPromises();
 
-            expect(fetch).toHaveBeenCalled();
             expect(onRefreshComplete).toHaveBeenCalledTimes(1);
         });
     });

@@ -2,6 +2,8 @@
  * Mock OAuth responses for testing
  */
 
+import type { TokenResponse } from '../../src/api/index.js';
+
 export const mockOAuthProvider = {
   provider: 'okta',
   clientId: 'test-client-id',
@@ -19,19 +21,21 @@ export const mockCodeChallenge = 'mock-code-challenge-encoded';
 
 export const mockState = 'mock-state-random-string';
 
+/**
+ * Raw JSON as the server returns it (absolute_expires_at as ISO string).
+ * Used when mocking global.fetch for the token exchange and refresh endpoints.
+ */
 export const mockTokenResponse = {
-  access_token: 'mock-access-token-abcdef123456',
-  refresh_token: 'mock-refresh-token-xyz789',
-  token_type: 'Bearer',
-  expires_in: 3600,
-  scope: 'openid profile email',
+  opaque_token: 'st_live_mock_token_abcdef123456',
+  absolute_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
 };
 
+/**
+ * Raw JSON for a refreshed token response (from /auth/refresh).
+ */
 export const mockRefreshTokenResponse = {
-  access_token: 'mock-new-access-token-123456',
-  token_type: 'Bearer',
-  expires_in: 3600,
-  scope: 'openid profile email',
+  opaque_token: 'st_live_mock_refreshed_token_xyz789',
+  absolute_expires_at: new Date(Date.now() + 7200 * 1000).toISOString(),
 };
 
 export const mockUserInfo = {
@@ -43,18 +47,19 @@ export const mockUserInfo = {
   email_verified: true,
 };
 
-export const mockTokens = {
-  access_token: mockTokenResponse.access_token,
-  refresh_token: mockTokenResponse.refresh_token,
-  expires_at: Date.now() + mockTokenResponse.expires_in * 1000,
-  token_type: mockTokenResponse.token_type,
+/**
+ * TokenResponse as returned by the SDK after date transformation.
+ * Use this whenever you need a typed TokenResponse (e.g. updateTokensInState).
+ */
+export const mockToken: TokenResponse = {
+  opaque_token: 'st_live_mock_token_abcdef123456',
+  absolute_expires_at: new Date(Date.now() + 3600 * 1000),
 };
 
 export const mockAuthState = {
   isAuthenticated: true,
   user: mockUserInfo,
-  tokens: mockTokens,
-  expiresAt: Date.now() + 3600000, // 1 hour from now
+  tokens: mockToken,
 };
 
 export function mockFetchSuccess(response: any): void {
@@ -64,6 +69,7 @@ export function mockFetchSuccess(response: any): void {
       json: async () => response,
       status: 200,
       statusText: 'OK',
+      headers: { get: (name: string) => name.toLowerCase() === 'content-type' ? 'application/json' : null },
     } as Response)
   );
 }
@@ -75,6 +81,7 @@ export function mockFetchError(status: number, message: string): void {
       json: async () => ({ error: message }),
       status,
       statusText: message,
+      headers: { get: (name: string) => name.toLowerCase() === 'content-type' ? 'application/json' : null },
     } as Response)
   );
 }

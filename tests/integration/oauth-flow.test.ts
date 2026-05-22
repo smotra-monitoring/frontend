@@ -4,6 +4,7 @@
  */
 
 import { mockOAuthProvider, mockAuthorizationCode, mockTokenResponse, mockUserInfo } from '../mocks/oauth-responses.js';
+import type { TokenResponse } from '../../src/types/auth-types.js';
 import { initiateOAuthFlow } from '../../src/auth/oauth-manager.js';
 import { handleLoginCallback } from '../../src/services/auth-service.js';
 import { saveAuthState, clearAuthState, isAuthenticated, getUserInfo as getStoredUserInfo, loadAuthState } from '../../src/state/auth-state.js';
@@ -31,17 +32,17 @@ describe('OAuth Authentication Flow (Integration)', () => {
      *   2. GET  /auth/userinfo      — user profile  (backend)
      */
     function mockBackendCalls(): void {
+        const makeJsonResponse = (data: unknown) => ({
+            ok: true,
+            status: 200,
+            headers: { get: (name: string) => name.toLowerCase() === 'content-type' ? 'application/json' : null },
+            text: async () => JSON.stringify(data),
+            json: async () => data,
+        } as unknown as Response);
+
         global.fetch = vi.fn()
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                json: async () => mockTokenResponse,
-            } as unknown as Response)
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                json: async () => mockUserInfo,
-            } as unknown as Response);
+            .mockResolvedValueOnce(makeJsonResponse(mockTokenResponse))
+            .mockResolvedValueOnce(makeJsonResponse(mockUserInfo));
     }
 
     it('completes full OAuth2 PKCE flow', async () => {
@@ -106,11 +107,9 @@ describe('OAuth Authentication Flow (Integration)', () => {
 
     it('persists authentication across page reloads', () => {
         // Seed complete auth state directly — no OAuth flow needed for this assertion
-        const tokenData = {
-            access_token: mockTokenResponse.access_token,
-            refresh_token: mockTokenResponse.refresh_token,
-            token_type: mockTokenResponse.token_type,
-            expires_at: Date.now() + mockTokenResponse.expires_in * 1000,
+        const tokenData: TokenResponse = {
+            opaque_token: mockTokenResponse.opaque_token,
+            absolute_expires_at: new Date(Date.now() + 3600 * 1000),
         };
         saveAuthState(mockUserInfo, tokenData);
 

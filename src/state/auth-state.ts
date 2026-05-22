@@ -3,7 +3,7 @@
  */
 
 import { createState } from './global-state.js';
-import type { AuthState, UserInfo, TokenData } from '../types/auth-types.js';
+import type { AuthState, UserInfo, TokenResponse } from '../types/auth-types.js';
 import { Storage } from '../utils/storage.js';
 
 const STORAGE_KEY = 'auth';
@@ -24,12 +24,12 @@ const authState = createState<AuthState>(initialAuthState);
  * Load authentication state from localStorage
  */
 export function loadAuthState(): void {
-  const stored = Storage.get<{ user: UserInfo; tokens: TokenData }>(STORAGE_KEY);
+  // absolute_expires_at is serialized as an ISO string in JSON; reconstruct as Date
+  const stored = Storage.get<{ user: UserInfo; tokens: TokenResponse }>(STORAGE_KEY);
 
   if (stored && stored.tokens) {
-    // Check if tokens are expired
-    const now = Date.now();
-    if (stored.tokens.expires_at > now) {
+
+    if (Date.now() < new Date(stored.tokens.absolute_expires_at).getTime()) {
       authState.setState({
         isAuthenticated: true,
         user: stored.user,
@@ -47,7 +47,7 @@ export function loadAuthState(): void {
 /**
  * Save authentication state to localStorage
  */
-export function saveAuthState(user: UserInfo, tokens: TokenData): void {
+export function saveAuthState(user: UserInfo, tokens: TokenResponse): void {
   Storage.set(STORAGE_KEY, { user, tokens });
 
   authState.setState({
@@ -107,7 +107,7 @@ export function updateUserInfo(user: Partial<UserInfo>): void {
 /**
  * Update tokens
  */
-export function updateTokensInState(tokens: TokenData): void {
+export function updateTokensInState(tokens: TokenResponse): void {
   const current = authState.getState();
   authState.setState({ tokens });
 
@@ -141,7 +141,7 @@ export function getUserFromState(): UserInfo | null {
 /**
  * Get current tokens
  */
-export function getTokensFromState(): TokenData | null {
+export function getTokensFromState(): TokenResponse | null {
   return authState.getState().tokens;
 }
 
@@ -154,10 +154,10 @@ export function isTokenExpiredInState(bufferSeconds: number = 60): boolean {
     return true;
   }
 
-  const now = Date.now();
-  const expiresAt = tokens.expires_at;
+  // Use new Date(...) to safely handle both Date objects and ISO strings (e.g. after localStorage round-trip)
+  const expiresAt = new Date(tokens.absolute_expires_at).getTime();
 
   // Check if token expires within buffer period
-  return expiresAt <= now + (bufferSeconds * 1000);
+  return expiresAt <= Date.now() + (bufferSeconds * 1000);
 }
 
