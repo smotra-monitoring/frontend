@@ -150,6 +150,9 @@ describe('token-manager', () => {
 
             const result = await revokeTokens();
 
+            const stateTokens = getTokensFromState();
+            expect(stateTokens).toBeNull();
+
             expect(result).toBe(true);
             expect(oauth2Revoke).toHaveBeenCalledWith({
                 body: { opaque_token: mockToken.opaque_token },
@@ -177,10 +180,11 @@ describe('token-manager', () => {
 
     describe('scheduleTokenRefresh', () => {
         it('schedules refresh at the half-life point', () => {
+            const timersBefore = vi.getTimerCount();
             const cleanup = scheduleTokenRefresh(mockToken);
+            const timersAfter = vi.getTimerCount();
 
-            // Timer should be scheduled
-            expect(vi.getTimerCount()).toBeGreaterThan(0);
+            expect(timersAfter).toBeGreaterThan(timersBefore);
 
             cleanup();
         });
