@@ -139,7 +139,7 @@ async function buildAuthorizationUrl(provider: OAuth2Provider): Promise<string> 
     code_challenge_method: pkce.code_challenge_method,
   };
 
-  let authEndpoint = new URL('/auth/oauth2/authorize', getEnvironmentConfig().apiBaseUrl).toString();
+  let authEndpoint = new URL('/v1/auth/oauth2/authorize', getEnvironmentConfig().apiBaseUrl).toString();
 
   return buildUrl(authEndpoint, params);
 }
