@@ -3,9 +3,7 @@ import { defineConfig } from '@hey-api/openapi-ts';
 export default defineConfig({
     input: './api/openapi/api/spec.yaml', // sign up at app.heyapi.dev
     output: {
-        // format: 'prettier',
-        // lint: 'eslint',
-        postProcess: ['prettier'],
+        // postProcess: ['prettier'],
         path: 'src/api', // generated code output directory
     },
     plugins: [
