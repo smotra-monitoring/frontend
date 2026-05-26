@@ -70,7 +70,7 @@ Added Jest unit/integration testing for all components and services per copilot-
     - `setup.ts` - Jest setup file, DOM mocking configuration
 
 11. **Configure Jest** in root:
-    - `jest.config.js` - Jest configuration for TypeScript, coverage thresholds, DOM environment (jsdom)
+    - `vi.config.js` - Jest configuration for TypeScript, coverage thresholds, DOM environment (jsdom)
     - Update package.json with test scripts: `test`, `test:watch`, `test:coverage`
 
 12. **Enhance** copilot-instructions.md with:

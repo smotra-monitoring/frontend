@@ -4,6 +4,8 @@ export const AgentStatusSchema = {
     type: 'object',
     required: [
         'agent_id',
+        'agent_version',
+        'config_version',
         'is_running',
         'started_at',
         'stopped_at',
@@ -13,13 +15,23 @@ export const AgentStatusSchema = {
         'last_report_at',
         'failed_report_count',
         'server_connected',
-        'cached_reports'
+        'cache_stats'
     ],
     properties: {
         agent_id: {
+            $ref: '#/components/schemas/UUIDv7',
+            description: 'Self-generated UUIDv7 identifier for this agent',
+            example: '0197f96c-b278-7f64-a32f-dae3cabe1ff0'
+        },
+        agent_version: {
             type: 'string',
-            description: 'Unique identifier for the agent',
-            example: 'agent-001'
+            description: 'Version of the agent',
+            example: '0.0.1'
+        },
+        config_version: {
+            type: 'integer',
+            description: 'Version of the agent configuration',
+            example: 23
         },
         is_running: {
             type: 'boolean',
@@ -70,10 +82,29 @@ export const AgentStatusSchema = {
             description: 'Whether the agent is currently connected to the server',
             example: true
         },
-        cached_reports: {
+        cache_stats: {
+            $ref: '#/components/schemas/AgentCacheStats',
+            description: 'Current state of the local result cache'
+        }
+    }
+} as const;
+
+export const AgentCacheStatsSchema = {
+    type: 'object',
+    required: [
+        'len',
+        'capacity'
+    ],
+    properties: {
+        len: {
             type: 'integer',
-            description: 'Number of reports cached locally on the agent',
-            example: 0
+            description: 'Number of results currently buffered in the local cache',
+            example: 42
+        },
+        capacity: {
+            type: 'integer',
+            description: 'Maximum number of results the cache can hold (hard cap)',
+            example: 10000
         }
     }
 } as const;
@@ -296,10 +327,12 @@ export const StorageConfigSchema = {
 
 export const EndpointSchema = {
     type: 'object',
+    description: 'An endpoint to monitor (IP address, hostname, or URL)',
     required: [
         'id',
         'address',
-        'enabled'
+        'enabled',
+        'tags'
     ],
     properties: {
         id: {
@@ -338,24 +371,22 @@ export const MonitoringResultSchema = {
     required: [
         'id',
         'agent_id',
-        'target',
+        'endpoint_id',
         'check_type',
         'timestamp'
     ],
     properties: {
         id: {
-            type: 'string',
-            description: 'Unique identifier for the monitoring result',
-            example: 'irusdf-1234-abcd-5678-efghijklmnop'
+            $ref: '#/components/schemas/UUIDv7',
+            description: 'Unique identifier for the monitoring result'
         },
         agent_id: {
-            type: 'string',
-            description: 'Unique identifier for the agent',
-            example: 'agent-001'
+            $ref: '#/components/schemas/UUIDv7',
+            description: 'Unique identifier for the agent'
         },
-        target: {
-            description: 'Monitoring target information',
-            $ref: '#/components/schemas/Endpoint'
+        endpoint_id: {
+            $ref: '#/components/schemas/UUIDv7',
+            description: 'UUID of the endpoint being monitored'
         },
         check_type: {
             $ref: '#/components/schemas/CheckType',
@@ -366,6 +397,23 @@ export const MonitoringResultSchema = {
             format: 'date-time',
             description: 'Timestamp when the report was generated (RFC3339)',
             example: '2025-11-19T10:30:00Z'
+        }
+    }
+} as const;
+
+export const BatchMonitoringResultsSchema = {
+    type: 'object',
+    required: [
+        'results'
+    ],
+    description: 'A batch of monitoring results submitted by an agent from its local cache.\nThe server deduplicates entries by `MonitoringResult.id`.\n',
+    properties: {
+        results: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/MonitoringResult'
+            },
+            description: 'Ordered list of monitoring results (oldest-first)'
         }
     }
 } as const;
@@ -404,6 +452,48 @@ export const CheckTypeSchema = {
     }
 } as const;
 
+export const PingCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'ping'
+    ]
+} as const;
+
+export const TracerouteCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'traceroute'
+    ]
+} as const;
+
+export const TcpConnectCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'tcpconnect'
+    ]
+} as const;
+
+export const UdpConnectCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'udpconnect'
+    ]
+} as const;
+
+export const HttpGetCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'httpget'
+    ]
+} as const;
+
+export const PluginCheckTypeSchema = {
+    type: 'string',
+    enum: [
+        'plugin'
+    ]
+} as const;
+
 export const PingCheckSchema = {
     type: 'object',
     required: [
@@ -412,10 +502,7 @@ export const PingCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'ping'
-            ]
+            $ref: '#/components/schemas/PingCheckType'
         },
         result: {
             $ref: '#/components/schemas/PingResult'
@@ -425,10 +512,18 @@ export const PingCheckSchema = {
 
 export const PingResultSchema = {
     type: 'object',
+    required: [
+        'resolved_ip',
+        'successes',
+        'failures',
+        'success_latencies'
+    ],
     properties: {
         resolved_ip: {
             type: 'string',
-            nullable: true
+            format: 'ipv4',
+            description: 'Resolved IP address of the target',
+            example: '4.2.2.2'
         },
         successes: {
             type: 'integer',
@@ -443,18 +538,16 @@ export const PingResultSchema = {
             items: {
                 type: 'number',
                 format: 'double'
-            }
+            },
+            example: [
+                12.5,
+                13,
+                11.8
+            ]
         },
-        avg_response_time_ms: {
-            type: 'number',
-            format: 'double',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
-        },
-        errors: {
-            type: 'array',
-            items: {
-                type: 'string'
-            }
         }
     }
 } as const;
@@ -467,10 +560,7 @@ export const TracerouteCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'traceroute'
-            ]
+            $ref: '#/components/schemas/TracerouteCheckType'
         },
         result: {
             $ref: '#/components/schemas/TracerouteResult'
@@ -480,6 +570,10 @@ export const TracerouteCheckSchema = {
 
 export const TracerouteResultSchema = {
     type: 'object',
+    required: [
+        'hops',
+        'target_reached'
+    ],
     properties: {
         hops: {
             type: 'array',
@@ -490,40 +584,43 @@ export const TracerouteResultSchema = {
         target_reached: {
             type: 'boolean'
         },
-        total_time_ms: {
-            type: 'number',
-            format: 'double',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
-        },
-        errors: {
-            type: 'array',
-            items: {
-                type: 'string'
-            }
         }
     }
 } as const;
 
 export const TracerouteHopSchema = {
     type: 'object',
+    required: [
+        'hop'
+    ],
     properties: {
         hop: {
             type: 'integer',
             format: 'int32'
         },
-        address: {
+        resolved_ip: {
             type: 'string',
             format: 'ipv4',
-            nullable: true
+            description: 'Resolved IP address of the target',
+            example: '4.2.2.2'
         },
-        response_time_ms: {
-            type: 'number',
-            format: 'double',
-            nullable: true
+        success_latencies: {
+            type: 'array',
+            items: {
+                type: 'number',
+                format: 'double'
+            },
+            example: [
+                12.5,
+                13,
+                11.8
+            ]
         },
         hostname: {
-            type: 'string',
-            nullable: true
+            type: 'string'
         }
     }
 } as const;
@@ -536,10 +633,7 @@ export const TcpConnectCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'tcpconnect'
-            ]
+            $ref: '#/components/schemas/TcpConnectCheckType'
         },
         result: {
             $ref: '#/components/schemas/TcpConnectResult'
@@ -549,6 +643,10 @@ export const TcpConnectCheckSchema = {
 
 export const TcpConnectResultSchema = {
     type: 'object',
+    required: [
+        'connected',
+        'resolved_ip'
+    ],
     properties: {
         connected: {
             type: 'boolean'
@@ -558,13 +656,12 @@ export const TcpConnectResultSchema = {
             format: 'double',
             nullable: true
         },
-        error: {
-            type: 'string',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
         },
         resolved_ip: {
-            type: 'string',
-            nullable: true
+            type: 'string'
         }
     }
 } as const;
@@ -577,10 +674,7 @@ export const UdpConnectCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'udpconnect'
-            ]
+            $ref: '#/components/schemas/UdpConnectCheckType'
         },
         result: {
             $ref: '#/components/schemas/UdpConnectResult'
@@ -590,6 +684,10 @@ export const UdpConnectCheckSchema = {
 
 export const UdpConnectResultSchema = {
     type: 'object',
+    required: [
+        'probe_successful',
+        'resolved_ip'
+    ],
     properties: {
         probe_successful: {
             type: 'boolean'
@@ -599,13 +697,12 @@ export const UdpConnectResultSchema = {
             format: 'double',
             nullable: true
         },
-        error: {
-            type: 'string',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
         },
         resolved_ip: {
-            type: 'string',
-            nullable: true
+            type: 'string'
         }
     }
 } as const;
@@ -618,10 +715,7 @@ export const HttpGetCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'httpget'
-            ]
+            $ref: '#/components/schemas/HttpGetCheckType'
         },
         result: {
             $ref: '#/components/schemas/HttpGetResult'
@@ -631,11 +725,14 @@ export const HttpGetCheckSchema = {
 
 export const HttpGetResultSchema = {
     type: 'object',
+    required: [
+        'status_code',
+        'success'
+    ],
     properties: {
         status_code: {
             type: 'integer',
-            format: 'int32',
-            nullable: true
+            format: 'int32'
         },
         response_time_ms: {
             type: 'number',
@@ -647,8 +744,8 @@ export const HttpGetResultSchema = {
             format: 'int64',
             nullable: true
         },
-        error: {
-            type: 'string',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
         },
         success: {
@@ -665,10 +762,7 @@ export const PluginCheckSchema = {
     ],
     properties: {
         type: {
-            type: 'string',
-            enum: [
-                'plugin'
-            ]
+            $ref: '#/components/schemas/PluginCheckType'
         },
         result: {
             $ref: '#/components/schemas/PluginResult'
@@ -678,6 +772,12 @@ export const PluginCheckSchema = {
 
 export const PluginResultSchema = {
     type: 'object',
+    required: [
+        'plugin_name',
+        'plugin_version',
+        'success',
+        'data'
+    ],
     properties: {
         plugin_name: {
             type: 'string'
@@ -693,8 +793,8 @@ export const PluginResultSchema = {
             format: 'double',
             nullable: true
         },
-        error: {
-            type: 'string',
+        error_details: {
+            $ref: '#/components/schemas/ErrorDetails',
             nullable: true
         },
         data: {
@@ -706,27 +806,69 @@ export const PluginResultSchema = {
     }
 } as const;
 
+export const ErrorDetailsSchema = {
+    type: 'object',
+    nullable: true,
+    description: 'Error information from a check, stored as an extensible JSON object',
+    properties: {
+        errors: {
+            type: 'array',
+            items: {
+                type: 'string'
+            },
+            description: 'List of error messages from the check',
+            example: [
+                'Timeout',
+                'Host unreachable'
+            ]
+        }
+    }
+} as const;
+
 export const AgentHeartbeatSchema = {
     type: 'object',
     required: [
-        'timestamp'
+        'timestamp',
+        'status',
+        'cpu_usage_percent',
+        'memory_usage_mb',
+        'memory_total_mb',
+        'system_uptime_secs'
     ],
     properties: {
         timestamp: {
             type: 'string',
-            format: 'date-time'
+            format: 'date-time',
+            description: 'Agent-local timestamp when the heartbeat was generated (RFC3339)'
         },
         status: {
             $ref: '#/components/schemas/AgentHealthStatus',
-            default: 'healthy'
+            description: 'Health status of the agent'
         },
         cpu_usage_percent: {
             type: 'number',
-            format: 'float'
+            format: 'float',
+            minimum: 0,
+            maximum: 100,
+            description: 'CPU utilization percentage (0.0–100.0)'
         },
         memory_usage_mb: {
             type: 'number',
-            format: 'float'
+            format: 'float',
+            minimum: 0,
+            description: 'Resident memory currently in use (MB)'
+        },
+        memory_total_mb: {
+            type: 'number',
+            format: 'float',
+            minimum: 0,
+            description: 'Total physical memory available (MB)'
+        },
+        system_uptime_secs: {
+            type: 'integer',
+            format: 'int64',
+            minimum: 0,
+            description: 'System uptime in seconds'
         }
     }
 } as const;
@@ -834,13 +976,46 @@ export const AgentRegistrationSchema = {
     }
 } as const;
 
+export const AgentNetworkInterfaceSchema = {
+    type: 'object',
+    required: [
+        'ip',
+        'iface',
+        'family',
+        'recommended'
+    ],
+    properties: {
+        ip: {
+            type: 'string',
+            description: 'IP address of the network interface (IPv4 or IPv6, excluding loopback and link-local)',
+            example: '192.168.1.10'
+        },
+        iface: {
+            type: 'string',
+            description: 'Name of the network interface',
+            example: 'eth0'
+        },
+        family: {
+            $ref: '#/components/schemas/IpAddressFamily',
+            description: 'IP address family',
+            example: 'ipv4'
+        },
+        recommended: {
+            type: 'boolean',
+            description: 'Whether this address is recommended for the server to use when communicating\nwith the agent. Determined by the agent using the OS routing table: the source\nIP the OS selects when opening a connection toward the server is marked as\nrecommended. Only one entry will have recommended=true.\n',
+            example: true
+        }
+    }
+} as const;
+
 export const AgentSelfRegistrationSchema = {
     type: 'object',
     required: [
         'agentId',
         'claimTokenHash',
         'hostname',
-        'agentVersion'
+        'agentVersion',
+        'ipAddresses'
     ],
     properties: {
         agentId: {
@@ -865,6 +1040,34 @@ export const AgentSelfRegistrationSchema = {
             type: 'string',
             description: 'Version of the agent software',
             example: '1.0.0'
+        },
+        ipAddresses: {
+            type: 'array',
+            description: 'List of all non-loopback, non-link-local network interfaces on the agent host.\nLoopback (127.x.x.x / ::1) and link-local (169.254.x.x / fe80::/10) addresses\nare excluded. The server should store all addresses and allow the operator to\nselect the preferred one during the claim process. The entry with\nrecommended=true reflects the OS-selected source IP for connections toward\nthe server (determined via routing table, no traffic sent).\n',
+            minItems: 1,
+            items: {
+                $ref: '#/components/schemas/AgentNetworkInterface'
+            },
+            example: [
+                {
+                    ip: '192.168.1.10',
+                    iface: 'eth0',
+                    family: 'ipv4',
+                    recommended: true
+                },
+                {
+                    ip: '10.0.0.5',
+                    iface: 'eth1',
+                    family: 'ipv4',
+                    recommended: false
+                },
+                {
+                    ip: '2001:db8::1',
+                    iface: 'eth0',
+                    family: 'ipv6',
+                    recommended: false
+                }
+            ]
         }
     }
 } as const;
@@ -1110,6 +1313,36 @@ export const ReportAcknowledgmentSchema = {
         update_available: {
             type: 'boolean',
             description: 'Whether agent update is available'
+        }
+    }
+} as const;
+
+export const ResultsBatchAcknowledgmentSchema = {
+    type: 'object',
+    required: [
+        'submission_id',
+        'accepted',
+        'received_at'
+    ],
+    properties: {
+        submission_id: {
+            $ref: '#/components/schemas/UUIDv7',
+            description: 'Server-assigned ID for this batch submission'
+        },
+        accepted: {
+            type: 'integer',
+            description: 'Number of results accepted for processing',
+            example: 25
+        },
+        duplicates_skipped: {
+            type: 'integer',
+            description: 'Number of results deduplicated (already known to the server)',
+            example: 0
+        },
+        received_at: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Timestamp when the batch was received by the server'
         }
     }
 } as const;
@@ -1580,129 +1813,23 @@ export const NotificationChannelSchema = {
     }
 } as const;
 
-export const AuthorizationCodeTokenRequestSchema = {
-    type: 'object',
-    required: [
-        'grant_type',
-        'code',
-        'redirect_uri',
-        'client_id'
-    ],
-    properties: {
-        grant_type: {
-            type: 'string',
-            enum: [
-                'authorization_code'
-            ]
-        },
-        code: {
-            type: 'string',
-            description: 'Authorization code from callback'
-        },
-        redirect_uri: {
-            type: 'string',
-            format: 'uri',
-            description: 'Must match original authorization request'
-        },
-        client_id: {
-            type: 'string'
-        },
-        client_secret: {
-            type: 'string',
-            description: 'Required for confidential clients'
-        },
-        code_verifier: {
-            type: 'string',
-            description: 'PKCE code verifier'
-        }
-    }
-} as const;
-
-export const RefreshTokenRequestSchema = {
-    type: 'object',
-    required: [
-        'grant_type',
-        'refresh_token'
-    ],
-    properties: {
-        grant_type: {
-            type: 'string',
-            enum: [
-                'refresh_token'
-            ]
-        },
-        refresh_token: {
-            type: 'string'
-        },
-        scope: {
-            type: 'string',
-            description: 'Optional scope restriction'
-        }
-    }
-} as const;
-
-export const ClientCredentialsTokenRequestSchema = {
-    type: 'object',
-    required: [
-        'grant_type',
-        'client_id',
-        'client_secret'
-    ],
-    properties: {
-        grant_type: {
-            type: 'string',
-            enum: [
-                'client_credentials'
-            ]
-        },
-        client_id: {
-            type: 'string'
-        },
-        client_secret: {
-            type: 'string'
-        },
-        scope: {
-            type: 'string',
-            description: 'Space-separated list of requested scopes'
-        }
-    }
-} as const;
-
 export const TokenResponseSchema = {
     type: 'object',
     required: [
-        'access_token',
-        'token_type',
-        'expires_in'
+        'opaque_token',
+        'expires_at'
     ],
     properties: {
-        access_token: {
+        opaque_token: {
             type: 'string',
-            description: 'JWT access token',
-            example: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'
+            description: 'Server-managed opaque session token. Use as a Bearer token in the\nAuthorization header for all subsequent requests.\nFormat: st_live_<hex> (production) or st_test_<hex> (dev/test).\n',
+            example: 'st_live_..............................'
         },
-        token_type: {
+        expires_at: {
             type: 'string',
-            example: 'Bearer'
-        },
-        expires_in: {
-            type: 'integer',
-            description: 'Token lifetime in seconds',
-            example: 3600
-        },
-        refresh_token: {
-            type: 'string',
-            description: 'Refresh token (only for authorization_code grant)',
-            example: 'rt_1234567890abcdef'
-        },
-        scope: {
-            type: 'string',
-            description: 'Space-separated list of granted scopes',
-            example: 'openid profile email metrics:read'
-        },
-        id_token: {
-            type: 'string',
-            description: 'OpenID Connect ID token (if openid scope requested)'
+            format: 'date-time',
+            description: 'Hard expiry time (ISO 8601). The session will never be valid after\nthis timestamp regardless of activity. Use this to schedule a\nproactive re-login in the client (e.g. at the midpoint).\n',
+            example: '2025-10-15T12:00:00Z'
         }
     }
 } as const;
@@ -2084,6 +2211,15 @@ export const RegistrationStatusSchema = {
         'pending_claim'
     ],
     description: 'Status of agent registration'
+} as const;
+
+export const IpAddressFamilySchema = {
+    type: 'string',
+    enum: [
+        'ipv4',
+        'ipv6'
+    ],
+    description: 'IP address family (IPv4 or IPv6)'
 } as const;
 
 export const ClaimStatusPendingEnumSchema = {

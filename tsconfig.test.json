@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": ".", // Allows files from both /src and /tests
+        "noEmit": true, // We don't want to actually generate JS files for tests
+        "types": [
+            "node",
+            "vitest/globals"
+        ]
+    },
+    "include": [
+        "src/**/*",
+        "tests/**/*"
+    ]
+}

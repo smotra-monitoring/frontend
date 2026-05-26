@@ -3,32 +3,22 @@
  * Extends the generated OpenAPI types with application-specific auth types
  */
 
+import type { TokenResponse, UserInfo } from '../api/index.js';
+
+// Re-export the generated types as canonical types
+export type { TokenResponse, UserInfo };
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: UserInfo | null;
-  tokens: TokenData | null;
+  tokens: TokenResponse | null;
   loading: boolean;
   error: string | null;
-}
-
-export interface TokenData {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number; // Unix timestamp
-  token_type: string;
-}
-
-export interface UserInfo {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
 }
 
 export type OAuth2Provider = 'okta' | 'auth0' | 'azure' | 'google' | 'oidc';
 
 export interface OAuth2Config {
-  provider: OAuth2Provider;
   clientId: string;
   redirectUri: string;
   authorizationEndpoint: string;
@@ -57,7 +47,7 @@ export interface AuthorizationRequest {
 
 export interface TokenRefreshResult {
   success: boolean;
-  tokens?: TokenData;
+  tokens?: TokenResponse;
   error?: string;
 }
 

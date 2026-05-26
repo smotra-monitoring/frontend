@@ -90,7 +90,7 @@ describe('Dashboard (Integration)', () => {
       ws = new MockWebSocket('ws://localhost:8080/ws');
     });
 
-    it('updates agent metrics on WebSocket message', (done) => {
+    it('updates agent metrics on WebSocket message', () => {
       const agentId = mockAgents[0].id;
       const initialAgent = getAgents().find(a => a.id === agentId);
       const initialLatency = initialAgent!.metrics.latency;
@@ -98,49 +98,39 @@ describe('Dashboard (Integration)', () => {
       // Simulate WebSocket update
       ws.simulateMessage(mockAgentUpdateMessage);
 
-      // Process update
-      setTimeout(() => {
-        updateAgent(mockAgentUpdateMessage.payload);
+      // Process update synchronously
+      updateAgent(mockAgentUpdateMessage.payload);
 
-        const updatedAgent = getAgents().find(a => a.id === agentId);
-        expect(updatedAgent!.metrics.latency).not.toBe(initialLatency);
-        expect(updatedAgent!.metrics.latency).toBe(mockAgentUpdateMessage.payload.metrics!.latency);
-
-        done();
-      }, 20);
+      const updatedAgent = getAgents().find(a => a.id === agentId);
+      expect(updatedAgent!.metrics.latency).not.toBe(initialLatency);
+      expect(updatedAgent!.metrics.latency).toBe(mockAgentUpdateMessage.payload.metrics!.latency);
     });
 
-    it('adds new agent via WebSocket', (done) => {
+    it('adds new agent via WebSocket', () => {
       const initialCount = getAgents().length;
 
       ws.simulateMessage(mockAgentAddedMessage);
 
-      setTimeout(() => {
-        addAgent(mockAgentAddedMessage.payload);
+      // Process update synchronously
+      addAgent(mockAgentAddedMessage.payload);
 
-        const agents = getAgents();
-        expect(agents).toHaveLength(initialCount + 1);
-        expect(agents.some(a => a.id === mockAgentAddedMessage.payload.id)).toBe(true);
-
-        done();
-      }, 20);
+      const agents = getAgents();
+      expect(agents).toHaveLength(initialCount + 1);
+      expect(agents.some(a => a.id === mockAgentAddedMessage.payload.id)).toBe(true);
     });
 
-    it('removes agent via WebSocket', (done) => {
+    it('removes agent via WebSocket', () => {
       const initialCount = getAgents().length;
       const agentToRemove = mockAgents[0].id;
 
       ws.simulateMessage(mockAgentRemovedMessage);
 
-      setTimeout(() => {
-        removeAgent(mockAgentRemovedMessage.payload.id);
+      // Process update synchronously
+      removeAgent(mockAgentRemovedMessage.payload.id);
 
-        const agents = getAgents();
-        expect(agents).toHaveLength(initialCount - 1);
-        expect(agents.some(a => a.id === agentToRemove)).toBe(false);
-
-        done();
-      }, 20);
+      const agents = getAgents();
+      expect(agents).toHaveLength(initialCount - 1);
+      expect(agents.some(a => a.id === agentToRemove)).toBe(false);
     });
   });
 

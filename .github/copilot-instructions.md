@@ -624,7 +624,7 @@ Based on 4px unit:
 - Data Storage: In-memory storage for real-time data, with potential for future integration with databases
 - Communication Protocol: HTTP/HTTPS for communcation with api and WebSocket for real-time updates
 - Deployment: Docker for containerization and ease of deployment
-- Testing: Jest for unit testing and integration testing
+- Testing: Vitest for unit testing and integration testing
 - Linting and Formatting: ESLint and Prettier for code quality and consistency
 
 
@@ -718,7 +718,7 @@ Based on 4px unit:
   - `integration/`: End-to-end flow tests
   - `integration/responsive/`: Responsive layout tests
   - `mocks/`: Mock data (agents, OAuth, WebSocket, viewport)
-  - `setup.ts`: Jest configuration
+  - `setup.ts`: Vitest configuration
 - `api/`: OpenAPI specification and configuration
   - `openapi/api/spec.yaml`: API specification
   - `openapi-ts.config.ts`: OpenAPI client generator config
@@ -730,9 +730,13 @@ Based on 4px unit:
     - `ui-design-system.md`: Design patterns, Bento-Box layouts
   - `testing/`: Testing guides
     - `responsive-testing.md`: Responsive testing matrix
+    - `TESTING_SUMMARY.md`: Test status and coverage
+  - `TYPESCRIPT_CONFIGURATION.md`: TypeScript multi-config strategy guide
 - `package.json`: Project metadata and dependencies
-- `tsconfig.json`: TypeScript configuration
-- `jest.config.js`: Jest testing configuration
+- `tsconfig.json`: TypeScript IDE configuration (type-checking only, noEmit: true)
+- `tsconfig.build.json`: TypeScript production build configuration (src/ only, emits JS)
+- `tsconfig.test.json`: TypeScript test configuration (extends base, includes tests/)
+- `vitest.config.js`: Vitest testing configuration
 
 # OpenAPI Specification
 
@@ -756,9 +760,54 @@ All API interactions in the frontend should utilize the generated TypeScript cli
 - Write JSDoc comments for functions and classes to provide clear documentation.
 - Use ESLint and Prettier for code formatting and linting to maintain a consistent code style across the project. 
 
+# TypeScript Configuration
+
+The project uses a **three-config TypeScript setup** to separate concerns between IDE type-checking, production builds, and test environments.
+
+## Configuration Files
+
+| Configuration | Purpose | Emits JS | Includes | Used By |
+|--------------|---------|----------|----------|---------|
+| `tsconfig.json` | IDE type-checking | ❌ No | `src/` + `tests/` | VS Code, `tsc --noEmit` |
+| `tsconfig.build.json` | Production build | ✅ Yes | `src/` only | `npm run build` |
+| `tsconfig.test.json` | Test environment | ❌ No | `src/` + `tests/` | Vitest |
+
+## Key Points
+
+- **tsconfig.json**: Base configuration for VS Code IntelliSense and general type-checking
+  - `noEmit: true` for faster type-checking without file system writes
+  - Includes both `src/` and `tests/` for complete type coverage
+  - Types: `node` and `vitest/globals`
+
+- **tsconfig.build.json**: Production-only compilation
+  - `rootDir: "./src"` and `outDir: "./dist"` for clean output structure
+  - Generates source maps and declaration files
+  - Stricter rules: `noUncheckedIndexedAccess`, `noUncheckedSideEffectImports`
+  - Excludes tests from production build
+
+- **tsconfig.test.json**: Test-specific configuration
+  - Extends `tsconfig.json` for consistency
+  - `rootDir: "."` to allow imports from both `src/` and `tests/`
+  - Used automatically by Vitest via vitest.config.js
+
+## Commands
+
+```bash
+# Type-check everything without emitting files (fast)
+npx tsc --noEmit
+
+# Build production code (src → dist)
+npm run build  # Uses tsconfig.build.json
+
+# Run tests (uses tsconfig.test.json)
+npm test
+```
+
+For detailed information, see [docs/TYPESCRIPT_CONFIGURATION.md](docs/TYPESCRIPT_CONFIGURATION.md).
+
 # Testing
 
-The project uses **Jest** for unit and integration testing with **jsdom** for DOM mocking.
+The project uses **Vitest** for unit and integration testing with **jsdom** for DOM mocking.
 
 ## Testing Principles
 

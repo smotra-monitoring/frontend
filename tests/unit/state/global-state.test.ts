@@ -41,7 +41,7 @@ describe('global-state', () => {
 
     it('notifies subscribers on state change', () => {
       const state = createState(initialState);
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       state.subscribe(callback);
       state.setState({ count: 5 });
@@ -54,8 +54,8 @@ describe('global-state', () => {
 
     it('supports multiple subscribers', () => {
       const state = createState(initialState);
-      const callback1 = jest.fn();
-      const callback2 = jest.fn();
+      const callback1 = vi.fn();
+      const callback2 = vi.fn();
 
       state.subscribe(callback1);
       state.subscribe(callback2);
@@ -68,7 +68,7 @@ describe('global-state', () => {
 
     it('unsubscribe removes subscriber', () => {
       const state = createState(initialState);
-      const callback = jest.fn();
+      const callback = vi.fn();
 
       const unsubscribe = state.subscribe(callback);
       unsubscribe();

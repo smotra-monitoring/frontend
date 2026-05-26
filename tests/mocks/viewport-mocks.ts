@@ -1,13 +1,14 @@
 /**
  * Mock viewport utilities for testing responsive behavior
  */
+import { vi, type Mock } from 'vitest';
 
 interface MockMediaQueryList {
   matches: boolean;
   media: string;
-  addEventListener: jest.Mock;
-  removeEventListener: jest.Mock;
-  dispatchEvent: jest.Mock;
+  addEventListener: Mock;
+  removeEventListener: Mock;
+  dispatchEvent: Mock;
 }
 
 export function mockViewport(width: number, height: number): void {
@@ -31,12 +32,12 @@ export function mockMatchMedia(matches: boolean): MockMediaQueryList {
   const mediaQueryList: MockMediaQueryList = {
     matches,
     media: '',
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   };
 
-  window.matchMedia = jest.fn(() => mediaQueryList as any);
+  window.matchMedia = vi.fn(() => mediaQueryList as any);
   return mediaQueryList;
 }
 

@@ -30,7 +30,7 @@ describe('agent-state', () => {
     });
 
     it('notifies subscribers', () => {
-      const callback = jest.fn();
+      const callback = vi.fn();
       const unsubscribe = subscribeToAgents(callback);
 
       setAgents(mockAgents);

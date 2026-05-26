@@ -24,7 +24,9 @@ We deliberately chose **vanilla TypeScript** over frameworks (React, Vue, Angula
 2. **Full Control**: Direct DOM manipulation without virtual DOM abstractions
 3. **Learning Opportunity**: Understand web fundamentals deeply
 4. **Performance**: Optimize exactly what we need, when we need it
-5. **Simplicity**: No build complexity, just TypeScript compiler
+5. **Simplicity**: Minimal build complexity, just TypeScript compiler
+
+> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for details on our three-config setup (IDE, build, test).
 
 ### Mobile-First Responsive
 
@@ -508,11 +510,12 @@ Each test file mirrors the `src/` structure for easy navigation.
 - **Customizable**: Easy to override with CSS variables
 - **No JavaScript**: Pure CSS framework
 
-### Why Jest?
+### Why Vitest?
 
-- **Fast**: Parallel test execution
+- **Fast**: Native ESM support, parallel test execution
+- **Modern**: Built for Vite, optimized for TypeScript
 - **Complete**: Mocking, coverage, snapshots built-in
-- **Standard**: Industry-standard testing framework
+- **Compatible**: Jest-compatible API, easy migration
 - **jsdom**: Browser environment simulation
 
 ### Why localStorage?

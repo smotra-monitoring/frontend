@@ -2,10 +2,10 @@
 
 import { client } from './client.gen.js';
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client/index.js';
-import { acknowledgeAlertResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listUsersResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentStatusResponseTransformer, updateAgentConfigurationResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
-import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutResponses, Oauth2AuthorizeData, Oauth2CallbackData, Oauth2CallbackErrors, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentStatusData, SubmitAgentStatusErrors, SubmitAgentStatusResponses, UpdateAgentConfigurationData, UpdateAgentConfigurationErrors, UpdateAgentConfigurationResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
+import { acknowledgeAlertResponseTransformer, authRefreshResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listUsersResponseTransformer, oauth2TokenResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentResultsResponseTransformer, submitAgentStatusResponseTransformer, updateAgentConfigurationResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
+import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutErrors, LogoutResponses, Oauth2AuthorizeData, Oauth2AuthorizeErrors, Oauth2CallbackData, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentResultsData, SubmitAgentResultsErrors, SubmitAgentResultsResponses, SubmitAgentStatusData, SubmitAgentStatusErrors, SubmitAgentStatusResponses, UpdateAgentConfigurationData, UpdateAgentConfigurationErrors, UpdateAgentConfigurationResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
 
-export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
+export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
      * You can provide a client instance returned by `createClient()` instead of
      * individual options. This might be also useful if you want to implement a
@@ -151,11 +151,34 @@ export const updateAgentConfiguration = <ThrowOnError extends boolean = false>(o
 /**
  * Send agent heartbeat
  *
- * Lightweight endpoint for agents to signal they are alive
+ * Lightweight endpoint for agents to signal they are alive and
+ * report host resource utilization (CPU, memory). When cpu_usage_percent
+ * and memory_usage_mb / memory_total_mb are included, the server stores
+ * a time-series snapshot in agent_vitals for dashboard display.
+ *
  */
 export const sendAgentHeartbeat = <ThrowOnError extends boolean = false>(options: Options<SendAgentHeartbeatData, ThrowOnError>) => (options.client ?? client).post<SendAgentHeartbeatResponses, SendAgentHeartbeatErrors, ThrowOnError>({
     security: [{ name: 'X-Agent-API-Key', type: 'apiKey' }],
     url: '/agent/{agentId}/heartbeat',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Submit batch monitoring results
+ *
+ * Agent submits a batch of monitoring results that were buffered in its
+ * local result cache. The server deduplicates by `result.id` so
+ * retransmitting the same batch on network failure is safe.
+ *
+ */
+export const submitAgentResults = <ThrowOnError extends boolean = false>(options: Options<SubmitAgentResultsData, ThrowOnError>) => (options.client ?? client).post<SubmitAgentResultsResponses, SubmitAgentResultsErrors, ThrowOnError>({
+    responseTransformer: submitAgentResultsResponseTransformer,
+    security: [{ name: 'X-Agent-API-Key', type: 'apiKey' }],
+    url: '/agent/{agentId}/results',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -267,34 +290,46 @@ export const acknowledgeAlert = <ThrowOnError extends boolean = false>(options: 
  *
  * Initiate OAuth2 authorization flow. Redirects user to identity provider.
  *
- * Supported providers:
- * - okta
- * - auth0
- * - azure
- * - google
- * - generic (custom OIDC provider)
+ * The server resolves provider endpoints from its configuration.
+ * Built-in provider names: okta, auth0, azure, google, github.
+ * Custom providers are also supported if configured on the server.
+ *
+ * PKCE (S256) is required. client_id and IDP URLs are server-side config only.
  *
  */
-export const oauth2Authorize = <ThrowOnError extends boolean = false>(options: Options<Oauth2AuthorizeData, ThrowOnError>) => (options.client ?? client).get<unknown, unknown, ThrowOnError>({ url: '/auth/oauth2/authorize', ...options });
+export const oauth2Authorize = <ThrowOnError extends boolean = false>(options: Options<Oauth2AuthorizeData, ThrowOnError>) => (options.client ?? client).get<unknown, Oauth2AuthorizeErrors, ThrowOnError>({ url: '/auth/oauth2/authorize', ...options });
 
 /**
  * OAuth2 callback endpoint
  *
  * Callback endpoint for OAuth2 authorization flow.
- * Identity provider redirects user here after authentication.
+ * This endpoint is called by the identity provider after user authentication —
+ * it is never called directly by end users or client applications.
+ *
+ * On success, redirects the browser to the frontend callback URL configured
+ * on the server (auth.frontend_callback_url), forwarding code and state.
+ * On error, redirects to the same frontend URL with error parameters.
  *
  */
-export const oauth2Callback = <ThrowOnError extends boolean = false>(options: Options<Oauth2CallbackData, ThrowOnError>) => (options.client ?? client).get<unknown, Oauth2CallbackErrors, ThrowOnError>({ url: '/auth/oauth2/callback', ...options });
+export const oauth2Callback = <ThrowOnError extends boolean = false>(options?: Options<Oauth2CallbackData, ThrowOnError>) => (options?.client ?? client).get<unknown, unknown, ThrowOnError>({ url: '/auth/oauth2/callback', ...options });
 
 /**
- * Exchange authorization code for tokens
+ * Exchange authorization code for a server-managed session token
  *
- * Exchange authorization code for access and refresh tokens.
- * Also supports refresh token grant type.
+ * Completes the PKCE authorization_code flow. The server exchanges the code
+ * with the IdP, stores IdP tokens server-side, creates a session, and returns
+ * a server-managed opaque token.
+ *
+ * IdP tokens are never returned to the client. The provider is resolved
+ * server-side from the pending state (stored during /authorize).
+ *
+ * client_id and IdP token URL are resolved server-side from provider config.
+ * client_secret is never used (PKCE-only flow).
  *
  */
 export const oauth2Token = <ThrowOnError extends boolean = false>(options: Options<Oauth2TokenData, ThrowOnError>) => (options.client ?? client).post<Oauth2TokenResponses, Oauth2TokenErrors, ThrowOnError>({
     ...urlSearchParamsBodySerializer,
+    responseTransformer: oauth2TokenResponseTransformer,
     url: '/auth/oauth2/token',
     ...options,
     headers: {
@@ -304,25 +339,48 @@ export const oauth2Token = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
- * Revoke access or refresh token
+ * Revoke a server-managed session token
  *
- * Revoke a previously issued token
+ * Revokes the session associated with the provided opaque token.
+ * The token is immediately invalidated on the server. The server also
+ * attempts to revoke the underlying IdP token (best-effort; ignored if
+ * the provider does not support revocation).
+ *
  */
 export const oauth2Revoke = <ThrowOnError extends boolean = false>(options: Options<Oauth2RevokeData, ThrowOnError>) => (options.client ?? client).post<Oauth2RevokeResponses, Oauth2RevokeErrors, ThrowOnError>({
-    ...urlSearchParamsBodySerializer,
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/oauth2/revoke',
     ...options,
     headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
         ...options.headers
     }
 });
 
 /**
+ * Refresh a server-managed session token
+ *
+ * Issues a new opaque session token for the currently authenticated session.
+ * The old token is revoked atomically. The server transparently refreshes the
+ * underlying IdP token if needed.
+ *
+ * Clients should call this proactively before `expires_at` (e.g. at
+ * the midpoint). Returns a new TokenResponse with a fresh expires_at.
+ *
+ */
+export const authRefresh = <ThrowOnError extends boolean = false>(options?: Options<AuthRefreshData, ThrowOnError>) => (options?.client ?? client).post<AuthRefreshResponses, AuthRefreshErrors, ThrowOnError>({
+    responseTransformer: authRefreshResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/auth/refresh',
+    ...options
+});
+
+/**
  * Get current user information
  *
- * Retrieve information about the authenticated user
+ * Retrieve information about the authenticated user from the local database.
+ * Requires a valid opaque session token in the Authorization header.
+ *
  */
 export const getUserInfo = <ThrowOnError extends boolean = false>(options?: Options<GetUserInfoData, ThrowOnError>) => (options?.client ?? client).get<GetUserInfoResponses, GetUserInfoErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -333,9 +391,16 @@ export const getUserInfo = <ThrowOnError extends boolean = false>(options?: Opti
 /**
  * User logout
  *
- * Logout user and revoke tokens
+ * Revokes the current session and redirects the browser to the IDP end-session
+ * endpoint (if the provider supports it). The provider is resolved server-side
+ * from the session — no provider parameter is needed from the client.
+ *
+ * For providers with an end-session endpoint (Okta, Auth0, Azure, Google),
+ * the server responds with 302 to that endpoint.
+ * For providers without one (GitHub), the server responds with 200.
+ *
  */
-export const logout = <ThrowOnError extends boolean = false>(options?: Options<LogoutData, ThrowOnError>) => (options?.client ?? client).post<LogoutResponses, unknown, ThrowOnError>({
+export const logout = <ThrowOnError extends boolean = false>(options?: Options<LogoutData, ThrowOnError>) => (options?.client ?? client).post<LogoutResponses, LogoutErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/auth/logout',
     ...options,

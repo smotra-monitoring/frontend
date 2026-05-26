@@ -1,86 +1,66 @@
 /**
- * Token manager for handling access and refresh tokens
+ * Token manager for handling opaque session tokens
  */
 
-import type { TokenData, TokenRefreshResult } from '../types/auth-types.js';
+import type { TokenRefreshResult } from '../types/auth-types.js';
+import type { TokenResponse } from '../api/index.js';
 import { getTokensFromState, updateTokensInState, clearAuthState, isTokenExpiredInState } from '../state/auth-state.js';
-
-// Import generated SDK functions (will be available after openapi-ts runs)
-// import { oauth2Token } from '../api/sdk.gen.js';
+import { authRefresh, oauth2Revoke } from '../api/index.js';
 
 /**
- * Get valid access token, refreshing if necessary
+ * Get valid opaque session token, refreshing if necessary
  */
 export async function getValidAccessToken(): Promise<string | null> {
   // If token is still valid, return it
   if (!isTokenExpiredInState()) {
-    const tokens = getTokensFromState() as TokenData;
-    return tokens.access_token;
+    const tokens = getTokensFromState() as TokenResponse;
+    return tokens.opaque_token;
   }
 
   // Token is expired or about to expire, refresh it
   const refreshResult = await refreshAccessToken();
 
   if (refreshResult.success && refreshResult.tokens) {
-    return refreshResult.tokens.access_token;
+    return refreshResult.tokens.opaque_token;
   }
 
   return null;
 }
 
 /**
- * Refresh access token using refresh token
+ * Refresh the session by calling /auth/refresh with the current opaque token.
+ * The server issues a new opaque token and revokes the old one atomically.
  */
 export async function refreshAccessToken(): Promise<TokenRefreshResult> {
   const tokens = getTokensFromState();
 
-  if (!tokens || !tokens.refresh_token) {
-    console.warn('No refresh token available for refreshing access token');
+  if (!tokens || !tokens.opaque_token) {
+    console.warn('No opaque token available for refreshing session');
 
     return {
       success: false,
-      error: 'No refresh token available',
+      error: 'No token available',
     };
   }
 
   try {
-    // TODO: Replace with actual API call to refresh token using the refresh token
-
-    // This would use the generated SDK function
-    // const response = await oauth2Token({
-    //   body: {
-    //     grant_type: 'refresh_token',
-    //     refresh_token: tokens.refresh_token,
-    //   },
-    // });
-
-    // For now, placeholder implementation
-    // In production, this calls the actual API endpoint
-    const response = await fetch('/auth/oauth2/token', {
-      method: 'POST',
+    const { data, error } = await authRefresh({
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${tokens.opaque_token}`,
       },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: tokens.refresh_token,
-      }),
     });
 
-    if (!response.ok) {
-      throw new Error('Token refresh request failed with status ' + response.status);
+    if (error || !data) {
+      const errorMessage =
+        (typeof error === 'object' && error && 'message' in error && typeof error.message === 'string'
+          ? error.message
+          : null) || 'Token refresh failed';
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-
-    // Calculate expiration timestamp
-    const expires_at = Date.now() + (data.expires_in * 1000);
-
-    const newTokens: TokenData = {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token || tokens.refresh_token, // Use new or keep old
-      expires_at,
-      token_type: data.token_type || 'Bearer',
+    const newTokens: TokenResponse = {
+      opaque_token: data.opaque_token,
+      expires_at: data.expires_at,
     };
 
     // Update tokens in state and storage
@@ -104,7 +84,7 @@ export async function refreshAccessToken(): Promise<TokenRefreshResult> {
 }
 
 /**
- * Revoke access and refresh tokens
+ * Revoke the current opaque session token via /auth/oauth2/revoke.
  */
 export async function revokeTokens(): Promise<boolean> {
   const tokens = getTokensFromState();
@@ -114,37 +94,16 @@ export async function revokeTokens(): Promise<boolean> {
   }
 
   try {
-    // TODO: Replace with generated SDK function to revoke tokens
+    await oauth2Revoke({
+      body: {
+        opaque_token: tokens.opaque_token,
+      },
+      headers: {
+        Authorization: `Bearer ${tokens.opaque_token}`,
+      },
+    });
 
-    // Revoke access token
-    if (tokens.access_token) {
-      await fetch('/auth/oauth2/revoke', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          token: tokens.access_token,
-          token_type_hint: 'access_token',
-        }),
-      });
-    }
-
-    // TODO: Replace with generated SDK function to revoke tokens
-
-    // Revoke refresh token
-    if (tokens.refresh_token) {
-      await fetch('/auth/oauth2/revoke', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          token: tokens.refresh_token,
-          token_type_hint: 'refresh_token',
-        }),
-      });
-    }
+    clearAuthState();
 
     return true;
   } catch (error) {
@@ -154,27 +113,29 @@ export async function revokeTokens(): Promise<boolean> {
 }
 
 /**
- * Schedule automatic token refresh before expiration.
+ * Schedule automatic token refresh at the half-life point of the token's
+ * remaining lifetime. This ensures the client proactively refreshes well
+ * before the hard expiry (expires_at) without waiting until the
+ * last minute.
  *
  * @param tokens - Current token data with expiration timestamp.
  * @param onRefreshComplete - Optional callback invoked with new tokens after a
- *   successful refresh. Use this to chain the next refresh cycle (e.g. call
- *   scheduleTokenRefresh again) so the proactive refresh loop continues for the
- *   entire session rather than firing only once.
+ *   successful refresh. Use this to chain the next refresh cycle so the
+ *   proactive refresh loop continues for the entire session.
  * @returns Cleanup function that cancels the pending timeout.
  */
 export function scheduleTokenRefresh(
-  tokens: TokenData,
-  onRefreshComplete?: (newTokens: TokenData) => void,
+  tokens: TokenResponse,
+  onRefreshComplete?: (newTokens: TokenResponse) => void,
 ): () => void {
   const now = Date.now();
-  const expiresAt = tokens.expires_at;
-  const refreshBuffer = 5 * 60 * 1000; // Refresh 5 minutes before expiration
+  const timeUntilExpiry = new Date(tokens.expires_at).getTime() - now;
 
-  const refreshTime = expiresAt - now - refreshBuffer;
+  // Schedule at the midpoint (half-life)
+  const refreshDelay = Math.min(timeUntilExpiry / 2, 2147483647); // Cap at max setTimeout value, which is ~24.8 days
 
   // Token already expired or expiring very soon — refresh immediately
-  if (refreshTime <= 0) {
+  if (refreshDelay <= 0) {
     refreshAccessToken().then((result) => {
       if (result.success && result.tokens) {
         onRefreshComplete?.(result.tokens);
@@ -188,34 +149,10 @@ export function scheduleTokenRefresh(
     if (result.success && result.tokens) {
       onRefreshComplete?.(result.tokens);
     }
-  }, refreshTime);
+  }, refreshDelay);
 
   // Return cleanup function
   return () => {
     clearTimeout(timeoutId);
   };
-}
-
-/**
- * Extract token expiration timestamp from JWT
- * (Fallback if expires_in not provided by server)
- */
-export function extractTokenExpiration(token: string): number | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const payload = JSON.parse(atob(parts[1]!));
-
-    if (payload.exp) {
-      return payload.exp * 1000; // Convert to milliseconds
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error extracting token expiration:', error);
-    return null;
-  }
 }

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **TypeScript Configuration Documentation**: Comprehensive guide for multi-config setup
+  - Detailed explanation of three TypeScript configurations (tsconfig.json, tsconfig.build.json, tsconfig.test.json)
+  - Usage patterns and commands
+  - Troubleshooting guide
+  - Best practices and design rationale
+
+### Changed
+- **Testing Framework**: Migrated from Jest to Vitest v4.x
+  - Faster test execution with native ESM support
+  - Better TypeScript integration
+  - V8 coverage provider instead of istanbul/nyc
+  - Jest-compatible API for easy migration
+- **TypeScript**: Upgraded to TypeScript 6.x
+  - Latest language features and improvements
+  - Enhanced type checking capabilities
+  - Better ESM support
+- **Node.js**: Upgraded to Node.js 24 LTS
+  - Long-term support version
+  - Improved performance
+  - Modern JavaScript features
+
+### Updated
+- Test configuration migrated from `jest.config.js` to `vitest.config.js`
+- Updated all documentation to reflect Vitest usage
+- Updated package dependencies to latest versions
+- Documentation now references TypeScript 6.x
+
 ### Planned
 - Backend API integration for token refresh, user info, agent data
 - Permission system and role-based access control

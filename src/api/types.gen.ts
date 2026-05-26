@@ -5,10 +5,15 @@ export type ClientOptions = {
 };
 
 export type AgentStatus = {
+    agent_id: UuiDv7;
     /**
-     * Unique identifier for the agent
+     * Version of the agent
      */
-    agent_id: string;
+    agent_version: string;
+    /**
+     * Version of the agent configuration
+     */
+    config_version: number;
     /**
      * Whether the agent is currently running
      */
@@ -45,10 +50,18 @@ export type AgentStatus = {
      * Whether the agent is currently connected to the server
      */
     server_connected: boolean;
+    cache_stats: AgentCacheStats;
+};
+
+export type AgentCacheStats = {
     /**
-     * Number of reports cached locally on the agent
+     * Number of results currently buffered in the local cache
      */
-    cached_reports: number;
+    len: number;
+    /**
+     * Maximum number of results the cache can hold (hard cap)
+     */
+    capacity: number;
 };
 
 export type AgentConfig = {
@@ -147,6 +160,9 @@ export type StorageConfig = {
     max_cache_age_secs: bigint;
 };
 
+/**
+ * An endpoint to monitor (IP address, hostname, or URL)
+ */
 export type Endpoint = {
     id: UuiDv7;
     /**
@@ -158,24 +174,30 @@ export type Endpoint = {
     /**
      * Tags associated with the target
      */
-    tags?: Array<string>;
+    tags: Array<string>;
 };
 
 export type MonitoringResult = {
-    /**
-     * Unique identifier for the monitoring result
-     */
-    id: string;
-    /**
-     * Unique identifier for the agent
-     */
-    agent_id: string;
-    target: Endpoint;
+    id: UuiDv7;
+    agent_id: UuiDv7;
+    endpoint_id: UuiDv7;
     check_type: CheckType;
     /**
      * Timestamp when the report was generated (RFC3339)
      */
     timestamp: Date;
+};
+
+/**
+ * A batch of monitoring results submitted by an agent from its local cache.
+ * The server deduplicates entries by `MonitoringResult.id`.
+ *
+ */
+export type BatchMonitoringResults = {
+    /**
+     * Ordered list of monitoring results (oldest-first)
+     */
+    results: Array<MonitoringResult>;
 };
 
 export type CheckType = ({
@@ -192,97 +214,152 @@ export type CheckType = ({
     type: 'plugin';
 } & PluginCheck);
 
+export const PingCheckType = { PING: 'ping' } as const;
+
+export type PingCheckType = typeof PingCheckType[keyof typeof PingCheckType];
+
+export const TracerouteCheckType = { TRACEROUTE: 'traceroute' } as const;
+
+export type TracerouteCheckType = typeof TracerouteCheckType[keyof typeof TracerouteCheckType];
+
+export const TcpConnectCheckType = { TCPCONNECT: 'tcpconnect' } as const;
+
+export type TcpConnectCheckType = typeof TcpConnectCheckType[keyof typeof TcpConnectCheckType];
+
+export const UdpConnectCheckType = { UDPCONNECT: 'udpconnect' } as const;
+
+export type UdpConnectCheckType = typeof UdpConnectCheckType[keyof typeof UdpConnectCheckType];
+
+export const HttpGetCheckType = { HTTPGET: 'httpget' } as const;
+
+export type HttpGetCheckType = typeof HttpGetCheckType[keyof typeof HttpGetCheckType];
+
+export const PluginCheckType = { PLUGIN: 'plugin' } as const;
+
+export type PluginCheckType = typeof PluginCheckType[keyof typeof PluginCheckType];
+
 export type PingCheck = {
-    type: 'ping';
+    type: PingCheckType;
     result: PingResult;
 };
 
 export type PingResult = {
-    resolved_ip?: string | null;
-    successes?: number;
-    failures?: number;
-    success_latencies?: Array<number>;
-    avg_response_time_ms?: number | null;
-    errors?: Array<string>;
+    /**
+     * Resolved IP address of the target
+     */
+    resolved_ip: string;
+    successes: number;
+    failures: number;
+    success_latencies: Array<number>;
+    error_details?: ErrorDetails;
 };
 
 export type TracerouteCheck = {
-    type: 'traceroute';
+    type: TracerouteCheckType;
     result: TracerouteResult;
 };
 
 export type TracerouteResult = {
-    hops?: Array<TracerouteHop>;
-    target_reached?: boolean;
-    total_time_ms?: number | null;
-    errors?: Array<string>;
+    hops: Array<TracerouteHop>;
+    target_reached: boolean;
+    error_details?: ErrorDetails;
 };
 
 export type TracerouteHop = {
-    hop?: number;
-    address?: string | null;
-    response_time_ms?: number | null;
-    hostname?: string | null;
+    hop: number;
+    /**
+     * Resolved IP address of the target
+     */
+    resolved_ip?: string;
+    success_latencies?: Array<number>;
+    hostname?: string;
 };
 
 export type TcpConnectCheck = {
-    type: 'tcpconnect';
+    type: TcpConnectCheckType;
     result: TcpConnectResult;
 };
 
 export type TcpConnectResult = {
-    connected?: boolean;
+    connected: boolean;
     connect_time_ms?: number | null;
-    error?: string | null;
-    resolved_ip?: string | null;
+    error_details?: ErrorDetails;
+    resolved_ip: string;
 };
 
 export type UdpConnectCheck = {
-    type: 'udpconnect';
+    type: UdpConnectCheckType;
     result: UdpConnectResult;
 };
 
 export type UdpConnectResult = {
-    probe_successful?: boolean;
+    probe_successful: boolean;
     response_time_ms?: number | null;
-    error?: string | null;
-    resolved_ip?: string | null;
+    error_details?: ErrorDetails;
+    resolved_ip: string;
 };
 
 export type HttpGetCheck = {
-    type: 'httpget';
+    type: HttpGetCheckType;
     result: HttpGetResult;
 };
 
 export type HttpGetResult = {
-    status_code?: number | null;
+    status_code: number;
     response_time_ms?: number | null;
     response_size_bytes?: bigint | null;
-    error?: string | null;
-    success?: boolean;
+    error_details?: ErrorDetails;
+    success: boolean;
 };
 
 export type PluginCheck = {
-    type: 'plugin';
+    type: PluginCheckType;
     result: PluginResult;
 };
 
 export type PluginResult = {
-    plugin_name?: string;
-    plugin_version?: string;
-    success?: boolean;
+    plugin_name: string;
+    plugin_version: string;
+    success: boolean;
     response_time_ms?: number | null;
-    error?: string | null;
-    data?: {
+    error_details?: ErrorDetails;
+    data: {
         [key: string]: string;
     };
 };
 
+/**
+ * Error information from a check, stored as an extensible JSON object
+ */
+export type ErrorDetails = {
+    /**
+     * List of error messages from the check
+     */
+    errors?: Array<string>;
+} | null;
+
 export type AgentHeartbeat = {
+    /**
+     * Agent-local timestamp when the heartbeat was generated (RFC3339)
+     */
     timestamp: Date;
-    status?: AgentHealthStatus;
-    cpu_usage_percent?: number;
-    memory_usage_mb?: number;
+    status: AgentHealthStatus;
+    /**
+     * CPU utilization percentage (0.0–100.0)
+     */
+    cpu_usage_percent: number;
+    /**
+     * Resident memory currently in use (MB)
+     */
+    memory_usage_mb: number;
+    /**
+     * Total physical memory available (MB)
+     */
+    memory_total_mb: number;
+    /**
+     * System uptime in seconds
+     */
+    system_uptime_secs: bigint;
 };
 
 export type Metric = {
@@ -333,6 +410,26 @@ export type AgentRegistration = {
     };
 };
 
+export type AgentNetworkInterface = {
+    /**
+     * IP address of the network interface (IPv4 or IPv6, excluding loopback and link-local)
+     */
+    ip: string;
+    /**
+     * Name of the network interface
+     */
+    iface: string;
+    family: IpAddressFamily;
+    /**
+     * Whether this address is recommended for the server to use when communicating
+     * with the agent. Determined by the agent using the OS routing table: the source
+     * IP the OS selects when opening a connection toward the server is marked as
+     * recommended. Only one entry will have recommended=true.
+     *
+     */
+    recommended: boolean;
+};
+
 export type AgentSelfRegistration = {
     agentId: UuiDv7;
     /**
@@ -347,6 +444,16 @@ export type AgentSelfRegistration = {
      * Version of the agent software
      */
     agentVersion: string;
+    /**
+     * List of all non-loopback, non-link-local network interfaces on the agent host.
+     * Loopback (127.x.x.x / ::1) and link-local (169.254.x.x / fe80::/10) addresses
+     * are excluded. The server should store all addresses and allow the operator to
+     * select the preferred one during the claim process. The entry with
+     * recommended=true reflects the OS-selected source IP for connections toward
+     * the server (determined via routing table, no traffic sent).
+     *
+     */
+    ipAddresses: Array<AgentNetworkInterface>;
 };
 
 export type AgentRegistrationResponse = {
@@ -445,6 +552,22 @@ export type ReportAcknowledgment = {
      * Whether agent update is available
      */
     update_available?: boolean;
+};
+
+export type ResultsBatchAcknowledgment = {
+    submission_id: UuiDv7;
+    /**
+     * Number of results accepted for processing
+     */
+    accepted: number;
+    /**
+     * Number of results deduplicated (already known to the server)
+     */
+    duplicates_skipped?: number;
+    /**
+     * Timestamp when the batch was received by the server
+     */
+    received_at: Date;
 };
 
 export type ResultReport = {
@@ -569,68 +692,21 @@ export type NotificationChannel = {
     };
 };
 
-export type AuthorizationCodeTokenRequest = {
-    grant_type: 'authorization_code';
-    /**
-     * Authorization code from callback
-     */
-    code: string;
-    /**
-     * Must match original authorization request
-     */
-    redirect_uri: string;
-    client_id: string;
-    /**
-     * Required for confidential clients
-     */
-    client_secret?: string;
-    /**
-     * PKCE code verifier
-     */
-    code_verifier?: string;
-};
-
-export type RefreshTokenRequest = {
-    grant_type: 'refresh_token';
-    refresh_token: string;
-    /**
-     * Optional scope restriction
-     */
-    scope?: string;
-};
-
-export type ClientCredentialsTokenRequest = {
-    grant_type: 'client_credentials';
-    client_id: string;
-    client_secret: string;
-    /**
-     * Space-separated list of requested scopes
-     */
-    scope?: string;
-};
-
 export type TokenResponse = {
     /**
-     * JWT access token
+     * Server-managed opaque session token. Use as a Bearer token in the
+     * Authorization header for all subsequent requests.
+     * Format: st_live_<hex> (production) or st_test_<hex> (dev/test).
+     *
      */
-    access_token: string;
-    token_type: string;
+    opaque_token: string;
     /**
-     * Token lifetime in seconds
+     * Hard expiry time (ISO 8601). The session will never be valid after
+     * this timestamp regardless of activity. Use this to schedule a
+     * proactive re-login in the client (e.g. at the midpoint).
+     *
      */
-    expires_in: number;
-    /**
-     * Refresh token (only for authorization_code grant)
-     */
-    refresh_token?: string;
-    /**
-     * Space-separated list of granted scopes
-     */
-    scope?: string;
-    /**
-     * OpenID Connect ID token (if openid scope requested)
-     */
-    id_token?: string;
+    expires_at: Date;
 };
 
 export type UserInfo = {
@@ -758,6 +834,16 @@ export const RegistrationStatus = { PENDING_CLAIM: 'pending_claim' } as const;
  * Status of agent registration
  */
 export type RegistrationStatus = typeof RegistrationStatus[keyof typeof RegistrationStatus];
+
+/**
+ * IP address family (IPv4 or IPv6)
+ */
+export const IpAddressFamily = { IPV4: 'ipv4', IPV6: 'ipv6' } as const;
+
+/**
+ * IP address family (IPv4 or IPv6)
+ */
+export type IpAddressFamily = typeof IpAddressFamily[keyof typeof IpAddressFamily];
 
 /**
  * Pending claim status
@@ -1210,9 +1296,17 @@ export type SendAgentHeartbeatData = {
 
 export type SendAgentHeartbeatErrors = {
     /**
+     * Bad request - Invalid parameters
+     */
+    400: Error;
+    /**
      * Unauthorized - Invalid or missing authentication
      */
     401: Error;
+    /**
+     * Internal server error
+     */
+    503: Error;
 };
 
 export type SendAgentHeartbeatError = SendAgentHeartbeatErrors[keyof SendAgentHeartbeatErrors];
@@ -1225,6 +1319,48 @@ export type SendAgentHeartbeatResponses = {
 };
 
 export type SendAgentHeartbeatResponse = SendAgentHeartbeatResponses[keyof SendAgentHeartbeatResponses];
+
+export type SubmitAgentResultsData = {
+    body: BatchMonitoringResults;
+    path: {
+        /**
+         * Unique identifier for the agent
+         */
+        agentId: UuiDv7;
+    };
+    query?: never;
+    url: '/agent/{agentId}/results';
+};
+
+export type SubmitAgentResultsErrors = {
+    /**
+     * Bad request - Invalid parameters
+     */
+    400: Error;
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: Error;
+    /**
+     * Unprocessable entity - Semantically invalid request
+     */
+    422: Error;
+    /**
+     * Internal server error
+     */
+    503: Error;
+};
+
+export type SubmitAgentResultsError = SubmitAgentResultsErrors[keyof SubmitAgentResultsErrors];
+
+export type SubmitAgentResultsResponses = {
+    /**
+     * Batch accepted for processing
+     */
+    202: ResultsBatchAcknowledgment;
+};
+
+export type SubmitAgentResultsResponse = SubmitAgentResultsResponses[keyof SubmitAgentResultsResponses];
 
 export type GetResultReportData = {
     body?: never;
@@ -1496,67 +1632,83 @@ export type Oauth2AuthorizeData = {
     path?: never;
     query: {
         /**
-         * Identity provider to use
+         * Identity provider name. Must match a provider configured on the server.
+         * Built-in values: okta, auth0, azure, google, github.
+         *
          */
-        provider: 'okta' | 'auth0' | 'azure' | 'google' | 'generic';
-        response_type: 'code';
-        client_id: string;
-        redirect_uri: string;
+        provider: string;
         /**
-         * Space-separated list of scopes
+         * Space-separated list of requested scopes
          */
         scope: string;
         /**
-         * CSRF protection token
+         * CSRF protection token generated by the client
          */
         state: string;
         /**
-         * PKCE code challenge
+         * PKCE code challenge (BASE64URL(SHA256(code_verifier)))
          */
-        code_challenge?: string;
+        code_challenge: string;
         /**
-         * PKCE code challenge method
+         * PKCE code challenge method — must be S256
          */
-        code_challenge_method?: 'S256';
+        code_challenge_method: 'S256';
     };
     url: '/auth/oauth2/authorize';
 };
 
-export type Oauth2CallbackData = {
-    body?: never;
-    path?: never;
-    query: {
-        /**
-         * Authorization code from identity provider
-         */
-        code: string;
-        /**
-         * CSRF protection token (must match original request)
-         */
-        state: string;
-        /**
-         * Error code if authorization failed
-         */
-        error?: string;
-        /**
-         * Human-readable error description
-         */
-        error_description?: string;
-    };
-    url: '/auth/oauth2/callback';
-};
-
-export type Oauth2CallbackErrors = {
+export type Oauth2AuthorizeErrors = {
     /**
      * Bad request - Invalid parameters
      */
     400: Error;
 };
 
-export type Oauth2CallbackError = Oauth2CallbackErrors[keyof Oauth2CallbackErrors];
+export type Oauth2AuthorizeError = Oauth2AuthorizeErrors[keyof Oauth2AuthorizeErrors];
+
+export type Oauth2CallbackData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Authorization code issued by the identity provider
+         */
+        code?: string;
+        /**
+         * CSRF protection token (must match the original authorize request)
+         */
+        state?: string;
+        /**
+         * Error code if authorization failed at the IDP
+         */
+        error?: string;
+        /**
+         * Human-readable error description from the IDP
+         */
+        error_description?: string;
+    };
+    url: '/auth/oauth2/callback';
+};
 
 export type Oauth2TokenData = {
-    body: AuthorizationCodeTokenRequest | RefreshTokenRequest | ClientCredentialsTokenRequest;
+    body: {
+        /**
+         * OAuth2 grant type (only authorization_code is supported here)
+         */
+        grant_type: 'authorization_code';
+        /**
+         * Authorization code returned by the IDP callback
+         */
+        code: string;
+        /**
+         * Must exactly match the redirect_uri used in the authorization request
+         */
+        redirect_uri: string;
+        /**
+         * PKCE code verifier corresponding to the code_challenge sent at /authorize
+         */
+        code_verifier: string;
+    };
     path?: never;
     query?: never;
     url: '/auth/oauth2/token';
@@ -1577,7 +1729,7 @@ export type Oauth2TokenError = Oauth2TokenErrors[keyof Oauth2TokenErrors];
 
 export type Oauth2TokenResponses = {
     /**
-     * Tokens issued successfully
+     * Session created; opaque token returned
      */
     200: TokenResponse;
 };
@@ -1587,13 +1739,9 @@ export type Oauth2TokenResponse = Oauth2TokenResponses[keyof Oauth2TokenResponse
 export type Oauth2RevokeData = {
     body: {
         /**
-         * Token to revoke
+         * The opaque session token to revoke (as returned by /auth/oauth2/token or /auth/refresh)
          */
-        token: string;
-        /**
-         * Hint about token type
-         */
-        token_type_hint?: 'access_token' | 'refresh_token';
+        opaque_token: string;
     };
     path?: never;
     query?: never;
@@ -1605,16 +1753,52 @@ export type Oauth2RevokeErrors = {
      * Bad request - Invalid parameters
      */
     400: Error;
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: Error;
 };
 
 export type Oauth2RevokeError = Oauth2RevokeErrors[keyof Oauth2RevokeErrors];
 
 export type Oauth2RevokeResponses = {
     /**
-     * Token revoked successfully
+     * Session revoked successfully.
      */
-    200: unknown;
+    200: {
+        /**
+         * Present if IdP revocation was skipped (provider limitation)
+         */
+        warning?: string;
+    };
 };
+
+export type Oauth2RevokeResponse = Oauth2RevokeResponses[keyof Oauth2RevokeResponses];
+
+export type AuthRefreshData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/refresh';
+};
+
+export type AuthRefreshErrors = {
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: Error;
+};
+
+export type AuthRefreshError = AuthRefreshErrors[keyof AuthRefreshErrors];
+
+export type AuthRefreshResponses = {
+    /**
+     * New session token issued
+     */
+    200: TokenResponse;
+};
+
+export type AuthRefreshResponse = AuthRefreshResponses[keyof AuthRefreshResponses];
 
 export type GetUserInfoData = {
     body?: never;
@@ -1624,6 +1808,10 @@ export type GetUserInfoData = {
 };
 
 export type GetUserInfoErrors = {
+    /**
+     * Bad request - Invalid parameters
+     */
+    400: Error;
     /**
      * Unauthorized - Invalid or missing authentication
      */
@@ -1644,7 +1832,9 @@ export type GetUserInfoResponse = GetUserInfoResponses[keyof GetUserInfoResponse
 export type LogoutData = {
     body?: {
         /**
-         * Where to redirect after logout
+         * Optional URI to redirect to after IDP logout completes.
+         * Forwarded to the IDP end-session endpoint as post_logout_redirect_uri.
+         *
          */
         post_logout_redirect_uri?: string;
     };
@@ -1653,16 +1843,26 @@ export type LogoutData = {
     url: '/auth/logout';
 };
 
+export type LogoutErrors = {
+    /**
+     * Bad request - Invalid parameters
+     */
+    400: Error;
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: Error;
+};
+
+export type LogoutError = LogoutErrors[keyof LogoutErrors];
+
 export type LogoutResponses = {
     /**
-     * Logout successful
+     * Logout acknowledged (providers without end-session endpoint, e.g. GitHub).
+     *
      */
     200: {
         message?: string;
-        /**
-         * Identity provider logout URL
-         */
-        logout_url?: string;
     };
 };
 

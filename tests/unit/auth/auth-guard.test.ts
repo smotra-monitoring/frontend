@@ -2,17 +2,27 @@
  * Tests for authentication guards
  */
 
-import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
-import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
-import { mockFetchSuccess, mockTokens, mockUserInfo } from '../../mocks/oauth-responses.js';
-import { navigateTo } from '../../../src/utils/navigation.js';
+import { vi, type Mock, type MockedFunction } from 'vitest';
+import type { TokenResponse } from '../../../src/types/auth-types.js';
 
-jest.mock('../../../src/utils/navigation.js', () => ({
-    navigateTo: jest.fn().mockResolvedValue(undefined),
-    registerNavigate: jest.fn(),
+vi.mock('../../../src/api/index.js', () => ({
+    authRefresh: vi.fn(),
+    oauth2Revoke: vi.fn(),
 }));
 
-const mockNavigateTo = navigateTo as jest.MockedFunction<typeof navigateTo>;
+import { authRefresh } from '../../../src/api/index.js';
+
+import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
+import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
+import { mockToken, mockUserInfo } from '../../mocks/oauth-responses.js';
+import { navigateTo } from '../../../src/utils/navigation.js';
+
+vi.mock('../../../src/utils/navigation.js', () => ({
+    navigateTo: vi.fn().mockResolvedValue(undefined),
+    registerNavigate: vi.fn(),
+}));
+
+const mockNavigateTo = navigateTo as MockedFunction<typeof navigateTo>;
 
 describe('auth-guard', () => {
     beforeEach(() => {
@@ -34,16 +44,16 @@ describe('auth-guard', () => {
 
         it('allows access when authenticated with valid token', async () => {
             // Set up authenticated state
-            saveAuthState(mockUserInfo, mockTokens);
+            saveAuthState(mockUserInfo, mockToken);
 
             const result = await canAccessRoute_ForTest(true);
             expect(result.allowed).toBe(true);
         });
 
         it('denies access when token is expired', async () => {
-            const expiredTokens = {
-                ...mockTokens,
-                expires_at: Date.now() - 1000, // Expired in the past
+            const expiredTokens: TokenResponse = {
+                ...mockToken,
+                expires_at: new Date(Date.now() - 1000), // Expired in the past
             };
             saveAuthState(mockUserInfo, expiredTokens);
 
@@ -53,17 +63,24 @@ describe('auth-guard', () => {
         });
 
         it('attempts token refresh for expired tokens', async () => {
-            mockFetchSuccess(mockTokens); // Mock successful refresh response
+            // Mock the authRefresh SDK to return refreshed tokens
+            const refreshedTokens: TokenResponse = {
+                ...mockToken,
+                opaque_token: 'st_live_refreshed_token',
+                expires_at: new Date(Date.now() + 3600 * 1000),
+            };
+            (authRefresh as Mock).mockResolvedValue({ data: refreshedTokens, error: null });
 
-            const almostExpiredTokens = {
-                ...mockTokens,
-                expires_at: Date.now() + 60 * 1000, // Expires in 1 minute (within default buffer time)
+            const almostExpiredTokens: TokenResponse = {
+                ...mockToken,
+                expires_at: new Date(Date.now() + 59 * 1000), // Expires in 1 minute (within default buffer time)
             };
             saveAuthState(mockUserInfo, almostExpiredTokens);
 
             const result = await canAccessRoute_ForTest(true);
             // Should allow access after successful refresh
             expect(result.allowed).toBe(true);
+            expect(authRefresh).toHaveBeenCalled();
         });
     });
 

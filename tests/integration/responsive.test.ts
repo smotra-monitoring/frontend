@@ -2,7 +2,7 @@
  * Integration test for responsive dashboard behavior
  */
 
-import { BreakpointName } from '../../src/types/viewport-types.js';
+import { type BreakpointName } from '../../src/types/viewport-types.js';
 import { getBreakpointName, getOptimalColumns, isMobile, isTablet, isDesktop, getBreakpointByName, isWide, isUltraWide } from '../../src/utils/viewport-utils.js';
 import { mockViewport, getComputedColumns } from '../mocks/viewport-mocks.js';
 

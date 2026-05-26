@@ -3,12 +3,12 @@
  * Orchestrates OAuth flow, token management,and user session
  */
 
-import type { OAuth2Provider, UserInfo, TokenData, OAuth2Config } from '../types/auth-types.js';
-import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE, getProviderConfig, retrieveAuthenticationProvider } from '../auth/oauth-manager.js';
+import type { OAuth2Provider, UserInfo, TokenResponse } from '../types/auth-types.js';
+import { initiateOAuthFlow, getCodeFromOAuthCallback, retrievePKCE } from '../auth/oauth-manager.js';
+import { oauth2Token, getUserInfo as apiGetUserInfo } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
-import { oauth2Token } from '../api/sdk.gen.js';
 
 // Token refresh cleanup function (tracks the current pending scheduled timeout)
 let tokenRefreshCleanup: (() => void) | null = null;
@@ -18,7 +18,10 @@ let tokenRefreshCleanup: (() => void) | null = null;
  * each successful refresh, keeping the proactive refresh loop alive for the
  * entire session.
  */
-function scheduleRefreshCycle(tokens: TokenData): void {
+function scheduleRefreshCycle(tokens: TokenResponse): void {
+    if (tokenRefreshCleanup) {
+        tokenRefreshCleanup();
+    }
     tokenRefreshCleanup = scheduleTokenRefresh(tokens, (newTokens) => {
         // After a successful refresh, immediately schedule the next cycle using
         // the freshly issued tokens (which have a new expiration timestamp).
@@ -33,11 +36,8 @@ export async function login(provider: OAuth2Provider): Promise<void> {
     try {
         setAuthLoading(true);
 
-        // Get provider configuration
-        const providerConfig = getProviderConfig(provider);
-
         // Initiate OAuth flow (redirects user to provider)
-        await initiateOAuthFlow(providerConfig);
+        await initiateOAuthFlow(provider);
     } catch (error) {
         console.error('Login error:', error);
         setAuthError(error instanceof Error ? error.message : 'Login failed');
@@ -52,7 +52,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
         setAuthLoading(true);
 
         // Parse and validate callback
-        const callbackResult = handleOAuthCallback();
+        const callbackResult = getCodeFromOAuthCallback();
 
         if (!callbackResult.valid || callbackResult.error) {
             const errorMessage = callbackResult.error || 'Authentication failed';
@@ -69,16 +69,8 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
             return [false, errorMessage];
         }
 
-        const providerConfig = getProviderConfig(retrieveAuthenticationProvider()!);
-
-        if (!providerConfig) {
-            const errorMessage = 'Authentication provider not found';
-            setAuthError(errorMessage);
-            return [false, errorMessage];
-        }
-
         // Exchange authorization code for tokens
-        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier, providerConfig);
+        const tokens = await exchangeCodeForTokens(callbackResult.code!, pkce.code_verifier);
 
         if (!tokens) {
             const errorMessage = 'Token exchange failed';
@@ -86,8 +78,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
             return [false, errorMessage];
         }
 
-        // Fetch user info
-        const userInfo = await fetchUserInfo(tokens.access_token, providerConfig);
+        const userInfo = await fetchUserInfo(tokens.opaque_token);
 
         if (!userInfo) {
             const errorMessage = 'Failed to fetch user information';
@@ -113,31 +104,30 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
 /**
  * Exchange authorization code for access and refresh tokens
  */
-async function exchangeCodeForTokens(
-    code: string,
-    codeVerifier: string,
-    providerConfig: OAuth2Config
-): Promise<TokenData | null> {
+async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TokenResponse | null> {
     try {
-        const result = await oauth2Token({
+        const { data, error } = await oauth2Token({
             body: {
                 grant_type: 'authorization_code',
                 code,
                 code_verifier: codeVerifier,
-                redirect_uri: providerConfig.redirectUri,
-                client_id: providerConfig.clientId,
+                redirect_uri: "defined on the server",
             },
-            throwOnError: true,
         });
 
-        const data = result.data!;
-        const expires_at = Date.now() + data.expires_in * 1000;
+        if (error || !data) {
+            const errorMessage =
+                (typeof error === 'object' && error && 'message' in error && typeof error.message === 'string'
+                    ? error.message
+                    : null) ||
+                'Token exchange failed';
+
+            throw new Error(errorMessage);
+        }
 
         return {
-            access_token: data.access_token,
-            refresh_token: data.refresh_token!,
-            expires_at,
-            token_type: data.token_type || 'Bearer',
+            opaque_token: data.opaque_token,
+            expires_at: data.expires_at,
         };
     } catch (error) {
         console.error('Token exchange error:', error);
@@ -148,26 +138,19 @@ async function exchangeCodeForTokens(
 /**
  * Fetch user information from API
  */
-async function fetchUserInfo(accessToken: string, providerConfig: OAuth2Config): Promise<UserInfo | null> {
+async function fetchUserInfo(accessToken: string): Promise<UserInfo | null> {
     try {
-        const response = await fetch(providerConfig.userinfoEndpoint, {
+        const { data, error } = await apiGetUserInfo({
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
 
-        if (!response.ok) {
+        if (error || !data) {
             throw new Error('Failed to fetch user info');
         }
 
-        const data = await response.json();
-
-        return {
-            id: data.sub || data.id,
-            email: data.email,
-            name: data.name || data.given_name || data.email,
-            picture: data.picture,
-        };
+        return data;
     } catch (error) {
         console.error('User info fetch error:', error);
         return null;

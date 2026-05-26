@@ -1,5 +1,3 @@
-import type { OAuth2Config, OAuth2Provider } from "./types/auth-types.js";
-
 type FrontendURL = "localhost:3000" | "production";
 
 interface AppConfig {
