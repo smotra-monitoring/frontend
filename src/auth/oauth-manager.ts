@@ -155,7 +155,7 @@ export async function initiateOAuthFlow(provider: OAuth2Provider): Promise<void>
 /**
  * Handle OAuth2 callback
  */
-export function handleOAuthCallback(): {
+export function getCodeFromOAuthCallback(): {
   code: string | null;
   error: string | null;
   valid: boolean;

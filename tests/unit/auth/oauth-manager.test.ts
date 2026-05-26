@@ -5,7 +5,7 @@
 
 import {
   initiateOAuthFlow,
-  handleOAuthCallback,
+  getCodeFromOAuthCallback,
   retrievePKCE,
 } from '../../../src/auth/oauth-manager.js';
 import { mockOAuthProvider } from '../../mocks/oauth-responses.js';
@@ -81,7 +81,7 @@ describe('oauth-manager', () => {
       seedState(state);
       window.location.href = `http://localhost:3000/auth/callback?code=auth-code-xyz&state=${state}`;
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(true);
       expect(result.code).toBe('auth-code-xyz');
@@ -92,7 +92,7 @@ describe('oauth-manager', () => {
       seedState('original-state');
       window.location.href = 'http://localhost:3000/auth/callback?code=auth-code-xyz&state=tampered-state';
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(false);
       expect(result.error).toMatch(/invalid state/i);
@@ -103,7 +103,7 @@ describe('oauth-manager', () => {
       seedState('some-state');
       window.location.href = 'http://localhost:3000/auth/callback?code=auth-code-xyz';
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(false);
       expect(result.error).toMatch(/invalid state/i);
@@ -114,7 +114,7 @@ describe('oauth-manager', () => {
       window.location.href =
         'http://localhost:3000/auth/callback?error=access_denied&error_description=User+cancelled&state=some-state';
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe('User cancelled');
@@ -125,7 +125,7 @@ describe('oauth-manager', () => {
       window.location.href =
         'http://localhost:3000/auth/callback?error=server_error&state=some-state';
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(false);
       expect(result.error).toBe('server_error');
@@ -136,7 +136,7 @@ describe('oauth-manager', () => {
       seedState(state);
       window.location.href = `http://localhost:3000/auth/callback?state=${state}`;
 
-      const result = handleOAuthCallback();
+      const result = getCodeFromOAuthCallback();
 
       expect(result.valid).toBe(false);
       expect(result.error).toMatch(/no authorization code/i);
@@ -147,11 +147,11 @@ describe('oauth-manager', () => {
       seedState(state);
       window.location.href = `http://localhost:3000/auth/callback?code=code-1&state=${state}`;
 
-      handleOAuthCallback(); // first call — consumes state
+      getCodeFromOAuthCallback(); // first call — consumes state
 
       // Second call with same URL: stored state already removed, should fail
       window.location.href = `http://localhost:3000/auth/callback?code=code-2&state=${state}`;
-      const secondResult = handleOAuthCallback();
+      const secondResult = getCodeFromOAuthCallback();
       expect(secondResult.valid).toBe(false);
     });
   });

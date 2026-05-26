@@ -4,7 +4,7 @@
  */
 
 import type { OAuth2Provider, UserInfo, TokenResponse } from '../types/auth-types.js';
-import { initiateOAuthFlow, handleOAuthCallback, retrievePKCE } from '../auth/oauth-manager.js';
+import { initiateOAuthFlow, getCodeFromOAuthCallback, retrievePKCE } from '../auth/oauth-manager.js';
 import { oauth2Token, getUserInfo as apiGetUserInfo } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
@@ -52,7 +52,7 @@ export async function handleLoginCallback(): Promise<[boolean, string?]> {
         setAuthLoading(true);
 
         // Parse and validate callback
-        const callbackResult = handleOAuthCallback();
+        const callbackResult = getCodeFromOAuthCallback();
 
         if (!callbackResult.valid || callbackResult.error) {
             const errorMessage = callbackResult.error || 'Authentication failed';
