@@ -132,7 +132,7 @@ export function scheduleTokenRefresh(
   const timeUntilExpiry = new Date(tokens.expires_at).getTime() - now;
 
   // Schedule at the midpoint (half-life)
-  const refreshDelay = timeUntilExpiry / 2;
+  const refreshDelay = Math.min(timeUntilExpiry / 2, 2147483647); // Cap at max setTimeout value, which is ~24.8 days
 
   // Token already expired or expiring very soon — refresh immediately
   if (refreshDelay <= 0) {
