@@ -32,7 +32,7 @@ export interface AgentCardData {
   loading: boolean;
 }
 
-export interface DashboardState {
+export interface AgentListState {
   agents: Agent[];
   filter: FilterOptions;
   sort: SortOptions;
