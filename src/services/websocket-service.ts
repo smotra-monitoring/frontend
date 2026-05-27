@@ -250,7 +250,7 @@ function attemptReconnect(): void {
 
     reconnectTimeout = setTimeout(() => {
         connect();
-    }, config.reconnectInterval);
+    }, config.reconnectInterval * reconnectAttempts); // Exponential backoff
 }
 
 /**

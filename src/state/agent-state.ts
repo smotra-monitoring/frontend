@@ -3,10 +3,10 @@
  */
 
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
-import type { Agent, DashboardState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
+import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
 
 // Initial dashboard state
-const initialDashboardState: DashboardState = {
+const initialDashboardState: AgentListState = {
   agents: [],
   filter: {},
   sort: {
@@ -19,7 +19,7 @@ const initialDashboardState: DashboardState = {
 };
 
 // Create dashboard state instance
-const dashboardState = createState<DashboardState>(initialDashboardState);
+const dashboardState = createState<AgentListState>(initialDashboardState);
 
 /**
  * Set agents list
@@ -234,7 +234,7 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
  * // Later: unsubscribe();
  * ```
  */
-export function subscribeToAgents(callback: Subscriber<DashboardState>): UnsubscribeFn {
+export function subscribeToAgents(callback: Subscriber<AgentListState>): UnsubscribeFn {
   return dashboardState.subscribe(callback);
 }
 
@@ -265,20 +265,133 @@ export function getAgentCountByStatus(): Record<string, number> {
   return counts;
 }
 
+const now = Math.floor(Date.now() / 1000);
+
+const fakeAgents: Agent[] = [
+  {
+    id: 'agent-001',
+    name: 'web-prod-01',
+    hostname: 'web-prod-01.infra.example.com',
+    ip: '10.0.1.10',
+    status: 'online',
+    lastSeen: now - 5,
+    metrics: { latency: 12, uptime: 2592000, reachability: 100, responseTime: 14, lastCheck: now - 5 },
+    tags: ['production', 'web'],
+    version: '1.4.2',
+  },
+  {
+    id: 'agent-002',
+    name: 'web-prod-02',
+    hostname: 'web-prod-02.infra.example.com',
+    ip: '10.0.1.11',
+    status: 'online',
+    lastSeen: now - 8,
+    metrics: { latency: 15, uptime: 2590000, reachability: 100, responseTime: 17, lastCheck: now - 8 },
+    tags: ['production', 'web'],
+    version: '1.4.2',
+  },
+  {
+    id: 'agent-003',
+    name: 'api-prod-01',
+    hostname: 'api-prod-01.infra.example.com',
+    ip: '10.0.2.10',
+    status: 'online',
+    lastSeen: now - 3,
+    metrics: { latency: 8, uptime: 1728000, reachability: 99.9, responseTime: 10, lastCheck: now - 3 },
+    tags: ['production', 'api'],
+    version: '1.4.2',
+  },
+  {
+    id: 'agent-004',
+    name: 'db-primary',
+    hostname: 'db-primary.infra.example.com',
+    ip: '10.0.3.10',
+    status: 'warning',
+    lastSeen: now - 45,
+    metrics: { latency: 142, uptime: 5184000, reachability: 97.3, responseTime: 155, lastCheck: now - 45 },
+    tags: ['production', 'database'],
+    version: '1.3.9',
+  },
+  {
+    id: 'agent-005',
+    name: 'db-replica-01',
+    hostname: 'db-replica-01.infra.example.com',
+    ip: '10.0.3.11',
+    status: 'online',
+    lastSeen: now - 12,
+    metrics: { latency: 18, uptime: 4320000, reachability: 100, responseTime: 20, lastCheck: now - 12 },
+    tags: ['production', 'database'],
+    version: '1.4.0',
+  },
+  {
+    id: 'agent-006',
+    name: 'cache-01',
+    hostname: 'cache-01.infra.example.com',
+    ip: '10.0.4.10',
+    status: 'online',
+    lastSeen: now - 2,
+    metrics: { latency: 3, uptime: 864000, reachability: 100, responseTime: 4, lastCheck: now - 2 },
+    tags: ['production', 'cache'],
+    version: '1.4.2',
+  },
+  {
+    id: 'agent-007',
+    name: 'worker-staging-01',
+    hostname: 'worker-staging-01.infra.example.com',
+    ip: '10.1.1.10',
+    status: 'offline',
+    lastSeen: now - 3720,
+    metrics: { latency: 0, uptime: 0, reachability: 0, responseTime: 0, lastCheck: now - 3720 },
+    tags: ['staging', 'worker'],
+    version: '1.5.0-beta',
+  },
+  {
+    id: 'agent-008',
+    name: 'monitor-eu-01',
+    hostname: 'monitor-eu-01.infra.example.com',
+    ip: '185.12.44.100',
+    status: 'online',
+    lastSeen: now - 20,
+    metrics: { latency: 68, uptime: 3456000, reachability: 99.5, responseTime: 72, lastCheck: now - 20 },
+    tags: ['monitoring', 'eu-west'],
+    version: '1.4.1',
+  },
+  {
+    id: 'agent-009',
+    name: 'monitor-us-01',
+    hostname: 'monitor-us-01.infra.example.com',
+    ip: '54.210.33.77',
+    status: 'online',
+    lastSeen: now - 18,
+    metrics: { latency: 34, uptime: 3456000, reachability: 99.8, responseTime: 37, lastCheck: now - 18 },
+    tags: ['monitoring', 'us-east'],
+    version: '1.4.1',
+  },
+  {
+    id: 'agent-010',
+    name: 'edge-cdn-01',
+    hostname: 'edge-cdn-01.infra.example.com',
+    ip: '104.21.55.200',
+    status: 'error',
+    lastSeen: now - 610,
+    metrics: { latency: 999, uptime: 0, reachability: 12, responseTime: 999, lastCheck: now - 610 },
+    tags: ['cdn', 'edge'],
+    version: '1.4.0',
+  },
+];
+
 /**
  * Load agents from API
- * TODO: Implement actual API call when backend is ready
+ * TODO: Replace fake data with actual API call when backend is ready
  */
 export async function loadAgents(): Promise<void> {
-  // For now, this is a stub. In production, it would fetch from API
-  // The WebSocket will provide real-time updates after initial load
   try {
     // Future: const response = await fetch('/api/v1/agents');
     // Future: const agents = await response.json();
     // Future: setAgents(agents);
 
-    // For now, just resolve - WebSocket will populate data
-    return Promise.resolve();
+    // Temporary: seed with fake agents for UI development
+    setAgents(fakeAgents);
   } catch (error) {
     console.error('Failed to load agents:', error);
     throw error;

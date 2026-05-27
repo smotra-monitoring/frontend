@@ -14,7 +14,6 @@ import { connect as connectWebSocket, disconnect as disconnectWebSocket } from '
 import { loadAgents } from '../state/agent-state.js';
 
 interface DashboardPageState extends ComponentState {
-  initialized: boolean;
 }
 
 /**
@@ -28,9 +27,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
   private toastNotification: ToastNotification | null = null;
 
   constructor(root: HTMLElement) {
-    super(root, {
-      initialized: false,
-    });
+    super(root, {});
   }
 
   render(): void {
@@ -104,10 +101,6 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
   }
 
   async onMount(): Promise<void> {
-    if (this.state.initialized) {
-      return;
-    }
-
     try {
       // Load agent data
       await loadAgents();
@@ -115,7 +108,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
       // Connect to WebSocket for real-time updates
       const connected = await connectWebSocket();
 
-      if (!connected) {
+      if (connected) {
         console.warn('Failed to establish WebSocket connection');
         // Show warning toast
         if (this.toastNotification) {
@@ -123,7 +116,6 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
         }
       }
 
-      this.setState({ initialized: true });
     } catch (error) {
       console.error('Dashboard initialization error:', error);
 
