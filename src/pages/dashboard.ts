@@ -105,17 +105,18 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
       // Load agent data
       await loadAgents();
 
+      /*
       // Connect to WebSocket for real-time updates
       const connected = await connectWebSocket();
 
-      if (connected) {
+      if (!connected) {
         console.warn('Failed to establish WebSocket connection');
         // Show warning toast
         if (this.toastNotification) {
           this.toastNotification.warning('Real-time updates unavailable. Retrying...');
         }
       }
-
+      */
     } catch (error) {
       console.error('Dashboard initialization error:', error);
 
