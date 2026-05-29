@@ -327,11 +327,17 @@ npm run test:integration
 
 ### Test Requirements
 
-Before submitting a PR, ensure:
+**New features** — a feature is not considered complete without tests:
+- ✅ Unit tests for all new functions, utilities, and components (`tests/unit/`)
+- ✅ At least one integration test covering the primary end-to-end flow (`tests/integration/`)
+
+**Bug fixes** — every bug fix must include a regression test:
+- ✅ A test that reproduces the original bug and verifies it is resolved
+- ✅ Place in the most appropriate location: `tests/unit/` for isolated logic, `tests/integration/` for flows
+
+**All PRs:**
 - ✅ All existing tests pass
-- ✅ New features have tests
-- ✅ Bug fixes have regression tests
-- ✅ Coverage doesn't decrease
+- ✅ Coverage doesn't decrease below goals
 - ✅ No console errors/warnings
 
 ## Submitting Changes
@@ -344,10 +350,11 @@ Before submitting a PR, ensure:
    npm test         # All tests pass
    ```
 
-2. **Update documentation** if needed
-   - Update README.md for new features
-   - Add feature docs to `docs/features/`
-   - Update CHANGELOG.md
+2. **Update documentation** (required for new features)
+   - Add `docs/features/<feature-name>.md` describing the feature, design decisions, and usage
+   - Update `docs/README.md` to link the new feature doc in the Feature Guides section
+   - Add a `CHANGELOG.md` entry under `[Unreleased]`
+   - For bug fixes, add a `CHANGELOG.md` entry describing what was fixed
    - Add JSDoc comments to functions
 
 3. **Check responsive design**
