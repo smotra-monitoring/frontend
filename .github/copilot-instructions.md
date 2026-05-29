@@ -17,6 +17,54 @@ The repository serves as the GUI frontend for the monitoring system, providing a
 - **Accessibility**: WCAG 2.1 AA compliance with support for keyboard navigation, touch interactions, screen readers, and user preferences (reduced motion, high contrast).
 - **Design Inspiration**: Modern monitoring aesthetics inspired by Linear.app (clean, keyboard-centric), Better Stack (uptime dashboards), Tailscale (node management), Vercel/Cloudflare (Bento layouts), and Grafana (dark mode, charts).
 
+# Non-Negotiable Rules
+
+## Feature Completeness
+
+A feature is **not complete** until all of the following exist and pass:
+- Unit tests covering all new functions, classes, utilities, and components (`tests/unit/`)
+- At least one integration test covering the primary end-to-end flow (`tests/integration/`)
+- A `docs/features/<feature-name>.md` documentation file
+- A `CHANGELOG.md` entry under `[Unreleased]`
+- Updated `docs/README.md` linking the new feature doc
+
+## Bug Fix Requirements
+
+A bug fix is **not complete** until:
+- A regression test (unit or integration) that reproduces the bug and confirms it is fixed
+- A `CHANGELOG.md` entry under `[Unreleased]` describing what was fixed and the root cause
+
+## Core Design Rules
+
+- **Mobile-first**: Base styles for mobile, enhance at larger breakpoints. NO max-width constraints on desktop.
+- **Full-width on desktop**: Sidebar fixed at 200px, main content uses `calc(100vw - 200px)`.
+- **Accessibility**: WCAG 2.1 AA — all touch targets 44px+, ARIA labels on all interactive elements, respect `prefers-reduced-motion`.
+- **No CSS-in-JS**: All styles in `public/css/` plain CSS files.
+- **No raw fetch**: All API calls via the generated OpenAPI client (`src/api/`). Never manually edit `*.gen.ts` files.
+- **TypeScript classes**: Components are classes extending `BaseComponent`, not functions.
+- **PKCE required**: All OAuth flows must use PKCE. No tokens in URL query parameters.
+
+## Detailed Instructions Index
+
+Detailed rules are in `.github/instructions/` with `applyTo` targeting:
+
+| File | Applies To |
+|------|-----------|
+| `project-overview.instructions.md` | `**` (always) |
+| `ui-design.instructions.md` | `src/components/**, src/pages/**, public/css/**` |
+| `responsive.instructions.md` | CSS, components, viewport utils |
+| `theme.instructions.md` | Theme CSS, theme-manager, theme-toggle |
+| `accessibility.instructions.md` | `src/components/**, src/pages/**, public/**` |
+| `html-structure.instructions.md` | `public/index.html, src/pages/**` |
+| `css-architecture.instructions.md` | `public/css/**` |
+| `components.instructions.md` | `src/components/**, src/pages/**` |
+| `auth.instructions.md` | `src/auth/**, src/pages/login.ts, oauth-callback.ts` |
+| `api.instructions.md` | `src/api/**, api/**` |
+| `typescript.instructions.md` | `src/**/*.ts, tsconfig*.json` |
+| `testing.instructions.md` | `tests/**, vitest.config.js` |
+| `documentation.instructions.md` | `docs/**, CHANGELOG.md` |
+| `performance.instructions.md` | `src/**, public/**` |
+
 # Visualization
 
 The frontend provides a dashboard that visualizes the collected data in an intuitive manner. Key performance metrics such as reachability and response time are displayed using charts and graphs, allowing administrators to quickly assess the health of their infrastructure. The dashboard also includes features for filtering and sorting data, as well as detailed views for individual agents and hosts.
@@ -617,26 +665,6 @@ Based on 4px unit:
 - **User-Friendly Interface**: Clean, modern design inspired by Linear.app, Better Stack, and Tailscale, with focus on usability and clarity.
 - **APIs for Integration**: RESTful APIs to allow integration with other systems and automation tools.
 
-# Technology Stack
-
-- Programming Language: vanilla TypeScript, no frameworks
-- CSS framework: Bulima for styling and responsive design
-- Data Storage: In-memory storage for real-time data, with potential for future integration with databases
-- Communication Protocol: HTTP/HTTPS for communcation with api and WebSocket for real-time updates
-- Deployment: Docker for containerization and ease of deployment
-- Testing: Vitest for unit testing and integration testing
-- Linting and Formatting: ESLint and Prettier for code quality and consistency
-
-
-# Endpoints
-
-- RESTful API endpoints for agent data submission, configuration management, and data retrieval.
-- WebSocket endpoints for real-time data updates to the dashboard.
-- Authentication endpoints for user login and management.
-- /metrics endpoint for Prometheus monitoring.
-- /healthz endpoint for server status monitoring.
-- API versioning implementet via URL path (e.g., /v1/).
-
 # Documentation
 
 - API specification provided in OpenAPI format for easy integration and client generation available in the `api/openapi/api/spec.yaml`.
@@ -658,299 +686,4 @@ Based on 4px unit:
 
 These documentation steps are non-negotiable — a feature is not complete until its docs exist.
 
-# Folder Structure
-
-- `public/`: Static assets and HTML shell
-  - `index.html`: SPA shell with viewport meta, theme initialization
-  - `css/`: All CSS files (no CSS-in-JS)
-    - `base.css`: Root HTML styles, smooth scroll
-    - `variables.css`: CSS custom properties
-    - `theme-dark.css`: Dark mode overrides
-    - `theme-light.css`: Light mode overrides
-    - `layout.css`: Grid/flexbox layouts, responsive structure
-    - `components.css`: Component-specific styles
-    - `animations.css`: Keyframes, transitions
-    - `utilities.css`: Helper classes
-  - `images/`: Image assets, icons
-- `src/`: Contains the source code for the frontend application
-  - `api/`: **Generated OpenAPI client - DO NOT MANUALLY EDIT**
-    - `types.gen.ts`: Generated types from OpenAPI spec
-    - `sdk.gen.ts`: Generated SDK functions
-    - `index.ts`: Re-exports all SDK
-  - `auth/`: Authentication logic (OAuth2, PKCE, tokens)
-    - `oauth-manager.ts`: OAuth2 flow orchestration
-    - `token-manager.ts`: Token storage, refresh, expiration
-    - `auth-state.ts`: Authentication state with pub/sub
-    - `auth-guard.ts`: Route protection utilities
-  - `components/`: Reusable UI components (TypeScript classes)
-    - `base-component.ts`: Base class with lifecycle hooks
-    - `agent-card.ts`: Bento-box agent card
-    - `expandable-table.ts`: Responsive table/card view
-    - `command-palette.ts`: Cmd+K search modal
-    - `toast-notification.ts`: Toast notifications
-    - `theme-toggle.ts`: Theme switcher button
-    - `sidebar.ts`: Responsive navigation sidebar
-    - `mobile-nav.ts`: Mobile bottom navigation
-    - `status-indicator.ts`: Pulsing status dot
-    - `dashboard-grid.ts`: Auto-fit grid container
-  - `pages/`: Application pages
-    - `login.ts`: Login page with OAuth provider selection
-    - `oauth-callback.ts`: OAuth callback handler
-    - `dashboard.ts`: Main dashboard with Bento-Box layout
-    - `router.ts`: SPA routing with auth guards
-  - `services/`: API and service layer
-    - `auth-service.ts`: High-level authentication API
-    - `websocket-service.ts`: WebSocket connection management
-  - `state/`: State management
-    - `global-state.ts`: Lightweight pub/sub state manager
-    - `auth-state.ts`: Authentication state module
-    - `agent-state.ts`: Agent/host data state
-    - `theme-manager.ts`: Theme detection, storage, CSS classes
-    - `viewport-state.ts`: Viewport size tracking
-  - `types/`: TypeScript type definitions
-    - `auth-types.ts`: Extended auth types
-    - `component-types.ts`: Component lifecycle, events
-    - `dashboard-types.ts`: Agent card, metrics
-    - `theme-types.ts`: Theme state types
-    - `websocket-types.ts`: WebSocket message types
-    - `viewport-types.ts`: Viewport, breakpoint types
-  - `utils/`: Utility functions
-    - `storage.ts`: Type-safe localStorage wrapper
-    - `url-utils.ts`: URL parameter parsing
-    - `dom-helpers.ts`: DOM manipulation, smooth scroll
-    - `theme-utils.ts`: Theme detection, CSS toggling
-    - `viewport-utils.ts`: Breakpoint detection, column calc
-  - `index.ts`: Application bootstrap entry point
-- `tests/`: Unit and integration tests (mirrors src/ structure)
-  - `unit/auth/`: OAuth, token management tests
-  - `unit/state/`: Theme, viewport state tests
-  - `unit/components/`: Component tests with accessibility
-  - `unit/services/`: Service tests with mocks
-  - `unit/utils/`: Utility function tests
-  - `integration/`: End-to-end flow tests
-  - `integration/responsive/`: Responsive layout tests
-  - `mocks/`: Mock data (agents, OAuth, WebSocket, viewport)
-  - `setup.ts`: Vitest configuration
-- `api/`: OpenAPI specification and configuration
-  - `openapi/api/spec.yaml`: API specification
-  - `openapi-ts.config.ts`: OpenAPI client generator config
-- `docs/`: Documentation
-  - `README.md`: Project overview
-  - `features/`: Detailed feature guides
-    - `oauth-authentication.md`: OAuth implementation guide
-    - `theme-management.md`: Theme system guide
-    - `ui-design-system.md`: Design patterns, Bento-Box layouts
-  - `testing/`: Testing guides
-    - `responsive-testing.md`: Responsive testing matrix
-    - `TESTING_SUMMARY.md`: Test status and coverage
-  - `TYPESCRIPT_CONFIGURATION.md`: TypeScript multi-config strategy guide
-- `package.json`: Project metadata and dependencies
-- `tsconfig.json`: TypeScript IDE configuration (type-checking only, noEmit: true)
-- `tsconfig.build.json`: TypeScript production build configuration (src/ only, emits JS)
-- `tsconfig.test.json`: TypeScript test configuration (extends base, includes tests/)
-- `vitest.config.js`: Vitest testing configuration
-
-# OpenAPI Specification
-
-The OpenAPI specification for the backend API is located in the `api/openapi/api/spec.yaml` file. This specification defines the available endpoints, request and response formats, authentication methods, and other relevant details for interacting with the backend server. The OpenAPI specification is used to generate the TypeScript client for the frontend application, ensuring type safety and consistency when making API calls. The `openapi-ts` command in the `package.json` scripts section is used to generate the client based on the OpenAPI specification, and it should be run whenever there are changes to the API specification to keep the client up to date.
-
-`npm run openapi-ts` should be executed after any changes to the `api/openapi/api/spec.yaml` file to regenerate the TypeScript client and ensure that the frontend application can properly communicate with the backend API.
-
-All API interactions in the frontend should utilize the generated TypeScript client to ensure type safety and consistency with the backend API specification. This approach helps to catch potential issues at compile time and provides a clear contract for how the frontend interacts with the backend services. 
-- types generated from the OpenAPI specification are located in the `src/api/types.gen.ts`
-- sdk generated from the OpenAPI specification are located in the `src/api/sdk.gen.ts`
-
-# Code Style
-
-- Use camelCase for variable and function names.
-- Use PascalCase for class and interface names.
-- Use consistent indentation (2 spaces).
-- Use semicolons at the end of statements.
-- Use single quotes for strings.
-- Use descriptive names for variables, functions, and classes.
-- Avoid using `any` type in TypeScript; prefer specific types or generics.
-- Write JSDoc comments for functions and classes to provide clear documentation.
-- Use ESLint and Prettier for code formatting and linting to maintain a consistent code style across the project. 
-
-# TypeScript Configuration
-
-The project uses a **three-config TypeScript setup** to separate concerns between IDE type-checking, production builds, and test environments.
-
-## Configuration Files
-
-| Configuration | Purpose | Emits JS | Includes | Used By |
-|--------------|---------|----------|----------|---------|
-| `tsconfig.json` | IDE type-checking | ❌ No | `src/` + `tests/` | VS Code, `tsc --noEmit` |
-| `tsconfig.build.json` | Production build | ✅ Yes | `src/` only | `npm run build` |
-| `tsconfig.test.json` | Test environment | ❌ No | `src/` + `tests/` | Vitest |
-
-## Key Points
-
-- **tsconfig.json**: Base configuration for VS Code IntelliSense and general type-checking
-  - `noEmit: true` for faster type-checking without file system writes
-  - Includes both `src/` and `tests/` for complete type coverage
-  - Types: `node` and `vitest/globals`
-
-- **tsconfig.build.json**: Production-only compilation
-  - `rootDir: "./src"` and `outDir: "./dist"` for clean output structure
-  - Generates source maps and declaration files
-  - Stricter rules: `noUncheckedIndexedAccess`, `noUncheckedSideEffectImports`
-  - Excludes tests from production build
-
-- **tsconfig.test.json**: Test-specific configuration
-  - Extends `tsconfig.json` for consistency
-  - `rootDir: "."` to allow imports from both `src/` and `tests/`
-  - Used automatically by Vitest via vitest.config.js
-
-## Commands
-
-```bash
-# Type-check everything without emitting files (fast)
-npx tsc --noEmit
-
-# Build production code (src → dist)
-npm run build  # Uses tsconfig.build.json
-
-# Run tests (uses tsconfig.test.json)
-npm test
-```
-
-For detailed information, see [docs/TYPESCRIPT_CONFIGURATION.md](docs/TYPESCRIPT_CONFIGURATION.md).
-
-# Testing
-
-The project uses **Vitest** for unit and integration testing with **jsdom** for DOM mocking.
-
-## Testing Principles
-
-- **Unit tests** for all functions, components, utilities, and services
-- **Integration tests** for complete flows (OAuth, WebSocket updates, routing)
-- **Responsive tests** at multiple viewports (375px, 768px, 1280px, 1440px, 1920px, 2560px)
-- **Accessibility tests** for keyboard navigation, ARIA labels, reduced motion
-- **Component tests** focus on behavior, not implementation (user interactions, state changes)
-- **Mock external dependencies** (WebSocket, fetch, localStorage, matchMedia)
-- Test files mirror `src/` structure in `tests/` directory
-- Aim for **80%+ code coverage**
-
-## Test Organization
-
-```
-tests/
-├── unit/
-│   ├── auth/          # PKCE generation, token refresh, storage
-│   ├── state/         # Theme detection, viewport tracking
-│   ├── components/    # Render, events, accessibility
-│   ├── services/      # API calls, WebSocket
-│   └── utils/         # Pure function tests
-├── integration/
-│   ├── oauth-flow.test.ts       # End-to-end OAuth
-│   ├── websocket-updates.test.ts # Real-time dashboard updates
-│   └── responsive/
-│       ├── layout.test.ts       # Grid column counts at breakpoints
-│       ├── navigation.test.ts   # Hamburger/sidebar switching
-│       └── touch.test.ts        # Touch interactions
-├── mocks/
-│   ├── agent-data.ts
-│   ├── oauth-responses.ts
-│   ├── websocket-messages.ts
-│   ├── user-data.ts
-│   └── viewport-mocks.ts
-└── setup.ts
-```
-
-## Component Testing Example
-
-```typescript
-describe('AgentCard', () => {
-  it('renders agent name and status', () => {
-    const card = new AgentCard(mockAgent);
-    expect(card.root.textContent).toContain(mockAgent.name);
-    expect(card.root.querySelector('.status-pulse')).toBeInTheDocument();
-  });
-  
-  it('updates on WebSocket message', () => {
-    const card = new AgentCard(mockAgent);
-    websocket.emit('agent:123', { latency: 50 });
-    expect(card.root.textContent).toContain('50ms');
-  });
-  
-  it('has accessible status indicator', () => {
-    const card = new AgentCard(mockAgent);
-    const status = card.root.querySelector('.status-pulse');
-    expect(status).toHaveAttribute('aria-label');
-  });
-});
-```
-
-## Responsive Testing
-
-```typescript
-describe('Dashboard Grid', () => {
-  it('shows 1 column on mobile (375px)', () => {
-    mockViewport(375, 667);
-    const grid = new DashboardGrid();
-    expect(getComputedColumns(grid.root)).toBe(1);
-  });
-  
-  it('shows 3-4 columns on desktop (1280px)', () => {
-    mockViewport(1280, 800);
-    const grid = new DashboardGrid();
-    const cols = getComputedColumns(grid.root);
-    expect(cols).toBeGreaterThanOrEqual(3);
-    expect(cols).toBeLessThanOrEqual(4);
-  });
-  
-  it('shows 5-6 columns on ultra-wide (1920px)', () => {
-    mockViewport(1920, 1080);
-    const grid = new DashboardGrid();
-    const cols = getComputedColumns(grid.root);
-    expect(cols).toBeGreaterThanOrEqual(5);
-  });
-});
-```
-
-## Test Requirements
-
-**New features MUST include:**
-- Unit tests covering all new functions, classes, utilities, and components (`tests/unit/`).
-- At least one integration test covering the primary end-to-end flow of the feature (`tests/integration/`).
-- A feature is not complete until its tests exist and pass.
-
-**Bug fixes MUST include:**
-- A regression test (unit or integration) that reproduces the bug and confirms it is fixed. This prevents the same bug from reappearing.
-
-## Testing Checklist
-
-- [ ] Unit tests for OAuth PKCE generation and validation
-- [ ] Unit tests for token refresh logic
-- [ ] Unit tests for theme detection (system preference)
-- [ ] Unit tests for viewport breakpoint detection
-- [ ] Component tests for all UI components
-- [ ] Integration test for complete OAuth login flow
-- [ ] Integration test for WebSocket updates triggering UI changes
-- [ ] Responsive tests at all breakpoints
-- [ ] Accessibility tests for keyboard navigation
-- [ ] Test smooth scroll is disabled with prefers-reduced-motion
-- [ ] Test touch target sizes are 44px+ on mobile
-- [ ] Test theme toggle updates CSS class on HTML element
-- [ ] Mock fetch for API calls
-- [ ] Mock WebSocket for real-time updates
-- [ ] Mock localStorage for token storage
-- [ ] Mock matchMedia for theme/viewport detection
-
-## Running Tests
-
-```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode for TDD
-npm run test:coverage # Coverage report
-```
-
-## Coverage Goals
-
-- Overall: 80%+
-- Auth module: 90%+ (security-critical)
-- Components: 80%+
-- Utilities: 90%+ (pure functions, easy to test)
-- Services: 80%+
 
