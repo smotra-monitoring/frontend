@@ -93,8 +93,6 @@ export class Sidebar extends BaseComponent<SidebarState> {
           </span>
         </button>
         
-        <h1 class="mobile-header__title">Smotra</h1>
-        
         <div class="mobile-header__actions">
           <!-- Theme toggle and other actions will be inserted here -->
         </div>
@@ -249,10 +247,22 @@ export class Sidebar extends BaseComponent<SidebarState> {
     this.setState({ activeRoute: route });
   }
 
-  onViewportChange(): void {
-    // Close sidebar when switching from mobile to desktop
-    if (this.isDesktop() && this.state.expanded) {
+  onViewportChange(prev: string, _current: string): void {
+    const wasDesktop = prev === 'desktop' || prev === 'wide' || prev === 'ultrawide';
+    const isDesktopNow = this.isDesktop();
+
+    if (wasDesktop === isDesktopNow) {
+      // No layout boundary crossed — nothing to do
+      return;
+    }
+
+    if (isDesktopNow && this.state.expanded) {
+      // Mobile/tablet → desktop while open: close() calls setState which re-renders
       this.close();
+    } else {
+      // Desktop → mobile/tablet (or mobile→desktop while closed): force re-render
+      // so the correct markup (mobile-header vs desktop sidebar) is generated
+      this.render();
     }
   }
 
