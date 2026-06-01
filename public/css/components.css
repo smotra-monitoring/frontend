@@ -936,10 +936,10 @@
   color: var(--color-text-primary);
 }
 
-/* Mobile: toolbar adjustments */
-@media (max-width: 767px) {
+/* Mobile + tablet: toolbar height matches mobile-header */
+@media (max-width: 1023px) {
   .dashboard__toolbar {
-    padding: var(--spacing-md) var(--spacing-base);
+    padding: var(--spacing-sm) var(--spacing-base);
     min-height: 56px;
   }
 
