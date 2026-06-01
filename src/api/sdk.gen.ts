@@ -2,8 +2,8 @@
 
 import { client } from './client.gen.js';
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client/index.js';
-import { acknowledgeAlertResponseTransformer, authRefreshResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listUsersResponseTransformer, oauth2TokenResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentResultsResponseTransformer, submitAgentStatusResponseTransformer, updateAgentConfigurationResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
-import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutErrors, LogoutResponses, Oauth2AuthorizeData, Oauth2AuthorizeErrors, Oauth2CallbackData, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentResultsData, SubmitAgentResultsErrors, SubmitAgentResultsResponses, SubmitAgentStatusData, SubmitAgentStatusErrors, SubmitAgentStatusResponses, UpdateAgentConfigurationData, UpdateAgentConfigurationErrors, UpdateAgentConfigurationResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
+import { acknowledgeAlertResponseTransformer, authRefreshResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAgentsResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listUsersResponseTransformer, oauth2TokenResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentResultsResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
+import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutErrors, LogoutResponses, Oauth2AuthorizeData, Oauth2AuthorizeErrors, Oauth2CallbackData, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentResultsData, SubmitAgentResultsErrors, SubmitAgentResultsResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -18,27 +18,6 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
-
-/**
- * Submit agent monitoring report
- *
- * Agents use this endpoint to submit collected monitoring data including
- * reachability checks, performance metrics, and system health information.
- *
- * This endpoint supports batch submissions for efficiency when agents are
- * recovering from offline periods.
- *
- */
-export const submitAgentStatus = <ThrowOnError extends boolean = false>(options: Options<SubmitAgentStatusData, ThrowOnError>) => (options.client ?? client).post<SubmitAgentStatusResponses, SubmitAgentStatusErrors, ThrowOnError>({
-    responseTransformer: submitAgentStatusResponseTransformer,
-    security: [{ name: 'X-Agent-API-Key', type: 'apiKey' }],
-    url: '/agent/report',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
 
 /**
  * Agent self-registration (unclaimed)
@@ -133,22 +112,6 @@ export const getAgentConfiguration = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Update agent configuration
- *
- * Update configuration for a specific agent
- */
-export const updateAgentConfiguration = <ThrowOnError extends boolean = false>(options: Options<UpdateAgentConfigurationData, ThrowOnError>) => (options.client ?? client).put<UpdateAgentConfigurationResponses, UpdateAgentConfigurationErrors, ThrowOnError>({
-    responseTransformer: updateAgentConfigurationResponseTransformer,
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/agent/{agentId}/configuration',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Send agent heartbeat
  *
  * Lightweight endpoint for agents to signal they are alive and
@@ -184,6 +147,23 @@ export const submitAgentResults = <ThrowOnError extends boolean = false>(options
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List agents
+ *
+ * Returns a paginated list of agents belonging to the authenticated user's tenant.
+ * Each agent entry includes all non-sensitive fields. The response is ordered by
+ * creation date (newest first).
+ *
+ * **Permissions:** Requires a valid OAuth2 session. Agent API keys are not accepted.
+ *
+ */
+export const listAgents = <ThrowOnError extends boolean = false>(options?: Options<ListAgentsData, ThrowOnError>) => (options?.client ?? client).get<ListAgentsResponses, ListAgentsErrors, ThrowOnError>({
+    responseTransformer: listAgentsResponseTransformer,
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/agents',
+    ...options
 });
 
 /**
