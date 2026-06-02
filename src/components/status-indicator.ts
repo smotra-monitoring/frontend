@@ -50,8 +50,6 @@ export class StatusIndicator extends BaseComponent<StatusIndicatorState> {
     const labels: Record<AgentStatus, string> = {
       online: 'Online - Agent is reachable',
       offline: 'Offline - Agent is not reachable',
-      warning: 'Warning - Agent experiencing issues',
-      error: 'Error - Agent has critical issues',
       unknown: 'Unknown - Agent status unavailable',
     };
     return labels[status] || 'Unknown status';

@@ -199,19 +199,25 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
     // Search agents
     const agentResults: CommandResult[] = agents
-      .filter((agent: Agent) =>
-        agent.name.toLowerCase().includes(lowerQuery) ||
-        agent.hostname?.toLowerCase().includes(lowerQuery) ||
-        agent.ipAddress?.toLowerCase().includes(lowerQuery) ||
-        agent.ip?.toLowerCase().includes(lowerQuery)
-      )
-      .map((agent: Agent) => ({
-        id: agent.id,
-        type: 'agent' as const,
-        label: agent.name,
-        description: agent.hostname || agent.ipAddress,
-        action: () => this.navigateToAgent(agent),
-      }));
+      .filter((agent: Agent) => {
+        const primaryIP = agent.ipAddresses?.[0]?.ip || '';
+        return (
+          agent.name.toLowerCase().includes(lowerQuery) ||
+          agent.agentVersion?.toLowerCase().includes(lowerQuery) ||
+          agent.sectionId?.toLowerCase().includes(lowerQuery) ||
+          primaryIP.toLowerCase().includes(lowerQuery)
+        );
+      })
+      .map((agent: Agent) => {
+        const primaryIP = agent.ipAddresses?.[0]?.ip;
+        return {
+          id: agent.id,
+          type: 'agent' as const,
+          label: agent.name,
+          description: primaryIP || agent.sectionId || 'No IP',
+          action: () => this.navigateToAgent(agent),
+        };
+      });
 
     // TODO: Add action results (e.g., "Add agent", "View logs", etc.)
 

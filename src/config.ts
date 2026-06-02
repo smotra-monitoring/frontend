@@ -20,3 +20,8 @@ export function getEnvironmentConfig(): AppConfig {
     const host = window.location.host as FrontendURL;
     return CONFIG_MAP[host] ? CONFIG_MAP[host] : CONFIG_MAP["production"];
 }
+
+/**
+ * Agent monitoring thresholds
+ */
+export const AGENT_ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes

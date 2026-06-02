@@ -23,13 +23,9 @@ export type WebSocketMessageType =
 export interface AgentUpdateMessage {
   id: string;
   status?: AgentStatus;
-  metrics?: {
-    latency?: number;
-    uptime?: number;
-    reachability?: number;
-    responseTime?: number;
-  };
-  lastSeen?: number;
+  lastSeenAt?: Date;
+  agentVersion?: string;
+  configVersion?: number;
 }
 
 export interface SystemNotificationMessage {

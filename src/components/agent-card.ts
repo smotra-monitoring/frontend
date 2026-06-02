@@ -1,11 +1,15 @@
 /**
  * Agent card component
  * Individual Bento-Box agent card with status pulse and metrics
+ * 
+ * NOTE: This component is being superseded by AgentStatesWidget
+ * (table-based view). Keeping for potential future use.
  */
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { Agent, AgentStatus } from '../types/dashboard-types.js';
+import type { Agent, DerivedAgentStatus } from '../types/dashboard-types.js';
+import { deriveAgentStatus } from '../utils/agent-utils.js';
 import { on as onWebSocket } from '../services/websocket-service.js';
 
 interface AgentCardState extends ComponentState {
@@ -35,14 +39,15 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   render(): void {
     const { agent, expanded } = this.state;
+    const status = deriveAgentStatus(agent.lastSeenAt);
 
     this.root.innerHTML = `
-      <article class="agent-card" data-status="${agent.status}">
+      <article class="agent-card" data-status="${status}">
         <div class="agent-card__header">
           <div class="agent-card__status">
             <span 
-              class="status-pulse status-pulse--${agent.status}" 
-              aria-label="${this.getStatusLabel(agent.status)}"
+              class="status-pulse status-pulse--${status}" 
+              aria-label="${this.getStatusLabel(status)}"
             ></span>
             <h3 class="agent-card__name">${this.escapeHtml(agent.name)}</h3>
           </div>
@@ -80,34 +85,31 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   private renderMetrics(): string {
     const { agent } = this.state;
-    const { metrics } = agent;
-
-    if (!metrics) {
-      return '<p class="has-text-grey">No metrics available</p>';
-    }
 
     return `
-      <div class="agent-card__metric">
-        <span class="agent-card__metric-label">Latency</span>
-        <span class="agent-card__metric-value ${this.getLatencyClass(metrics.latency)}">
-          ${metrics.latency}ms
-        </span>
-      </div>
-      
-      ${metrics.uptime !== undefined ? `
+      ${agent.agentVersion ? `
         <div class="agent-card__metric">
-          <span class="agent-card__metric-label">Uptime</span>
+          <span class="agent-card__metric-label">Agent Version</span>
           <span class="agent-card__metric-value">
-            ${this.formatUptime(metrics.uptime)}
+            ${this.escapeHtml(agent.agentVersion)}
           </span>
         </div>
       ` : ''}
       
-      ${metrics.lastSeen ? `
+      ${agent.configVersion !== undefined && agent.configVersion !== null ? `
+        <div class="agent-card__metric">
+          <span class="agent-card__metric-label">Config Version</span>
+          <span class="agent-card__metric-value">
+            ${agent.configVersion}
+          </span>
+        </div>
+      ` : ''}
+      
+      ${agent.lastSeenAt ? `
         <div class="agent-card__metric">
           <span class="agent-card__metric-label">Last Seen</span>
           <span class="agent-card__metric-value">
-            ${this.formatRelativeTime(metrics.lastSeen)}
+            ${this.formatRelativeTime(agent.lastSeenAt.getTime())}
           </span>
         </div>
       ` : ''}
@@ -116,6 +118,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   private renderDetails(): string {
     const { agent } = this.state;
+    const primaryIP = agent.ipAddresses?.[0];
 
     return `
       <div class="agent-card__details">
@@ -123,19 +126,19 @@ export class AgentCard extends BaseComponent<AgentCardState> {
           <dt>ID</dt>
           <dd><code>${this.escapeHtml(agent.id)}</code></dd>
           
-          ${agent.hostname ? `
-            <dt>Hostname</dt>
-            <dd>${this.escapeHtml(agent.hostname)}</dd>
+          ${agent.sectionId ? `
+            <dt>Section ID</dt>
+            <dd><code>${this.escapeHtml(agent.sectionId)}</code></dd>
           ` : ''}
           
-          ${agent.ipAddress ? `
+          ${primaryIP ? `
             <dt>IP Address</dt>
-            <dd>${this.escapeHtml(agent.ipAddress)}</dd>
+            <dd>${this.escapeHtml(primaryIP.ip)} (${this.escapeHtml(primaryIP.iface)})</dd>
           ` : ''}
           
-          ${agent.version ? `
-            <dt>Version</dt>
-            <dd>${this.escapeHtml(agent.version)}</dd>
+          ${agent.agentVersion ? `
+            <dt>Agent Version</dt>
+            <dd>${this.escapeHtml(agent.agentVersion)}</dd>
           ` : ''}
         </dl>
       </div>
@@ -163,12 +166,10 @@ export class AgentCard extends BaseComponent<AgentCardState> {
     this.setState({ agent });
   }
 
-  private getStatusLabel(status: AgentStatus): string {
-    const labels: Record<AgentStatus, string> = {
+  private getStatusLabel(status: DerivedAgentStatus): string {
+    const labels: Record<DerivedAgentStatus, string> = {
       online: 'Online',
       offline: 'Offline',
-      warning: 'Warning',
-      error: 'Error',
       unknown: 'Unknown',
     };
     return labels[status] || 'Unknown';

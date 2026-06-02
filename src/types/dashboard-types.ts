@@ -2,35 +2,16 @@
  * Dashboard and agent monitoring type definitions
  */
 
-export interface Agent {
-  id: string;
-  name: string;
-  hostname: string;
-  ip: string;
-  ipAddress?: string; // Alias for ip
-  status: AgentStatus;
-  lastSeen: number; // Unix timestamp
-  metrics: AgentMetrics;
-  tags: string[];
-  version: string;
-}
+// Re-export generated types from OpenAPI SDK (DO NOT recreate these types)
+import type { AgentListItem, AgentNetworkInterface } from '../api/types.gen.js';
+export type Agent = AgentListItem;
+export type { AgentNetworkInterface };
 
-export type AgentStatus = 'online' | 'offline' | 'warning' | 'error' | 'unknown';
+// UI-specific derived status (computed from lastSeenAt threshold)
+export type DerivedAgentStatus = 'online' | 'offline' | 'unknown';
 
-export interface AgentMetrics {
-  latency: number; // milliseconds
-  uptime: number; // seconds
-  reachability: number; // percentage 0-100
-  responseTime: number; // milliseconds
-  lastCheck: number; // Unix timestamp
-  lastSeen?: number; // Unix timestamp - optional for backward compat
-}
-
-export interface AgentCardData {
-  agent: Agent;
-  expanded: boolean;
-  loading: boolean;
-}
+// Legacy type alias for backward compatibility during migration
+export type AgentStatus = DerivedAgentStatus;
 
 export interface AgentListState {
   agents: Agent[];
@@ -42,8 +23,9 @@ export interface AgentListState {
 }
 
 export interface FilterOptions {
-  status?: AgentStatus | AgentStatus[];
-  hostname?: string;
+  status?: DerivedAgentStatus | DerivedAgentStatus[];
+  sectionId?: string;
+  agentVersion?: string;
   tags?: string[];
   search?: string;
 }
@@ -53,15 +35,16 @@ export interface SortOptions {
   direction: 'asc' | 'desc';
 }
 
-export type SortField = 'name' | 'status' | 'latency' | 'uptime' | 'lastSeen';
+export type SortField = 'name' | 'status' | 'lastSeenAt' | 'agentVersion' | 'configVersion';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 
 export interface AgentUpdate {
   id: string;
-  status?: AgentStatus;
-  metrics?: Partial<AgentMetrics>;
-  lastSeen?: number;
+  status?: DerivedAgentStatus;
+  lastSeenAt?: Date;
+  agentVersion?: string;
+  configVersion?: number;
 }
 
 export interface DashboardConfig {

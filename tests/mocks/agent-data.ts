@@ -2,91 +2,77 @@
  * Mock agent data for testing
  */
 
-import type { Agent, AgentStatus } from '../../src/types/dashboard-types.js';
+import type { Agent } from '../../src/types/dashboard-types.js';
+
+const now = new Date();
+const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
+const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000);
+const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
 export const mockAgent: Agent = {
-  id: 'agent-1',
+  id: '01930000-0000-7000-a001-000000000001',
+  sectionId: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
-  hostname: 'test-host-1',
-  ip: '192.168.1.100',
-  ipAddress: '192.168.1.100',
-  status: 'online' as AgentStatus,
-  version: '1.0.0',
-  lastSeen: Date.now(),
-  metrics: {
-    latency: 25,
-    uptime: 86400,
-    reachability: 99.5,
-    responseTime: 150,
-    lastCheck: Date.now(),
-  },
-  tags: ['production', 'web-server'],
+  configVersion: 3,
+  agentVersion: '1.0.0',
+  ipAddresses: [
+    { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
+  ],
+  lastSeenAt: minutesAgo(1), // online
+  lastResultSubmittedAt: minutesAgo(2),
+  createdAt: daysAgo(10),
+  updatedAt: minutesAgo(1),
 };
 
 export const mockAgents: Agent[] = [
   mockAgent,
   {
-    id: 'agent-2',
+    id: '01930000-0000-7000-a002-000000000002',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 2',
-    hostname: 'test-host-2',
-    ip: '192.168.1.101',
-    ipAddress: '192.168.1.101',
-    status: 'offline' as AgentStatus,
-    version: '1.0.0',
-    lastSeen: Date.now() - 300000, // 5 minutes ago
-    metrics: {
-      latency: 0,
-      uptime: 0,
-      reachability: 0,
-      responseTime: 0,
-      lastCheck: Date.now() - 300000,
-    },
-    tags: ['staging', 'database'],
+    configVersion: 2,
+    agentVersion: '1.0.0',
+    ipAddresses: [
+      { ip: '192.168.1.101', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: hoursAgo(1), // offline (beyond 5 min threshold)
+    lastResultSubmittedAt: hoursAgo(1),
+    createdAt: daysAgo(9),
+    updatedAt: hoursAgo(1),
   },
   {
-    id: 'agent-3',
+    id: '01930000-0000-7000-a003-000000000003',
+    sectionId: '01930000-0000-7000-0000-000000000002',
     name: 'Test Agent 3',
-    hostname: 'test-host-3',
-    ip: '192.168.1.102',
-    ipAddress: '192.168.1.102',
-    status: 'warning' as AgentStatus,
-    version: '1.0.0',
-    lastSeen: Date.now(),
-    metrics: {
-      latency: 500,
-      uptime: 43200,
-      reachability: 85,
-      responseTime: 750,
-      lastCheck: Date.now(),
-    },
-    tags: ['production', 'cache'],
+    configVersion: 1,
+    agentVersion: '1.0.1',
+    ipAddresses: [
+      { ip: '192.168.1.102', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(2), // online
+    lastResultSubmittedAt: minutesAgo(3),
+    createdAt: daysAgo(8),
+    updatedAt: minutesAgo(2),
   },
   {
-    id: 'agent-4',
+    id: '01930000-0000-7000-a004-000000000004',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 4',
-    hostname: 'test-host-4',
-    ip: '192.168.1.103',
-    ipAddress: '192.168.1.103',
-    status: 'error' as AgentStatus,
-    version: '1.0.0',
-    lastSeen: Date.now(),
-    metrics: {
-      latency: 1000,
-      uptime: 1800,
-      reachability: 50,
-      responseTime: 2000,
-      lastCheck: Date.now(),
-    },
-    tags: ['production', 'api'],
+    configVersion: 4,
+    agentVersion: '1.0.0',
+    ipAddresses: [
+      { ip: '192.168.1.103', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: null, // unknown (never seen)
+    lastResultSubmittedAt: null,
+    createdAt: daysAgo(1),
+    updatedAt: daysAgo(1),
   },
 ];
 
 export const mockAgentUpdate = {
-  id: 'agent-1',
-  status: 'online' as AgentStatus,
-  metrics: {
-    latency: 30,
-    reachability: 99.8,
-  },
-  lastSeen: Date.now(),
+  id: '01930000-0000-7000-a001-000000000001',
+  lastSeenAt: now,
+  agentVersion: '1.0.1',
+  configVersion: 4,
 };
