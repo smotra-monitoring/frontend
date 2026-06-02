@@ -52,7 +52,7 @@ export const submitAgentResultsResponseTransformer = async (data: any): Promise<
     return data;
 };
 
-const agentListItemSchemaResponseTransformer = (data: any) => {
+const agentSchemaResponseTransformer = (data: any) => {
     if (data.lastSeenAt) {
         data.lastSeenAt = new Date(data.lastSeenAt);
     }
@@ -65,7 +65,7 @@ const agentListItemSchemaResponseTransformer = (data: any) => {
 };
 
 const agentListResponseSchemaResponseTransformer = (data: any) => {
-    data.agents = data.agents.map((item: any) => agentListItemSchemaResponseTransformer(item));
+    data.agents = data.agents.map((item: any) => agentSchemaResponseTransformer(item));
     return data;
 };
 

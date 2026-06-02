@@ -919,7 +919,7 @@ export const AgentNetworkInterfaceSchema = {
     }
 } as const;
 
-export const AgentListItemSchema = {
+export const AgentSchema = {
     type: 'object',
     required: [
         'id',
@@ -1001,7 +1001,7 @@ export const AgentListResponseSchema = {
         agents: {
             type: 'array',
             items: {
-                $ref: '#/components/schemas/AgentListItem'
+                $ref: '#/components/schemas/Agent'
             }
         },
         pagination: {

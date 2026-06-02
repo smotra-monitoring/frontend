@@ -381,7 +381,7 @@ export type AgentNetworkInterface = {
     recommended: boolean;
 };
 
-export type AgentListItem = {
+export type Agent = {
     id: UuiDv7;
     /**
      * Section (organizational unit) this agent belongs to
@@ -422,7 +422,7 @@ export type AgentListItem = {
 };
 
 export type AgentListResponse = {
-    agents: Array<AgentListItem>;
+    agents: Array<Agent>;
     pagination: Pagination;
 };
 

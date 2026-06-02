@@ -8,7 +8,7 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { Agent, DerivedAgentStatus } from '../types/dashboard-types.js';
+import type { Agent, AgentStatus } from '../types/dashboard-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 import { on as onWebSocket } from '../services/websocket-service.js';
 
@@ -166,8 +166,8 @@ export class AgentCard extends BaseComponent<AgentCardState> {
     this.setState({ agent });
   }
 
-  private getStatusLabel(status: DerivedAgentStatus): string {
-    const labels: Record<DerivedAgentStatus, string> = {
+  private getStatusLabel(status: AgentStatus): string {
+    const labels: Record<AgentStatus, string> = {
       online: 'Online',
       offline: 'Offline',
       unknown: 'Unknown',

@@ -3,15 +3,12 @@
  */
 
 // Re-export generated types from OpenAPI SDK (DO NOT recreate these types)
-import type { AgentListItem, AgentNetworkInterface } from '../api/types.gen.js';
-export type Agent = AgentListItem;
+import type { Agent, AgentNetworkInterface } from '../api/types.gen.js';
+export type { Agent };
 export type { AgentNetworkInterface };
 
 // UI-specific derived status (computed from lastSeenAt threshold)
-export type DerivedAgentStatus = 'online' | 'offline' | 'unknown';
-
-// Legacy type alias for backward compatibility during migration
-export type AgentStatus = DerivedAgentStatus;
+export type AgentStatus = 'online' | 'offline' | 'unknown';
 
 export interface AgentListState {
   agents: Agent[];
@@ -23,7 +20,7 @@ export interface AgentListState {
 }
 
 export interface FilterOptions {
-  status?: DerivedAgentStatus | DerivedAgentStatus[];
+  status?: AgentStatus | AgentStatus[];
   sectionId?: string;
   agentVersion?: string;
   tags?: string[];
@@ -41,7 +38,7 @@ export type ViewMode = 'grid' | 'list' | 'table';
 
 export interface AgentUpdate {
   id: string;
-  status?: DerivedAgentStatus;
+  status?: AgentStatus;
   lastSeenAt?: Date;
   agentVersion?: string;
   configVersion?: number;
