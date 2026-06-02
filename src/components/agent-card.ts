@@ -118,7 +118,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   private renderDetails(): string {
     const { agent } = this.state;
-    const primaryIP = agent.ipAddresses?.[0];
+    const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
 
     return `
       <div class="agent-card__details">

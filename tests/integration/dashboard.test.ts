@@ -199,7 +199,7 @@ describe('Dashboard (Integration)', () => {
       const now = new Date();
       const minutesAgo = (m: number) => new Date(now.getTime() - m * 60 * 1000);
       const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
-      
+
       // Create agents with all derived status types
       setAgents([
         { ...mockAgent, id: '1', lastSeenAt: minutesAgo(1) }, // online
