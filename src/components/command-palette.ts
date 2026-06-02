@@ -200,21 +200,21 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
     // Search agents
     const agentResults: CommandResult[] = agents
       .filter((agent: Agent) => {
-        const primaryIP = agent.ipAddresses?.[0]?.ip || '';
+        const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
         return (
           agent.name.toLowerCase().includes(lowerQuery) ||
           agent.agentVersion?.toLowerCase().includes(lowerQuery) ||
           agent.sectionId?.toLowerCase().includes(lowerQuery) ||
-          primaryIP.toLowerCase().includes(lowerQuery)
+          primaryIP?.ip.toLowerCase().includes(lowerQuery)
         );
       })
       .map((agent: Agent) => {
-        const primaryIP = agent.ipAddresses?.[0]?.ip;
+        const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
         return {
           id: agent.id,
           type: 'agent' as const,
           label: agent.name,
-          description: primaryIP || agent.sectionId || 'No IP',
+          description: primaryIP?.ip || agent.sectionId || 'No IP',
           action: () => this.navigateToAgent(agent),
         };
       });
