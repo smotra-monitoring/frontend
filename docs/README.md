@@ -40,6 +40,13 @@ Welcome to the Smotra Frontend documentation! This guide will help you navigate 
 
 Located in the [`features/`](features/) directory:
 
+- **[Agent States Widget](features/agent-states-widget.md)** - Table-based agent list component
+  - Table layout with sortable columns
+  - CSS-only expandable rows for agent details
+  - Status derivation from lastSeenAt timestamp
+  - Real-time updates and accessibility
+  - Performance optimizations
+
 - **[OAuth Authentication](features/oauth-authentication.md)** - OAuth2 with PKCE implementation
   - OAuth flow explanation
   - PKCE security
