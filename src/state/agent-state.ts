@@ -20,20 +20,20 @@ const initialDashboardState: AgentListState = {
 };
 
 // Create dashboard state instance
-const dashboardState = createState<AgentListState>(initialDashboardState);
+const widgetState = createState<AgentListState>(initialDashboardState);
 
 /**
  * Set agents list
  */
 export function setAgents(agents: Agent[]): void {
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Add single agent
  */
 export function addAgent(agent: Agent): void {
-  const current = dashboardState.getState();
+  const current = widgetState.getState();
   const agents = [...current.agents];
   const existingIndex = agents.findIndex(a => a.id === agent.id);
 
@@ -43,14 +43,14 @@ export function addAgent(agent: Agent): void {
     agents[existingIndex] = agent;
   }
 
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Update single agent
  */
 export function updateAgent(update: AgentUpdate): void {
-  const current = dashboardState.getState();
+  const current = widgetState.getState();
   const agents = current.agents.map(agent => {
     if (agent.id === update.id) {
       return {
@@ -63,58 +63,58 @@ export function updateAgent(update: AgentUpdate): void {
     }
     return agent;
   });
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Remove agent
  */
 export function removeAgent(agentId: string): void {
-  const current = dashboardState.getState();
+  const current = widgetState.getState();
   const agents = current.agents.filter(agent => agent.id !== agentId);
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Set filter options
  */
 export function setFilter(filter: FilterOptions): void {
-  dashboardState.setState({ filter });
+  widgetState.setState({ filter });
 }
 
 /**
  * Clear filters
  */
 export function clearFilters(): void {
-  dashboardState.setState({ filter: {} });
+  widgetState.setState({ filter: {} });
 }
 
 /**
  * Set sort options
  */
 export function setSort(sort: SortOptions): void {
-  dashboardState.setState({ sort });
+  widgetState.setState({ sort });
 }
 
 /**
  * Set view mode
  */
 export function setViewMode(viewMode: ViewMode): void {
-  dashboardState.setState({ viewMode });
+  widgetState.setState({ viewMode });
 }
 
 /**
  * Select agent
  */
 export function selectAgent(agentId: string | null): void {
-  dashboardState.setState({ selectedAgent: agentId });
+  widgetState.setState({ selectedAgent: agentId });
 }
 
 /**
  * Get all agents (legacy - use getAgents)
  */
 export function getAgents(): Agent[] {
-  return dashboardState.getState().agents;
+  return widgetState.getState().agents;
 }
 
 /**
@@ -154,16 +154,16 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
     filtered = filtered.filter(agent => {
       // Search in name
       if (agent.name.toLowerCase().includes(searchLower)) return true;
-      
+
       // Search in sectionId
       if (agent.sectionId.toLowerCase().includes(searchLower)) return true;
-      
+
       // Search in agentVersion
       if (agent.agentVersion?.toLowerCase().includes(searchLower)) return true;
-      
+
       // Search in IP addresses
       if (agent.ipAddresses?.some(ip => ip.ip.includes(searchLower))) return true;
-      
+
       return false;
     });
   }
@@ -252,14 +252,14 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
  * ```
  */
 export function subscribeToAgents(callback: Subscriber<AgentListState>): UnsubscribeFn {
-  return dashboardState.subscribe(callback);
+  return widgetState.subscribe(callback);
 }
 
 /**
  * Get agent by ID
  */
 export function getAgentById(agentId: string): Agent | null {
-  const agents = dashboardState.getState().agents;
+  const agents = widgetState.getState().agents;
   return agents.find((agent: Agent) => agent.id === agentId) || null;
 }
 
@@ -267,7 +267,7 @@ export function getAgentById(agentId: string): Agent | null {
  * Get agent count by status
  */
 export function getAgentCountByStatus(): Record<string, number> {
-  const agents = dashboardState.getState().agents;
+  const agents = widgetState.getState().agents;
   const counts: Record<string, number> = {
     online: 0,
     offline: 0,
