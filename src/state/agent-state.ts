@@ -6,8 +6,8 @@ import { createState, type Subscriber, type UnsubscribeFn } from './global-state
 import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 
-// Initial dashboard state
-const initialDashboardState: AgentListState = {
+// Initial widget state
+const initialWidgetState: AgentListState = {
   agents: [],
   filter: {},
   sort: {
@@ -19,8 +19,8 @@ const initialDashboardState: AgentListState = {
   loading: false
 };
 
-// Create dashboard state instance
-const widgetState = createState<AgentListState>(initialDashboardState);
+// Create widget state instance
+const widgetState = createState<AgentListState>(initialWidgetState);
 
 /**
  * Set agents list
