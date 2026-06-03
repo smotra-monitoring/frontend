@@ -197,7 +197,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     }
 
     private renderAgentDetails(agent: Agent): string {
-        const primaryIP = agent.ipAddresses?.[0];
+        const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
         const allIPs = agent.ipAddresses || [];
 
         return `
