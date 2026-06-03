@@ -351,18 +351,18 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
 
         if (!detailsRow) return;
 
-        const isExpanded = detailsRow.classList.contains('is-expanded');
+        const wasExpanded = detailsRow.classList.contains('is-expanded');
         const chevronIcon = button.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
 
         // Toggle classes and ARIA attributes (no setState to avoid re-render)
         detailsRow.classList.toggle('is-expanded');
-        button.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
-        detailsRow.setAttribute('aria-hidden', isExpanded ? 'true' : 'false');
+        button.setAttribute('aria-expanded', wasExpanded ? 'false' : 'true');
+        detailsRow.setAttribute('aria-hidden', wasExpanded ? 'true' : 'false');
 
         // Update chevron icon
         if (chevronIcon) {
-            chevronIcon.classList.toggle('fa-chevron-down', isExpanded);
-            chevronIcon.classList.toggle('fa-chevron-up', !isExpanded);
+            chevronIcon.classList.toggle('fa-chevron-down', wasExpanded);
+            chevronIcon.classList.toggle('fa-chevron-up', !wasExpanded);
         }
     }
 
