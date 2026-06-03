@@ -1322,3 +1322,292 @@
 .agent-card-container:nth-child(n+7) {
   animation-delay: 240ms;
 }
+/* ===================================================================
+   Agent States Widget - Table-based agent list with expandable rows
+   =================================================================== */
+
+.agent-states-widget {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  contain: layout style;
+}
+
+.agent-states-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.agent-states-widget__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.agent-states-widget__title h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.agent-states-widget__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 var(--spacing-sm);
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.agent-states-widget__loading,
+.agent-states-widget__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Table structure */
+.agent-states-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-base);
+}
+
+.agent-states-table thead {
+  background-color: var(--color-bg-secondary);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.agent-states-table th {
+  padding: var(--spacing-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Sortable header buttons */
+.agent-states-table th .sort-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.agent-states-table th .sort-btn:hover {
+  color: var(--color-primary);
+}
+
+.agent-states-table th .sort-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.sort-indicator {
+  display: inline-flex;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.sort-indicator--active {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+/* Table body rows */
+.agent-states-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-fast);
+}
+
+.agent-states-table tbody tr:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.agent-states-row td {
+  padding: var(--spacing-md);
+  vertical-align: middle;
+}
+
+.agent-states-row__name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.agent-states-row__status {
+  white-space: nowrap;
+}
+
+.agent-states-row__last-seen {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.agent-states-row__actions {
+  text-align: right;
+}
+
+/* Chevron button */
+.chevron-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.chevron-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Status badge */
+.agent-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.agent-status-badge--online {
+  background-color: rgba(72, 199, 142, 0.15);
+  color: var(--color-success);
+}
+
+.agent-status-badge--offline {
+  background-color: rgba(155, 155, 155, 0.15);
+  color: var(--color-text-secondary);
+}
+
+.agent-status-badge--unknown {
+  background-color: rgba(255, 224, 138, 0.15);
+  color: var(--color-warning);
+}
+
+.agent-status-badge .status-pulse {
+  width: 6px;
+  height: 6px;
+}
+
+/* Expandable detail row - CRITICAL for smooth CSS transitions */
+.agent-states-row__details {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 300ms ease, opacity 200ms ease;
+}
+
+.agent-states-row__details.is-expanded {
+  max-height: 800px; /* Generous height for all content */
+  opacity: 1;
+}
+
+.agent-states-row__details td {
+  padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+}
+
+/* Agent details content */
+.agent-details {
+  padding: var(--spacing-md);
+}
+
+.agent-details__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.agent-details__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-sm);
+  align-items: baseline;
+}
+
+.agent-details__item--full {
+  grid-column: 1 / -1;
+  grid-template-columns: auto 1fr;
+}
+
+.agent-details__item dt {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.agent-details__item dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+.agent-details__ip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Tablet and desktop: 2-column detail grid */
+@media (min-width: 768px) {
+  .agent-details__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Reduced motion support - disable transitions */
+@media (prefers-reduced-motion: reduce) {
+  .agent-states-row__details {
+    transition: none;
+  }
+  
+  .chevron-btn {
+    transition: none;
+  }
+  
+  .sort-indicator {
+    transition: none;
+  }
+}
+
+/* Screen reader only utility */
+.is-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
