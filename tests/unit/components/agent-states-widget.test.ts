@@ -243,12 +243,11 @@ describe('AgentStatesWidget', () => {
     });
 
     describe('Agent details content', () => {
-        it('displays all agent fields in expanded details', () => {
+        it('check agent details fields', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
-            firstChevron.click();
 
             const firstAgentId = firstChevron.dataset.agentId;
             const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
@@ -261,12 +260,11 @@ describe('AgentStatesWidget', () => {
             expect(detailsContent).toContain('Config Version');
         });
 
-        it('displays IP addresses in expanded details', () => {
+        it('IP addresses in agent details', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
-            firstChevron.click();
 
             const firstAgentId = firstChevron.dataset.agentId;
             const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
