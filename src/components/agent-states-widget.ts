@@ -421,7 +421,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     /**
      * Update the loading state
      */
-    public setLoading_ForTests(loading: boolean): void {
+    public setLoading(loading: boolean): void {
         this.setState({ loading });
     }
 

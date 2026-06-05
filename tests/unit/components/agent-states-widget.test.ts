@@ -55,7 +55,7 @@ describe('AgentStatesWidget', () => {
         it('renders loading state', () => {
             widget = new AgentStatesWidget(container, []);
             widget.mount();
-            widget.setLoading_ForTests(true);
+            widget.setLoading(true);
 
             const loading = container.querySelector('.agent-states-widget__loading');
             expect(loading).toBeTruthy();
