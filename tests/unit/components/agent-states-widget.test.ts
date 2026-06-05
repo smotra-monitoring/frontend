@@ -334,7 +334,7 @@ describe('AgentStatesWidget', () => {
 
             const nameCell = container.querySelector('.agent-states-row__name');
             expect(nameCell?.innerHTML).not.toContain('<script>');
-            expect(nameCell?.textContent).toContain('script');
+            expect(nameCell?.textContent).toContain('\<script\>'); // Should render as text, not HTML
         });
     });
 });
