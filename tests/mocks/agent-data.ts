@@ -2,7 +2,7 @@
  * Mock agent data for testing
  */
 
-import type { Agent, AgentUpdate } from '../../src/types/dashboard-types.js';
+import type { Agent, AgentUpdate } from '../../src/types/agent-types.js';
 
 const now = new Date();
 const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);

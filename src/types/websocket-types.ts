@@ -2,7 +2,7 @@
  * WebSocket communication type definitions
  */
 
-import type { AgentStatus } from './dashboard-types.js';
+import type { AgentStatus } from './agent-types.js';
 
 export interface WebSocketMessage<T = any> {
   type: WebSocketMessageType;

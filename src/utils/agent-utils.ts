@@ -3,7 +3,7 @@
  */
 
 import { AGENT_ONLINE_THRESHOLD_MS } from '../config.js';
-import type { AgentStatus } from '../types/dashboard-types.js';
+import type { AgentStatus } from '../types/agent-types.js';
 
 /**
  * Derive agent status from lastSeenAt timestamp

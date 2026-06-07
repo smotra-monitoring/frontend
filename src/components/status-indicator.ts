@@ -5,7 +5,7 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { AgentStatus } from '../types/dashboard-types.js';
+import type { AgentStatus } from '../types/agent-types.js';
 
 interface StatusIndicatorState extends ComponentState {
   status: AgentStatus;

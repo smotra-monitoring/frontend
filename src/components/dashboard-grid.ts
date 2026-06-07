@@ -9,7 +9,6 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { Agent } from '../types/dashboard-types.js';
 import { AgentStatesWidget } from './agent-states-widget.js';
 import { getAgents } from '../state/agent-state.js';
 

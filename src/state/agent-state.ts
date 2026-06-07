@@ -3,7 +3,7 @@
  */
 
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
-import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
+import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/agent-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 
 // Initial widget state

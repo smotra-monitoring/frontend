@@ -14,40 +14,40 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { Agent, SortOptions, AgentStatus, SortField } from '../types/dashboard-types.js';
+import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
 import { subscribeToAgents, sortAgents } from '../state/agent-state.js';
 import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
 
 interface AgentStatesWidgetState extends ComponentState {
-    agents: Agent[];
-    loading: boolean;
-    sort: SortOptions;
+  agents: Agent[];
+  loading: boolean;
+  sort: SortOptions;
 }
 
 /**
  * AgentStatesWidget - Table-based agent list with expandable details
  */
 export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
-    constructor(root: HTMLElement, agents: Agent[] = []) {
-        super(root, {
-            agents,
-            loading: false,
-            sort: { field: 'name', direction: 'asc' },
-        });
+  constructor(root: HTMLElement, agents: Agent[] = []) {
+    super(root, {
+      agents,
+      loading: false,
+      sort: { field: 'name', direction: 'asc' },
+    });
 
-        // Subscribe to agent state updates
-        this.addSubscription(
-            subscribeToAgents((agentState) => {
-                this.setState({ agents: agentState.agents, loading: false });
-            })
-        );
-    }
+    // Subscribe to agent state updates
+    this.addSubscription(
+      subscribeToAgents((agentState) => {
+        this.setState({ agents: agentState.agents, loading: false });
+      })
+    );
+  }
 
-    render(): void {
-        const { agents, loading, sort } = this.state;
-        const sortedAgents = sortAgents(agents, sort);
+  render(): void {
+    const { agents, loading, sort } = this.state;
+    const sortedAgents = sortAgents(agents, sort);
 
-        this.root.innerHTML = `
+    this.root.innerHTML = `
       <section class="agent-states-widget">
         <div class="agent-states-widget__header">
           <div class="agent-states-widget__title">
@@ -72,29 +72,29 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       </section>
     `;
 
-        this.attachEventListeners();
-    }
+    this.attachEventListeners();
+  }
 
-    private renderLoading(): string {
-        return `
+  private renderLoading(): string {
+    return `
       <div class="agent-states-widget__loading">
         <p>Loading agents...</p>
       </div>
     `;
-    }
+  }
 
-    private renderTable(agents: Agent[]): string {
-        if (agents.length === 0) {
-            return `
+  private renderTable(agents: Agent[]): string {
+    if (agents.length === 0) {
+      return `
         <div class="agent-states-widget__empty">
           <p>No agents found</p>
         </div>
       `;
-        }
+    }
 
-        const { sort } = this.state;
+    const { sort } = this.state;
 
-        return `
+    return `
       <table class="agent-states-table">
         <thead>
           <tr>
@@ -138,14 +138,14 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         </tbody>
       </table>
     `;
-    }
+  }
 
-    private renderAgentRow(agent: Agent): string {
-        const status = deriveAgentStatus(agent.lastSeenAt);
-        const rowId = `agent-row-${agent.id}`;
-        const detailsId = `agent-details-${agent.id}`;
+  private renderAgentRow(agent: Agent): string {
+    const status = deriveAgentStatus(agent.lastSeenAt);
+    const rowId = `agent-row-${agent.id}`;
+    const detailsId = `agent-details-${agent.id}`;
 
-        return `
+    return `
       <tr class="agent-states-row" data-agent-id="${agent.id}">
         <td class="agent-states-row__name">
           ${this.escapeHtml(agent.name)}
@@ -182,25 +182,25 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         </td>
       </tr>
     `;
-    }
+  }
 
-    private renderStatusBadge(status: AgentStatus): string {
-        const statusClass = `agent-status-badge agent-status-badge--${status}`;
-        const statusLabel = this.getStatusLabel(status);
+  private renderStatusBadge(status: AgentStatus): string {
+    const statusClass = `agent-status-badge agent-status-badge--${status}`;
+    const statusLabel = this.getStatusLabel(status);
 
-        return `
+    return `
       <span class="${statusClass}" role="status" aria-label="${statusLabel}">
         <span class="status-pulse status-pulse--${status}"></span>
         <span class="status-label">${statusLabel}</span>
       </span>
     `;
-    }
+  }
 
-    private renderAgentDetails(agent: Agent): string {
-        const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
-        const allIPs = agent.ipAddresses || [];
+  private renderAgentDetails(agent: Agent): string {
+    const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
+    const allIPs = agent.ipAddresses || [];
 
-        return `
+    return `
       <div class="agent-details">
         <dl class="agent-details__grid">
           <div class="agent-details__item">
@@ -275,162 +275,162 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         </dl>
       </div>
     `;
+  }
+
+  private renderSortIndicator(field: string): string {
+    const { sort } = this.state;
+    if (sort.field !== field) {
+      return '<span class="sort-indicator sort-indicator--inactive"></span>';
     }
 
-    private renderSortIndicator(field: string): string {
-        const { sort } = this.state;
-        if (sort.field !== field) {
-            return '<span class="sort-indicator sort-indicator--inactive"></span>';
-        }
-
-        const icon = sort.direction === 'asc' ? 'fa-chevron-up' : 'fa-chevron-down';
-        return `
+    const icon = sort.direction === 'asc' ? 'fa-chevron-up' : 'fa-chevron-down';
+    return `
       <span class="sort-indicator sort-indicator--active">
         <i class="fas ${icon}"></i>
       </span>
     `;
-    }
+  }
 
-    private getSortAriaAttribute(field: string): string {
-        const { sort } = this.state;
-        if (sort.field !== field) {
-            return 'none';
+  private getSortAriaAttribute(field: string): string {
+    const { sort } = this.state;
+    if (sort.field !== field) {
+      return 'none';
+    }
+    return sort.direction === 'asc' ? 'ascending' : 'descending';
+  }
+
+  private attachEventListeners(): void {
+    // Sort button handlers
+    const sortButtons = this.root.querySelectorAll<HTMLButtonElement>('.sort-btn');
+    sortButtons.forEach(button => {
+      this.addEventListener(button, 'click', () => {
+        const field = button.dataset.sortField as SortField;
+        if (field) {
+          this.handleSort(field);
         }
-        return sort.direction === 'asc' ? 'ascending' : 'descending';
-    }
+      });
+    });
 
-    private attachEventListeners(): void {
-        // Sort button handlers
-        const sortButtons = this.root.querySelectorAll<HTMLButtonElement>('.sort-btn');
-        sortButtons.forEach(button => {
-            this.addEventListener(button, 'click', () => {
-                const field = button.dataset.sortField as SortField;
-                if (field) {
-                    this.handleSort(field);
-                }
-            });
-        });
-
-        // Toggle details handlers (CSS-only, no setState)
-        const chevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
-        chevronButtons.forEach(button => {
-            this.addEventListener(button, 'click', () => {
-                const agentId = button.dataset.agentId;
-                if (agentId) {
-                    this.toggleAgentDetails(agentId, button);
-                }
-            });
-        });
-
-        // Toggle all handler (CSS-only, no setState)
-        const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
-        if (toggleAllButton) {
-            this.addEventListener(toggleAllButton, 'click', () => {
-                this.toggleAllDetails();
-            });
+    // Toggle details handlers (CSS-only, no setState)
+    const chevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
+    chevronButtons.forEach(button => {
+      this.addEventListener(button, 'click', () => {
+        const agentId = button.dataset.agentId;
+        if (agentId) {
+          this.toggleAgentDetails(agentId, button);
         }
+      });
+    });
+
+    // Toggle all handler (CSS-only, no setState)
+    const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
+    if (toggleAllButton) {
+      this.addEventListener(toggleAllButton, 'click', () => {
+        this.toggleAllDetails();
+      });
     }
+  }
 
-    private handleSort(field: SortField): void {
-        const { sort } = this.state;
-        const newDirection = sort.field === field && sort.direction === 'asc' ? 'desc' : 'asc';
+  private handleSort(field: SortField): void {
+    const { sort } = this.state;
+    const newDirection = sort.field === field && sort.direction === 'asc' ? 'desc' : 'asc';
 
-        this.setState({
-            sort: { field, direction: newDirection },
-        });
+    this.setState({
+      sort: { field, direction: newDirection },
+    });
+  }
+
+  /**
+   * Toggle a single agent's detail row (CSS-only, no setState)
+   * This uses direct DOM manipulation to preserve the element and enable smooth CSS transitions
+   */
+  private toggleAgentDetails(agentId: string, button: HTMLButtonElement): void {
+    const detailsRow = this.root.querySelector<HTMLTableRowElement>(
+      `.agent-states-row__details[data-agent-id="${agentId}"]`
+    );
+
+    if (!detailsRow) return;
+
+    const wasExpanded = detailsRow.classList.contains('is-expanded');
+    const chevronIcon = button.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
+
+    // Toggle classes and ARIA attributes (no setState to avoid re-render)
+    detailsRow.classList.toggle('is-expanded');
+    button.setAttribute('aria-expanded', wasExpanded ? 'false' : 'true');
+    detailsRow.setAttribute('aria-hidden', wasExpanded ? 'true' : 'false');
+
+    // Update chevron icon
+    if (chevronIcon) {
+      chevronIcon.classList.toggle('fa-chevron-down', wasExpanded);
+      chevronIcon.classList.toggle('fa-chevron-up', !wasExpanded);
     }
+  }
 
-    /**
-     * Toggle a single agent's detail row (CSS-only, no setState)
-     * This uses direct DOM manipulation to preserve the element and enable smooth CSS transitions
-     */
-    private toggleAgentDetails(agentId: string, button: HTMLButtonElement): void {
-        const detailsRow = this.root.querySelector<HTMLTableRowElement>(
-            `.agent-states-row__details[data-agent-id="${agentId}"]`
-        );
+  /**
+   * Toggle all detail rows at once (CSS-only, no setState)
+   * If any row is collapsed, expand all. If all are expanded, collapse all.
+   */
+  private toggleAllDetails(): void {
+    const allDetailsRows = this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row__details');
+    const allChevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
 
-        if (!detailsRow) return;
+    if (allDetailsRows.length === 0) return;
 
-        const wasExpanded = detailsRow.classList.contains('is-expanded');
-        const chevronIcon = button.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
+    // Check if any row is collapsed
+    const anyCollapsed = Array.from(allDetailsRows).some(row => !row.classList.contains('is-expanded'));
+    const shouldExpand = anyCollapsed;
 
-        // Toggle classes and ARIA attributes (no setState to avoid re-render)
-        detailsRow.classList.toggle('is-expanded');
-        button.setAttribute('aria-expanded', wasExpanded ? 'false' : 'true');
-        detailsRow.setAttribute('aria-hidden', wasExpanded ? 'true' : 'false');
+    // Toggle all rows
+    allDetailsRows.forEach((row, index) => {
+      const button = allChevronButtons[index];
+      const chevronIcon = button?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
 
-        // Update chevron icon
-        if (chevronIcon) {
-            chevronIcon.classList.toggle('fa-chevron-down', wasExpanded);
-            chevronIcon.classList.toggle('fa-chevron-up', !wasExpanded);
-        }
+      if (shouldExpand) {
+        row.classList.add('is-expanded');
+        row.setAttribute('aria-hidden', 'false');
+        button?.setAttribute('aria-expanded', 'true');
+        chevronIcon?.classList.remove('fa-chevron-down');
+        chevronIcon?.classList.add('fa-chevron-up');
+      } else {
+        row.classList.remove('is-expanded');
+        row.setAttribute('aria-hidden', 'true');
+        button?.setAttribute('aria-expanded', 'false');
+        chevronIcon?.classList.remove('fa-chevron-up');
+        chevronIcon?.classList.add('fa-chevron-down');
+      }
+    });
+
+    // Update "Toggle All" button icon
+    const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
+    const toggleAllIcon = toggleAllButton?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
+    if (toggleAllIcon) {
+      toggleAllIcon.classList.toggle('fa-chevron-down', !shouldExpand);
+      toggleAllIcon.classList.toggle('fa-chevron-up', shouldExpand);
     }
+  }
 
-    /**
-     * Toggle all detail rows at once (CSS-only, no setState)
-     * If any row is collapsed, expand all. If all are expanded, collapse all.
-     */
-    private toggleAllDetails(): void {
-        const allDetailsRows = this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row__details');
-        const allChevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
+  private getStatusLabel(status: AgentStatus): string {
+    const labels: Record<AgentStatus, string> = {
+      online: 'Online',
+      offline: 'Offline',
+      unknown: 'Unknown',
+    };
+    return labels[status];
+  }
 
-        if (allDetailsRows.length === 0) return;
+  /**
+   * Update the loading state
+   */
+  public setLoading(loading: boolean): void {
+    this.setState({ loading });
+  }
 
-        // Check if any row is collapsed
-        const anyCollapsed = Array.from(allDetailsRows).some(row => !row.classList.contains('is-expanded'));
-        const shouldExpand = anyCollapsed;
-
-        // Toggle all rows
-        allDetailsRows.forEach((row, index) => {
-            const button = allChevronButtons[index];
-            const chevronIcon = button?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
-
-            if (shouldExpand) {
-                row.classList.add('is-expanded');
-                row.setAttribute('aria-hidden', 'false');
-                button?.setAttribute('aria-expanded', 'true');
-                chevronIcon?.classList.remove('fa-chevron-down');
-                chevronIcon?.classList.add('fa-chevron-up');
-            } else {
-                row.classList.remove('is-expanded');
-                row.setAttribute('aria-hidden', 'true');
-                button?.setAttribute('aria-expanded', 'false');
-                chevronIcon?.classList.remove('fa-chevron-up');
-                chevronIcon?.classList.add('fa-chevron-down');
-            }
-        });
-
-        // Update "Toggle All" button icon
-        const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
-        const toggleAllIcon = toggleAllButton?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
-        if (toggleAllIcon) {
-            toggleAllIcon.classList.toggle('fa-chevron-down', !shouldExpand);
-            toggleAllIcon.classList.toggle('fa-chevron-up', shouldExpand);
-        }
-    }
-
-    private getStatusLabel(status: AgentStatus): string {
-        const labels: Record<AgentStatus, string> = {
-            online: 'Online',
-            offline: 'Offline',
-            unknown: 'Unknown',
-        };
-        return labels[status];
-    }
-
-    /**
-     * Update the loading state
-     */
-    public setLoading(loading: boolean): void {
-        this.setState({ loading });
-    }
-
-    /**
-     * Escape HTML to prevent XSS attacks
-     */
-    private escapeHtml(text: string): string {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+  /**
+   * Escape HTML to prevent XSS attacks
+   */
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 }
