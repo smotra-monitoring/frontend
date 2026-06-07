@@ -16,7 +16,7 @@ import { getEnvironmentConfig } from './config.js';
  */
 async function bootstrap(): Promise<void> {
   try {
-    console.log('🚀 Bootstrapping Smotra...');
+    console.log('🚀 Bootstrapping ...');
 
     // 0. Configure API client base URL (before anything else uses it)
     client.setConfig({ baseUrl: getEnvironmentConfig().apiBaseUrl });
@@ -52,7 +52,7 @@ async function bootstrap(): Promise<void> {
     initializeRouter(appRoot);
     console.log('✓ Router initialized');
 
-    console.log('✅ Smotra initialized successfully');
+    console.log('✅ Initialized successfully');
   } catch (error) {
     console.error('❌ Bootstrap error:', error);
 
