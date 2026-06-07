@@ -2,7 +2,10 @@
  * WebSocket communication type definitions
  */
 
-import type { AgentStatus } from './agent-types.js';
+import type { AgentPartialUpdate } from './agent-types.js';
+
+// Re-export AgentPartialUpdate for convenience
+export type { AgentPartialUpdate };
 
 export interface WebSocketMessage<T = any> {
   type: WebSocketMessageType;
@@ -19,14 +22,6 @@ export type WebSocketMessageType =
   | 'system:notification'
   | 'connection:ack'
   | 'connection:heartbeat';
-
-export interface AgentUpdateMessage {
-  id: string;
-  status?: AgentStatus;
-  lastSeenAt?: Date;
-  agentVersion?: string;
-  configVersion?: number;
-}
 
 export interface SystemNotificationMessage {
   severity: 'info' | 'warning' | 'error' | 'success';

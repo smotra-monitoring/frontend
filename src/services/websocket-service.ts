@@ -7,7 +7,7 @@ import type {
     WebSocketState,
     WebSocketConfig,
     WebSocketEventHandler,
-    AgentUpdateMessage,
+    AgentPartialUpdate,
     SystemNotificationMessage,
 } from '../types/websocket-types.js';
 import { createState, type Subscriber, type UnsubscribeFn } from '../state/global-state.js';
@@ -206,7 +206,7 @@ function handleMessage(event: MessageEvent): void {
 /**
  * Handle agent update message
  */
-function handleAgentUpdate(data: AgentUpdateMessage): void {
+function handleAgentUpdate(data: AgentPartialUpdate): void {
     updateAgent(data);
 }
 

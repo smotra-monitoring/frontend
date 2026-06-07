@@ -3,7 +3,7 @@
  */
 
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
-import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/agent-types.js';
+import type { Agent, AgentListState, FilterOptions, SortOptions, AgentPartialUpdate, ViewMode } from '../types/agent-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 
 // Initial widget state
@@ -49,7 +49,7 @@ export function addAgent(agent: Agent): void {
 /**
  * Update single agent
  */
-export function updateAgent(update: AgentUpdate): void {
+export function updateAgent(update: AgentPartialUpdate): void {
   const current = widgetState.getState();
   const agents = current.agents.map(agent => {
     if (agent.id === update.id) {

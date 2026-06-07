@@ -4,11 +4,11 @@
 
 import type {
     WebSocketMessage,
-    AgentUpdateMessage,
+    AgentPartialUpdate,
     SystemNotificationMessage,
 } from '../../src/types/websocket-types.js';
 
-export const mockAgentUpdateMessage: WebSocketMessage<AgentUpdateMessage> = {
+export const mockAgentUpdateMessage: WebSocketMessage<AgentPartialUpdate> = {
     type: 'agent:update',
     payload: {
         id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id

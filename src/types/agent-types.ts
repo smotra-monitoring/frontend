@@ -36,10 +36,9 @@ export type SortField = 'name' | 'status' | 'lastSeenAt' | 'agentVersion' | 'con
 
 export type ViewMode = 'grid' | 'list' | 'table';
 
-export interface AgentUpdate {
-  id: string;
-  status?: AgentStatus;
-  lastSeenAt?: Date;
-  agentVersion?: string;
-  configVersion?: number;
-}
+/**
+ * Partial update payload for agent properties.
+ * Only id is required; other fields are optional and represent updatable agent properties.
+ * This type automatically stays in sync with changes to the Agent type.
+ */
+export type AgentPartialUpdate = Pick<Agent, 'id'> & Partial<Pick<Agent, 'lastSeenAt' | 'agentVersion' | 'configVersion'>>;
