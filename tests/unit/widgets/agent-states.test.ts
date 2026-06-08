@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AgentStatesWidget } from '../../../src/components/agent-states-widget.js';
+import { AgentStatesWidget } from '../../../src/widgets/agent-states.js';
 import { mockAgents } from '../../mocks/agent-data.js';
 import { deriveAgentStatus } from '../../../src/utils/agent-utils.js';
 

@@ -9,7 +9,7 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import { AgentStatesWidget } from './agent-states-widget.js';
+import { AgentStatesWidget } from '../widgets/agent-states.js';
 import { getAgents } from '../state/agent-state.js';
 
 interface DashboardGridState extends ComponentState {

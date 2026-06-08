@@ -12,7 +12,7 @@
  * - Real-time updates via agent state subscription
  */
 
-import { BaseComponent } from './base-component.js';
+import { BaseComponent } from '../components/base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
 import { subscribeToAgents, sortAgents } from '../state/agent-state.js';
