@@ -47,6 +47,13 @@ Located in the [`features/`](features/) directory:
   - Real-time updates and accessibility
   - Performance optimizations
 
+- **[Refresh Manager](features/refresh-manager.md)** - Periodic data polling system
+  - Centralized refresh control for dashboard widgets
+  - User-configurable refresh frequencies (Off, 5s, 15s, 30s)
+  - State-based pub/sub architecture
+  - Automatic subscription cleanup
+  - Widget integration guide
+
 - **[OAuth Authentication](features/oauth-authentication.md)** - OAuth2 with PKCE implementation
   - OAuth flow explanation
   - PKCE security

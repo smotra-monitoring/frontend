@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Refresh Manager**: Centralized periodic data polling system for dashboard widgets
+  - Built on global-state pattern for consistent pub/sub functionality
+  - Configurable refresh frequencies (Off, 5s, 15s, 30s) via UI dropdown
+  - Single timer management with automatic cleanup
+  - Widget subscription API for automatic data refresh
+  - Comprehensive unit and integration tests (40+ tests)
+  - Full documentation in `docs/features/refresh-manager.md`
+- **Refresh Control Component**: UI component for selecting refresh frequency
+  - Dropdown with frequency options in dashboard toolbar
+  - Real-time integration with RefreshManager
+  - Bulma CSS styling with WCAG 2.1 AA accessibility
+  - Proper ARIA labels and keyboard navigation
 - **TypeScript Configuration Documentation**: Comprehensive guide for multi-config setup
   - Detailed explanation of three TypeScript configurations (tsconfig.json, tsconfig.build.json, tsconfig.test.json)
   - Usage patterns and commands

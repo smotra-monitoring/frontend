@@ -218,6 +218,61 @@
   line-height: 1;
 }
 
+/* ============================================
+   Refresh Control
+   ============================================ */
+.refresh-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: var(--touch-target-min);
+}
+
+.refresh-control__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.refresh-control .select {
+  min-height: var(--touch-target-min);
+}
+
+.refresh-control .select select {
+  min-height: var(--touch-target-min);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.refresh-control .select select:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-info);
+  transform: translateY(-1px);
+}
+
+.refresh-control .select select:active {
+  transform: translateY(0);
+}
+
+.refresh-control .select select:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Toast Notification
+   ============================================ */
 /* Toast notification */
 .toast {
   background-color: var(--color-surface);

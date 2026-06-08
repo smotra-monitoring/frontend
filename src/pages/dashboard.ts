@@ -12,6 +12,7 @@ import { CommandPalette } from '../components/command-palette.js';
 import { ToastNotification } from '../components/toast-notification.js';
 import { connect as connectWebSocket, disconnect as disconnectWebSocket } from '../services/websocket-service.js';
 import { loadAgents } from '../state/agent-state.js';
+import { RefreshControl } from '../components/refresh-control.js';
 
 interface DashboardPageState extends ComponentState {
 }
@@ -25,6 +26,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
   private themeToggle: ThemeToggle | null = null;
   private commandPalette: CommandPalette | null = null;
   private toastNotification: ToastNotification | null = null;
+  private refreshControl: RefreshControl | null = null;
 
   constructor(root: HTMLElement) {
     super(root, {});
@@ -42,6 +44,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
             <h2 class="dashboard__title">Dashboard</h2>
             
             <div class="dashboard__toolbar-actions">
+              <div id="refresh-control-container"></div>
               <div id="theme-toggle-container"></div>
             </div>
           </div>
@@ -76,6 +79,13 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
     if (gridContainer) {
       this.dashboardGrid = new DashboardGrid(gridContainer);
       this.dashboardGrid.mount();
+    }
+
+    // Refresh Control
+    const refreshControlContainer = this.query('#refresh-control-container');
+    if (refreshControlContainer) {
+      this.refreshControl = new RefreshControl(refreshControlContainer);
+      this.refreshControl.mount();
     }
 
     // Theme Toggle
@@ -133,6 +143,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
     this.themeToggle?.destroy();
     this.commandPalette?.destroy();
     this.toastNotification?.destroy();
+    this.refreshControl?.destroy();
 
     // Disconnect WebSocket
     // disconnectWebSocket();

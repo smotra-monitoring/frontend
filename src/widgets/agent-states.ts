@@ -15,8 +15,9 @@
 import { BaseComponent } from '../components/base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
-import { subscribeToAgents, sortAgents } from '../state/agent-state.js';
+import { subscribeToAgents, sortAgents, loadAgents } from '../state/agent-state.js';
 import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
+import { subscribeToRefresh } from '../services/refresh-manager.js';
 
 interface AgentStatesWidgetState extends ComponentState {
   agents: Agent[];
@@ -40,6 +41,18 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       subscribeToAgents((agentState) => {
         this.setState({ agents: agentState.agents, loading: false });
       })
+    );
+
+    // Subscribe to the refresh manager to poll for new data
+    this.addSubscription(
+        subscribeToRefresh(() => {
+            console.log('Refreshing agent data due to refresh manager tick.');
+            this.setLoading(true);
+            loadAgents().catch(error => {
+                console.error('Failed to refresh agent data:', error);
+                this.setLoading(false);
+            });
+        })
     );
   }
 
