@@ -135,6 +135,6 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
     this.toastNotification?.destroy();
 
     // Disconnect WebSocket
-    disconnectWebSocket();
+    // disconnectWebSocket();
   }
 }
