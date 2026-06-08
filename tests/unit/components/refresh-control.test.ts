@@ -13,7 +13,7 @@ describe('RefreshControl', () => {
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    
+
     // Reset refresh manager state
     setFrequency('off');
   });
@@ -39,7 +39,7 @@ describe('RefreshControl', () => {
 
       const options = container.querySelectorAll('option');
       expect(options.length).toBe(4); // Off, 5s, 15s, 30s
-      
+
       const optionValues = Array.from(options).map(opt => opt.value);
       expect(optionValues).toContain('off');
       expect(optionValues).toContain('5000');
@@ -49,7 +49,7 @@ describe('RefreshControl', () => {
 
     it('selects current frequency from refresh manager', () => {
       setFrequency(15000);
-      
+
       refreshControl = new RefreshControl(container);
       refreshControl.mount();
 
@@ -59,7 +59,7 @@ describe('RefreshControl', () => {
 
     it('defaults to "off" when refresh manager is off', () => {
       setFrequency('off');
-      
+
       refreshControl = new RefreshControl(container);
       refreshControl.mount();
 
@@ -82,7 +82,7 @@ describe('RefreshControl', () => {
       refreshControl.mount();
 
       const select = container.querySelector('select') as HTMLSelectElement;
-      
+
       // Change to 5 seconds
       select.value = '5000';
       select.dispatchEvent(new Event('change'));
@@ -92,12 +92,12 @@ describe('RefreshControl', () => {
 
     it('sets frequency to "off" when "Off" is selected', () => {
       setFrequency(5000);
-      
+
       refreshControl = new RefreshControl(container);
       refreshControl.mount();
 
       const select = container.querySelector('select') as HTMLSelectElement;
-      
+
       select.value = 'off';
       select.dispatchEvent(new Event('change'));
 
@@ -109,7 +109,7 @@ describe('RefreshControl', () => {
       refreshControl.mount();
 
       const select = container.querySelector('select') as HTMLSelectElement;
-      
+
       select.value = '30000';
       select.dispatchEvent(new Event('change'));
 
@@ -122,14 +122,14 @@ describe('RefreshControl', () => {
       refreshControl.mount();
 
       const select = container.querySelector('select') as HTMLSelectElement;
-      
+
       select.value = '15000';
       select.dispatchEvent(new Event('change'));
 
       // After setState, component re-renders
       const updatedSelect = container.querySelector('select') as HTMLSelectElement;
       expect(updatedSelect.value).toBe('15000');
-      
+
       const selectedOption = updatedSelect.querySelector('option[selected]');
       expect(selectedOption?.getAttribute('value')).toBe('15000');
     });
@@ -182,11 +182,11 @@ describe('RefreshControl', () => {
 
       const options = Array.from(container.querySelectorAll('option'));
       const labels = options.map(opt => opt.textContent?.trim());
-      
+
       expect(labels).toContain('Off');
-      expect(labels).toContain('5s');
-      expect(labels).toContain('15s');
-      expect(labels).toContain('30s');
+      expect(labels).toContain('5 s');
+      expect(labels).toContain('15 s');
+      expect(labels).toContain('30 s');
     });
   });
 });

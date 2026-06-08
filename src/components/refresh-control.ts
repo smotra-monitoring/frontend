@@ -12,9 +12,9 @@ import type { ComponentState } from '../types/component-types.js';
 
 const REFRESH_OPTIONS: { label: string; value: RefreshFrequency }[] = [
     { label: 'Off', value: 'off' },
-    { label: '5s', value: 5000 },
-    { label: '15s', value: 15000 },
-    { label: '30s', value: 30000 },
+    { label: '5 s', value: 5000 },
+    { label: '15 s', value: 15000 },
+    { label: '30 s', value: 30000 },
 ];
 
 interface RefreshControlState extends ComponentState {
