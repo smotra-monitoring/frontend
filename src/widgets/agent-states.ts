@@ -70,7 +70,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </span>
           </div>
           <button 
-            class="button is-small" 
+            class="agent-states-widget__toggle-btn" 
             data-action="toggle-all"
             aria-label="Toggle all agent details"
           >
