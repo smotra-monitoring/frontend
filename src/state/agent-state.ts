@@ -3,8 +3,9 @@
  */
 
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
-import type { Agent, AgentListState, FilterOptions, SortOptions, AgentPartialUpdate, ViewMode } from '../types/agent-types.js';
+import type { Agent, AgentListState, FilterOptions, SortOptions, ViewMode } from '../types/agent-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
+import type { AgentUpdateMessage } from '../types/websocket-types.js';
 
 // Initial widget state
 const initialWidgetState: AgentListState = {
@@ -49,15 +50,13 @@ export function addAgent(agent: Agent): void {
 /**
  * Update single agent
  */
-export function updateAgent(update: AgentPartialUpdate): void {
+export function updateAgent(update: AgentUpdateMessage): void {
   const current = widgetState.getState();
   const agents = current.agents.map(agent => {
     if (agent.id === update.id) {
       return {
         ...agent,
-        ...(update.lastSeenAt !== undefined && { lastSeenAt: update.lastSeenAt }),
-        ...(update.agentVersion !== undefined && { agentVersion: update.agentVersion }),
-        ...(update.configVersion !== undefined && { configVersion: update.configVersion }),
+        ...update,
         updatedAt: new Date(), // Update timestamp on any change
       };
     }

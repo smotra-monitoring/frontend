@@ -2,6 +2,7 @@
  * Tests for agent state management
  */
 
+import type { Agent } from '../../../src/types/agent-types.js';
 import {
   setAgents,
   addAgent,
@@ -74,7 +75,12 @@ describe('agent-state', () => {
       setAgents([mockAgent]);
       const agentsBefore = getAgents();
 
-      updateAgent({ id: 'non-existent' });
+      // Create a minimal but complete Agent for update
+      const nonExistentAgentUpdate: Agent = {
+        ...mockAgent,
+        id: 'non-existent',
+      };
+      updateAgent(nonExistentAgentUpdate);
 
       expect(getAgents()).toEqual(agentsBefore);
     });

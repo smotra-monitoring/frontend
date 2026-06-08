@@ -147,14 +147,10 @@ describe('Dashboard (Integration)', () => {
       expect(getAgents()).toHaveLength(1);
       expect(getAgents()[0].agentVersion).toBe(mockAgent.agentVersion);
 
-      // Update agent
-      updateAgent({
-        id: mockAgent.id,
-        agentVersion: '1.0.1',
-        configVersion: 4,
-      });
-      expect(getAgents()[0].agentVersion).toBe('1.0.1');
-      expect(getAgents()[0].configVersion).toBe(4);
+      // Update agent (use mockAgentUpdate which is a full Agent)
+      updateAgent(mockAgentUpdate);
+      expect(getAgents()[0].agentVersion).toBe(mockAgentUpdate.agentVersion);
+      expect(getAgents()[0].configVersion).toBe(mockAgentUpdate.configVersion);
 
       // Remove agent
       removeAgent(mockAgent.id);
@@ -164,10 +160,10 @@ describe('Dashboard (Integration)', () => {
     it('handles multiple simultaneous agent updates', () => {
       setAgents(mockAgents);
 
-      // Update multiple agents
-      updateAgent({ id: mockAgents[0].id, agentVersion: '1.1.0' });
-      updateAgent({ id: mockAgents[1].id, agentVersion: '1.2.0' });
-      updateAgent({ id: mockAgents[2].id, agentVersion: '1.3.0' });
+      // Update multiple agents with full Agent objects
+      updateAgent({ ...mockAgents[0], agentVersion: '1.1.0' });
+      updateAgent({ ...mockAgents[1], agentVersion: '1.2.0' });
+      updateAgent({ ...mockAgents[2], agentVersion: '1.3.0' });
 
       const agents = getAgents();
       expect(agents.find(a => a.id === mockAgents[0].id)!.agentVersion).toBe('1.1.0');
@@ -186,8 +182,8 @@ describe('Dashboard (Integration)', () => {
       // Find an offline agent (lastSeenAt beyond threshold)
       const offlineAgent = mockAgents.find(a => deriveAgentStatus(a.lastSeenAt) === 'offline');
       if (offlineAgent) {
-        // Update to make it online (recent lastSeenAt)
-        updateAgent({ id: offlineAgent.id, lastSeenAt: new Date() });
+        // Update to make it online (recent lastSeenAt) - use full Agent object
+        updateAgent({ ...offlineAgent, lastSeenAt: new Date() });
 
         const newCounts = getAgentCountByStatus();
         expect(newCounts.online).toBe(initialOnline + 1);

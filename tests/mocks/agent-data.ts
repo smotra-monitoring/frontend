@@ -2,7 +2,8 @@
  * Mock agent data for testing
  */
 
-import type { Agent, AgentPartialUpdate } from '../../src/types/agent-types.js';
+import type { Agent } from '../../src/types/agent-types.js';
+import type { AgentUpdateMessage } from '../../src/types/websocket-types.js';
 
 const now = new Date();
 const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
@@ -70,9 +71,17 @@ export const mockAgents: Agent[] = [
   },
 ];
 
-export const mockAgentUpdate: AgentPartialUpdate = {
+export const mockAgentUpdate: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
-  lastSeenAt: now,
-  agentVersion: '1.0.1',
+  sectionId: '01930000-0000-7000-0000-000000000001',
+  name: 'Test Agent 1',
   configVersion: 4,
+  agentVersion: '1.0.1',
+  ipAddresses: [
+    { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
+  ],
+  lastSeenAt: now,
+  lastResultSubmittedAt: minutesAgo(2),
+  createdAt: daysAgo(10),
+  updatedAt: now,
 };

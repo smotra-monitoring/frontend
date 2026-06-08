@@ -4,17 +4,25 @@
 
 import type {
     WebSocketMessage,
-    AgentPartialUpdate,
+    Agent,
     SystemNotificationMessage,
 } from '../../src/types/websocket-types.js';
 
-export const mockAgentUpdateMessage: WebSocketMessage<AgentPartialUpdate> = {
+export const mockAgentUpdateMessage: WebSocketMessage<Agent> = {
     type: 'agent:update',
     payload: {
         id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id
-        agentVersion: '1.0.1',
+        sectionId: '01930000-0000-7000-0000-000000000001',
+        name: 'Test Agent 1',
         configVersion: 4,
+        agentVersion: '1.0.1',
+        ipAddresses: [
+            { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
+        ],
         lastSeenAt: new Date(),
+        lastResultSubmittedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     },
     timestamp: Date.now(),
 };

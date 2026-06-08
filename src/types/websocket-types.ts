@@ -2,10 +2,10 @@
  * WebSocket communication type definitions
  */
 
-import type { AgentPartialUpdate } from './agent-types.js';
+import type { Agent } from './agent-types.js';
 
-// Re-export AgentPartialUpdate for convenience
-export type { AgentPartialUpdate };
+// Re-export for convenience
+export type { Agent };
 
 export interface WebSocketMessage<T = any> {
   type: WebSocketMessageType;
@@ -22,6 +22,12 @@ export type WebSocketMessageType =
   | 'system:notification'
   | 'connection:ack'
   | 'connection:heartbeat';
+
+/**
+ * Agent update message payload.
+ * Uses the full Agent type from the API.
+ */
+export type AgentUpdateMessage = Agent;
 
 export interface SystemNotificationMessage {
   severity: 'info' | 'warning' | 'error' | 'success';
