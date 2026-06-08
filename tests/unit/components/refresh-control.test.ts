@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RefreshControl } from '../../../src/components/refresh-control.js';
-import { setFrequency, getRefreshState } from '../../../src/services/refresh-manager.js';
+import { setFrequency, getRefreshState } from '../../../src/state/refresh-state.js';
 
 describe('RefreshControl', () => {
   let container: HTMLElement;

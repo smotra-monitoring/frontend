@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setFrequency, subscribeToRefresh, getRefreshState } from '../../src/services/refresh-manager.js';
+import { setFrequency, subscribeToRefresh, getRefreshState } from '../../src/state/refresh-state.js';
 import { RefreshControl } from '../../src/components/refresh-control.js';
 import { AgentStatesWidget } from '../../src/widgets/agent-states.js';
 import { setAgents } from '../../src/state/agent-state.js';

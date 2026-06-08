@@ -17,7 +17,7 @@ import type { ComponentState } from '../types/component-types.js';
 import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
 import { subscribeToAgents, sortAgents, loadAgents } from '../state/agent-state.js';
 import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
-import { subscribeToRefresh } from '../services/refresh-manager.js';
+import { subscribeToRefresh } from '../state/refresh-state.js';
 
 interface AgentStatesWidgetState extends ComponentState {
   agents: Agent[];

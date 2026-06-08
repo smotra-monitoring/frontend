@@ -1,7 +1,7 @@
 /**
- * Refresh Manager
+ * Refresh State
  * 
- * A centralized service to manage a global refresh interval for polling data.
+ * A centralized state module to manage a global refresh interval for polling data.
  * It uses the global state management system to notify subscribers about refresh "ticks".
  * 
  * Key Features:
@@ -11,7 +11,7 @@
  * - Supports starting and stopping the refresh timer.
  */
 
-import { createState, type Subscriber, type UnsubscribeFn } from '../state/global-state.js';
+import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
 
 export type RefreshFrequency = 'off' | 5000 | 15000 | 30000;
 

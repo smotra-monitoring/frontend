@@ -7,7 +7,7 @@
  */
 
 import { BaseComponent } from './base-component.js';
-import { setFrequency, getRefreshState, type RefreshFrequency } from '../services/refresh-manager.js';
+import { setFrequency, getRefreshState, type RefreshFrequency } from '../state/refresh-state.js';
 import type { ComponentState } from '../types/component-types.js';
 
 const REFRESH_OPTIONS: { label: string; value: RefreshFrequency }[] = [

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Widget subscription API for automatic data refresh
   - Comprehensive unit and integration tests (40+ tests)
   - Full documentation in `docs/features/refresh-manager.md`
+- **Refactored Refresh Manager to Refresh State**: Moved `src/services/refresh-manager.ts` to `src/state/refresh-state.ts` and `tests/unit/services/refresh-manager.test.ts` to `tests/unit/state/refresh-state.test.ts` to reflect that the module manages only its own state
 - **Refresh Control Component**: UI component for selecting refresh frequency
   - Dropdown with frequency options in dashboard toolbar
   - Real-time integration with RefreshManager

@@ -15,7 +15,7 @@ The Refresh Manager is a centralized service that manages periodic data polling 
 
 ### Components
 
-1. **RefreshManager Service** (`src/services/refresh-manager.ts`)
+1. **Refresh State** (`src/state/refresh-state.ts`)
    - Manages a single `setInterval` timer
    - Uses `global-state` for pub/sub functionality
    - Exposes subscription API for widgets
@@ -42,7 +42,7 @@ The Refresh Manager is a centralized service that manages periodic data polling 
 To make a widget respond to refresh ticks:
 
 ```typescript
-import { subscribeToRefresh } from '../services/refresh-manager.js';
+import { subscribeToRefresh } from '../state/refresh-state.js';
 import { loadAgents } from '../state/agent-state.js';
 
 export class MyWidget extends BaseComponent<MyWidgetState> {
@@ -107,7 +107,7 @@ export class DashboardPage extends BaseComponent<DashboardPageState> {
 You can also control the refresh frequency programmatically:
 
 ```typescript
-import { setFrequency, getRefreshState } from '../services/refresh-manager.js';
+import { setFrequency, getRefreshState } from '../state/refresh-state.js';
 
 // Set refresh to 5 seconds
 setFrequency(5000);
@@ -181,7 +181,7 @@ Comprehensive tests are available:
 
 ### Unit Tests
 
-- **RefreshManager** (`tests/unit/services/refresh-manager.test.ts`)
+- **Refresh State** (`tests/unit/state/refresh-state.test.ts`)
   - Frequency changes
   - Timer management
   - Subscription lifecycle

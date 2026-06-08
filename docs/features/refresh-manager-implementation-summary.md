@@ -8,7 +8,7 @@ All components of the refresh manager feature have been successfully implemented
 
 ### 1. Core Services
 
-#### **RefreshManager Service** (`src/services/refresh-manager.ts`)
+#### **Refresh State** (`src/state/refresh-state.ts`)
 - Centralized periodic data polling system
 - Built on `global-state` pattern for consistent pub/sub
 - Manages single `setInterval` timer
@@ -49,7 +49,7 @@ All components of the refresh manager feature have been successfully implemented
 
 #### Unit Tests (26 tests)
 
-**RefreshManager** (`tests/unit/services/refresh-manager.test.ts`) - 12 tests
+**Refresh State** (`tests/unit/state/refresh-state.test.ts`) - 12 tests
 - ✅ Frequency state updates
 - ✅ Timer start/stop behavior
 - ✅ Timer restart on frequency change
@@ -141,7 +141,7 @@ Duration:    6.81s
 ### For Developers
 ```typescript
 // In a widget
-import { subscribeToRefresh } from '../services/refresh-manager.js';
+import { subscribeToRefresh } from '../state/refresh-state.js';
 
 this.addSubscription(
   subscribeToRefresh(() => {
