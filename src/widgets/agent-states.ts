@@ -178,7 +178,9 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         data-agent-id="${agent.id}"
       >
         <td colspan="4">
-          ${this.renderAgentDetails(agent)}
+          <div class="agent-states-row__details-inner">
+            ${this.renderAgentDetails(agent)}
+          </div>
         </td>
       </tr>
     `;

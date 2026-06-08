@@ -1516,23 +1516,32 @@
   height: 6px;
 }
 
-/* Expandable detail row - CRITICAL for smooth CSS transitions */
+/* Expandable detail row - overflow:hidden does not work on <tr>, so we
+   animate an inner <div> instead of the row itself */
 .agent-states-row__details {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 300ms ease, opacity 200ms ease;
+  border-bottom: none;
 }
 
 .agent-states-row__details.is-expanded {
-  max-height: 800px;
-  /* Generous height for all content */
-  opacity: 1;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .agent-states-row__details td {
-  padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  padding: 0;
   background-color: var(--color-bg-secondary);
+}
+
+/* Inner div: overflow:hidden works reliably here */
+.agent-states-row__details-inner {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 300ms ease, opacity 200ms ease;
+}
+
+.agent-states-row__details.is-expanded .agent-states-row__details-inner {
+  max-height: 800px;
+  opacity: 1;
 }
 
 /* Agent details content */
