@@ -1286,12 +1286,13 @@
 }
 
 .agent-card__details-list code {
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-secondary, var(--color-bg));
   border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 1px 6px;
   font-size: 0.75rem;
-  color: var(--color-info);
+  color: var(--color-text-secondary);
+  font-family: monospace;
 }
 
 /* Staggered entrance animation for cards */
@@ -1322,6 +1323,7 @@
 .agent-card-container:nth-child(n+7) {
   animation-delay: 240ms;
 }
+
 /* ===================================================================
    Agent States Widget - Table-based agent list with expandable rows
    =================================================================== */
@@ -1523,7 +1525,8 @@
 }
 
 .agent-states-row__details.is-expanded {
-  max-height: 800px; /* Generous height for all content */
+  max-height: 800px;
+  /* Generous height for all content */
   opacity: 1;
 }
 
@@ -1584,30 +1587,41 @@
   }
 }
 
-/* Reduced motion support - disable transitions */
-@media (prefers-reduced-motion: reduce) {
-  .agent-states-row__details {
-    transition: none;
-  }
-  
-  .chevron-btn {
-    transition: none;
-  }
-  
-  .sort-indicator {
-    transition: none;
-  }
+.agent-details code {
+  background-color: var(--color-bg-secondary, var(--color-bg));
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-family: monospace;
 }
 
-/* Screen reader only utility */
-.is-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+/* Staggered entrance animation for cards */
+.agent-card-container:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.agent-card-container:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.agent-card-container:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.agent-card-container:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.agent-card-container:nth-child(5) {
+  animation-delay: 160ms;
+}
+
+.agent-card-container:nth-child(6) {
+  animation-delay: 200ms;
+}
+
+.agent-card-container:nth-child(n+7) {
+  animation-delay: 240ms;
 }
