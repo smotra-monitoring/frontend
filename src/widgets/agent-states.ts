@@ -45,14 +45,13 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
 
     // Subscribe to the refresh manager to poll for new data
     this.addSubscription(
-        subscribeToRefresh(() => {
-            console.log('Refreshing agent data due to refresh manager tick.');
-            this.setLoading(true);
-            loadAgents().catch(error => {
-                console.error('Failed to refresh agent data:', error);
-                this.setLoading(false);
-            });
-        })
+      subscribeToRefresh(() => {
+        this.setLoading(true);
+        loadAgents().catch(error => {
+          console.error('Failed to refresh agent data:', error);
+          this.setLoading(false);
+        });
+      })
     );
   }
 
