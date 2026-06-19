@@ -281,6 +281,12 @@ export function getAgentCountByStatus(): Record<string, number> {
   return counts;
 }
 
+/*
+  * Mock data and API loading function for development/testing
+  * Replace with actual API calls when backend is ready
+  * Provides a variety of agents with different statuses, versions, and timestamps for UI testing
+*/
+
 const now = new Date();
 const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
 const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000);
