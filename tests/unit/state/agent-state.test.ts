@@ -2,6 +2,7 @@
  * Tests for agent state management
  */
 
+import type { Agent } from '../../../src/types/agent-types.js';
 import {
   setAgents,
   addAgent,
@@ -15,6 +16,7 @@ import {
   loadAgents,
   subscribeToAgents,
 } from '../../../src/state/agent-state.js';
+import { deriveAgentStatus } from '../../../src/utils/agent-utils.js';
 import { mockAgent, mockAgents, mockAgentUpdate } from '../../mocks/agent-data.js';
 
 describe('agent-state', () => {
@@ -65,14 +67,20 @@ describe('agent-state', () => {
       updateAgent(mockAgentUpdate);
 
       const updated = getAgentById(mockAgent.id);
-      expect(updated?.metrics.latency).toBe(mockAgentUpdate.metrics.latency);
+      expect(updated?.agentVersion).toBe(mockAgentUpdate.agentVersion);
+      expect(updated?.configVersion).toBe(mockAgentUpdate.configVersion);
     });
 
     it('does nothing for non-existent agent', () => {
       setAgents([mockAgent]);
       const agentsBefore = getAgents();
 
-      updateAgent({ id: 'non-existent', metrics: {} });
+      // Create a minimal but complete Agent for update
+      const nonExistentAgentUpdate: Agent = {
+        ...mockAgent,
+        id: 'non-existent',
+      };
+      updateAgent(nonExistentAgentUpdate);
 
       expect(getAgents()).toEqual(agentsBefore);
     });
@@ -116,18 +124,17 @@ describe('agent-state', () => {
   describe('filterAgents', () => {
     it('filters by status', () => {
       const online = filterAgents(mockAgents, { status: 'online' });
-      expect(online.every(a => a.status === 'online')).toBe(true);
+      expect(online.every(a => deriveAgentStatus(a.lastSeenAt) === 'online')).toBe(true);
     });
 
-    it('filters by hostname', () => {
-      const filtered = filterAgents(mockAgents, { hostname: 'test-host-1' });
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].hostname).toBe('test-host-1');
+    it('filters by sectionId', () => {
+      const filtered = filterAgents(mockAgents, { sectionId: '01930000-0000-7000-0000-000000000001' });
+      expect(filtered.every(a => a.sectionId === '01930000-0000-7000-0000-000000000001')).toBe(true);
     });
 
-    it('filters by tag', () => {
-      const production = filterAgents(mockAgents, { tags: ['production'] });
-      expect(production.every(a => a.tags.includes('production'))).toBe(true);
+    it('filters by agentVersion', () => {
+      const filtered = filterAgents(mockAgents, { agentVersion: '1.0.0' });
+      expect(filtered.every(a => a.agentVersion === '1.0.0')).toBe(true);
     });
 
     it('filters by search term', () => {
@@ -153,14 +160,18 @@ describe('agent-state', () => {
       expect(sorted[0].name.localeCompare(sorted[1].name)).toBeGreaterThan(0);
     });
 
-    it('sorts by latency', () => {
-      const sorted = sortAgents(mockAgents, { field: 'latency', direction: 'asc' });
-      expect(sorted[0].metrics.latency).toBeLessThanOrEqual(sorted[1].metrics.latency);
+    it('sorts by agentVersion', () => {
+      const sorted = sortAgents(mockAgents, { field: 'agentVersion', direction: 'asc' });
+      const version0 = sorted[0].agentVersion || '';
+      const version1 = sorted[1].agentVersion || '';
+      expect(version0.localeCompare(version1)).toBeLessThanOrEqual(0);
     });
 
-    it('sorts by lastSeen', () => {
-      const sorted = sortAgents(mockAgents, { field: 'lastSeen', direction: 'desc' });
-      expect(sorted[0].lastSeen).toBeGreaterThanOrEqual(sorted[1].lastSeen);
+    it('sorts by lastSeenAt', () => {
+      const sorted = sortAgents(mockAgents, { field: 'lastSeenAt', direction: 'desc' });
+      const time0 = sorted[0].lastSeenAt?.getTime() ?? 0;
+      const time1 = sorted[1].lastSeenAt?.getTime() ?? 0;
+      expect(time0).toBeGreaterThanOrEqual(time1);
     });
   });
 
@@ -170,8 +181,7 @@ describe('agent-state', () => {
 
       const counts = getAgentCountByStatus();
       expect(counts.online).toBeGreaterThan(0);
-      expect(counts.offline).toBeGreaterThan(0);
-      expect(counts.warning).toBeGreaterThan(0);
+      expect(counts.offline + counts.unknown).toBeGreaterThan(0);
     });
 
     it('returns zero for empty state', () => {
@@ -180,6 +190,7 @@ describe('agent-state', () => {
       const counts = getAgentCountByStatus();
       expect(counts.online).toBe(0);
       expect(counts.offline).toBe(0);
+      expect(counts.unknown).toBe(0);
     });
   });
 

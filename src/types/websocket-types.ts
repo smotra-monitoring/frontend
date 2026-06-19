@@ -2,7 +2,10 @@
  * WebSocket communication type definitions
  */
 
-import type { AgentStatus } from './dashboard-types.js';
+import type { Agent } from './agent-types.js';
+
+// Re-export for convenience
+export type { Agent };
 
 export interface WebSocketMessage<T = any> {
   type: WebSocketMessageType;
@@ -20,17 +23,11 @@ export type WebSocketMessageType =
   | 'connection:ack'
   | 'connection:heartbeat';
 
-export interface AgentUpdateMessage {
-  id: string;
-  status?: AgentStatus;
-  metrics?: {
-    latency?: number;
-    uptime?: number;
-    reachability?: number;
-    responseTime?: number;
-  };
-  lastSeen?: number;
-}
+/**
+ * Agent update message payload.
+ * Uses the full Agent type from the API.
+ */
+export type AgentUpdateMessage = Agent;
 
 export interface SystemNotificationMessage {
   severity: 'info' | 'warning' | 'error' | 'success';

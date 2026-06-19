@@ -3,10 +3,12 @@
  */
 
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
-import type { Agent, AgentListState, FilterOptions, SortOptions, AgentUpdate, ViewMode } from '../types/dashboard-types.js';
+import type { Agent, AgentListState, FilterOptions, SortOptions, ViewMode } from '../types/agent-types.js';
+import { deriveAgentStatus } from '../utils/agent-utils.js';
+import type { AgentUpdateMessage } from '../types/websocket-types.js';
 
-// Initial dashboard state
-const initialDashboardState: AgentListState = {
+// Initial widget state
+const initialWidgetState: AgentListState = {
   agents: [],
   filter: {},
   sort: {
@@ -18,21 +20,21 @@ const initialDashboardState: AgentListState = {
   loading: false
 };
 
-// Create dashboard state instance
-const dashboardState = createState<AgentListState>(initialDashboardState);
+// Create widget state instance
+const widgetState = createState<AgentListState>(initialWidgetState);
 
 /**
  * Set agents list
  */
 export function setAgents(agents: Agent[]): void {
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Add single agent
  */
 export function addAgent(agent: Agent): void {
-  const current = dashboardState.getState();
+  const current = widgetState.getState();
   const agents = [...current.agents];
   const existingIndex = agents.findIndex(a => a.id === agent.id);
 
@@ -42,77 +44,76 @@ export function addAgent(agent: Agent): void {
     agents[existingIndex] = agent;
   }
 
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Update single agent
  */
-export function updateAgent(update: AgentUpdate): void {
-  const current = dashboardState.getState();
+export function updateAgent(update: AgentUpdateMessage): void {
+  const current = widgetState.getState();
   const agents = current.agents.map(agent => {
     if (agent.id === update.id) {
       return {
         ...agent,
-        ...(update.status && { status: update.status }),
-        ...(update.metrics && { metrics: { ...agent.metrics, ...update.metrics } }),
-        ...(update.lastSeen && { lastSeen: update.lastSeen }),
+        ...update,
+        updatedAt: new Date(), // Update timestamp on any change
       };
     }
     return agent;
   });
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Remove agent
  */
 export function removeAgent(agentId: string): void {
-  const current = dashboardState.getState();
+  const current = widgetState.getState();
   const agents = current.agents.filter(agent => agent.id !== agentId);
-  dashboardState.setState({ agents });
+  widgetState.setState({ agents });
 }
 
 /**
  * Set filter options
  */
 export function setFilter(filter: FilterOptions): void {
-  dashboardState.setState({ filter });
+  widgetState.setState({ filter });
 }
 
 /**
  * Clear filters
  */
 export function clearFilters(): void {
-  dashboardState.setState({ filter: {} });
+  widgetState.setState({ filter: {} });
 }
 
 /**
  * Set sort options
  */
 export function setSort(sort: SortOptions): void {
-  dashboardState.setState({ sort });
+  widgetState.setState({ sort });
 }
 
 /**
  * Set view mode
  */
 export function setViewMode(viewMode: ViewMode): void {
-  dashboardState.setState({ viewMode });
+  widgetState.setState({ viewMode });
 }
 
 /**
  * Select agent
  */
 export function selectAgent(agentId: string | null): void {
-  dashboardState.setState({ selectedAgent: agentId });
+  widgetState.setState({ selectedAgent: agentId });
 }
 
 /**
  * Get all agents (legacy - use getAgents)
  */
 export function getAgents(): Agent[] {
-  return dashboardState.getState().agents;
+  return widgetState.getState().agents;
 }
 
 /**
@@ -121,36 +122,49 @@ export function getAgents(): Agent[] {
 export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
   let filtered = [...agents];
 
-  // Apply status filter
+  // Apply status filter (derived from lastSeenAt)
   if (filter.status) {
-    if (Array.isArray(filter.status)) {
-      filtered = filtered.filter(agent => filter.status!.includes(agent.status));
-    } else {
-      filtered = filtered.filter(agent => agent.status === filter.status);
-    }
+    const statusArray = Array.isArray(filter.status) ? filter.status : [filter.status];
+    filtered = filtered.filter(agent => {
+      const derivedStatus = deriveAgentStatus(agent.lastSeenAt);
+      return statusArray.includes(derivedStatus);
+    });
   }
 
-  // Apply hostname filter
-  if (filter.hostname) {
-    filtered = filtered.filter(agent => agent.hostname === filter.hostname);
+  // Apply sectionId filter
+  if (filter.sectionId) {
+    filtered = filtered.filter(agent => agent.sectionId === filter.sectionId);
   }
 
-  // Apply tags filter
+  // Apply agentVersion filter
+  if (filter.agentVersion) {
+    filtered = filtered.filter(agent => agent.agentVersion === filter.agentVersion);
+  }
+
+  // Apply tags filter (not in AgentListItem, but kept for future extension)
   if (filter.tags && filter.tags.length > 0) {
-    filtered = filtered.filter(agent =>
-      filter.tags!.some((tag: string) => agent.tags.includes(tag))
-    );
+    // Tags not in AgentListItem schema, skip for now
+    // Can be added later if needed
   }
 
   // Apply search filter
   if (filter.search) {
     const searchLower = filter.search.toLowerCase();
-    filtered = filtered.filter(agent =>
-      agent.name.toLowerCase().includes(searchLower) ||
-      agent.hostname.toLowerCase().includes(searchLower) ||
-      agent.ip?.includes(searchLower) ||
-      agent.ipAddress?.includes(searchLower)
-    );
+    filtered = filtered.filter(agent => {
+      // Search in name
+      if (agent.name.toLowerCase().includes(searchLower)) return true;
+
+      // Search in sectionId
+      if (agent.sectionId.toLowerCase().includes(searchLower)) return true;
+
+      // Search in agentVersion
+      if (agent.agentVersion?.toLowerCase().includes(searchLower)) return true;
+
+      // Search in IP addresses
+      if (agent.ipAddresses?.some(ip => ip.ip.includes(searchLower))) return true;
+
+      return false;
+    });
   }
 
   return filtered;
@@ -172,20 +186,22 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
         bValue = b.name.toLowerCase();
         break;
       case 'status':
-        aValue = a.status;
-        bValue = b.status;
+        // Sort by derived status
+        aValue = deriveAgentStatus(a.lastSeenAt);
+        bValue = deriveAgentStatus(b.lastSeenAt);
         break;
-      case 'latency':
-        aValue = a.metrics.latency;
-        bValue = b.metrics.latency;
+      case 'lastSeenAt':
+        // Sort by timestamp (null values go to end)
+        aValue = a.lastSeenAt?.getTime() ?? 0;
+        bValue = b.lastSeenAt?.getTime() ?? 0;
         break;
-      case 'uptime':
-        aValue = a.metrics.uptime;
-        bValue = b.metrics.uptime;
+      case 'agentVersion':
+        aValue = a.agentVersion ?? '';
+        bValue = b.agentVersion ?? '';
         break;
-      case 'lastSeen':
-        aValue = a.lastSeen;
-        bValue = b.lastSeen;
+      case 'configVersion':
+        aValue = a.configVersion;
+        bValue = b.configVersion;
         break;
       default:
         aValue = a.name;
@@ -235,14 +251,14 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
  * ```
  */
 export function subscribeToAgents(callback: Subscriber<AgentListState>): UnsubscribeFn {
-  return dashboardState.subscribe(callback);
+  return widgetState.subscribe(callback);
 }
 
 /**
  * Get agent by ID
  */
 export function getAgentById(agentId: string): Agent | null {
-  const agents = dashboardState.getState().agents;
+  const agents = widgetState.getState().agents;
   return agents.find((agent: Agent) => agent.id === agentId) || null;
 }
 
@@ -250,133 +266,173 @@ export function getAgentById(agentId: string): Agent | null {
  * Get agent count by status
  */
 export function getAgentCountByStatus(): Record<string, number> {
-  const agents = dashboardState.getState().agents;
+  const agents = widgetState.getState().agents;
   const counts: Record<string, number> = {
     online: 0,
     offline: 0,
-    warning: 0,
     unknown: 0,
   };
 
   agents.forEach((agent: Agent) => {
-    counts[agent.status] = (counts[agent.status] || 0) + 1;
+    const status = deriveAgentStatus(agent.lastSeenAt);
+    counts[status] = (counts[status] || 0) + 1;
   });
 
   return counts;
 }
 
-const now = Math.floor(Date.now() / 1000);
+/*
+  * Mock data and API loading function for development/testing
+  * Replace with actual API calls when backend is ready
+  * Provides a variety of agents with different statuses, versions, and timestamps for UI testing
+*/
+
+const now = new Date();
+const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
+const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000);
+const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
 const fakeAgents: Agent[] = [
   {
-    id: 'agent-001',
+    id: '01930000-0000-7000-a001-000000000001',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'web-prod-01',
-    hostname: 'web-prod-01.infra.example.com',
-    ip: '10.0.1.10',
-    status: 'online',
-    lastSeen: now - 5,
-    metrics: { latency: 12, uptime: 2592000, reachability: 100, responseTime: 14, lastCheck: now - 5 },
-    tags: ['production', 'web'],
-    version: '1.4.2',
+    configVersion: 3,
+    agentVersion: '1.4.2',
+    ipAddresses: [
+      { ip: '10.0.1.10', iface: 'eth0', family: 'ipv4', recommended: true },
+      { ip: '2001:db8::1', iface: 'eth0', family: 'ipv6', recommended: false },
+    ],
+    lastSeenAt: minutesAgo(1), // online
+    lastResultSubmittedAt: minutesAgo(2),
+    createdAt: daysAgo(30),
+    updatedAt: minutesAgo(1),
   },
   {
-    id: 'agent-002',
+    id: '01930000-0000-7000-a002-000000000002',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'web-prod-02',
-    hostname: 'web-prod-02.infra.example.com',
-    ip: '10.0.1.11',
-    status: 'online',
-    lastSeen: now - 8,
-    metrics: { latency: 15, uptime: 2590000, reachability: 100, responseTime: 17, lastCheck: now - 8 },
-    tags: ['production', 'web'],
-    version: '1.4.2',
+    configVersion: 3,
+    agentVersion: '1.4.2',
+    ipAddresses: [
+      { ip: '10.0.1.11', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(2), // online
+    lastResultSubmittedAt: minutesAgo(3),
+    createdAt: daysAgo(29),
+    updatedAt: minutesAgo(2),
   },
   {
-    id: 'agent-003',
+    id: '01930000-0000-7000-a003-000000000003',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'api-prod-01',
-    hostname: 'api-prod-01.infra.example.com',
-    ip: '10.0.2.10',
-    status: 'online',
-    lastSeen: now - 3,
-    metrics: { latency: 8, uptime: 1728000, reachability: 99.9, responseTime: 10, lastCheck: now - 3 },
-    tags: ['production', 'api'],
-    version: '1.4.2',
+    configVersion: 5,
+    agentVersion: '1.4.2',
+    ipAddresses: [
+      { ip: '10.0.2.10', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(0.5), // online (30 seconds ago)
+    lastResultSubmittedAt: minutesAgo(1),
+    createdAt: daysAgo(20),
+    updatedAt: minutesAgo(0.5),
   },
   {
-    id: 'agent-004',
+    id: '01930000-0000-7000-a004-000000000004',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'db-primary',
-    hostname: 'db-primary.infra.example.com',
-    ip: '10.0.3.10',
-    status: 'warning',
-    lastSeen: now - 45,
-    metrics: { latency: 142, uptime: 5184000, reachability: 97.3, responseTime: 155, lastCheck: now - 45 },
-    tags: ['production', 'database'],
-    version: '1.3.9',
+    configVersion: 2,
+    agentVersion: '1.3.9',
+    ipAddresses: [
+      { ip: '10.0.3.10', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(3), // online
+    lastResultSubmittedAt: minutesAgo(4),
+    createdAt: daysAgo(60),
+    updatedAt: minutesAgo(3),
   },
   {
-    id: 'agent-005',
+    id: '01930000-0000-7000-a005-000000000005',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'db-replica-01',
-    hostname: 'db-replica-01.infra.example.com',
-    ip: '10.0.3.11',
-    status: 'online',
-    lastSeen: now - 12,
-    metrics: { latency: 18, uptime: 4320000, reachability: 100, responseTime: 20, lastCheck: now - 12 },
-    tags: ['production', 'database'],
-    version: '1.4.0',
+    configVersion: 2,
+    agentVersion: '1.4.0',
+    ipAddresses: [
+      { ip: '10.0.3.11', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(4), // online
+    lastResultSubmittedAt: minutesAgo(5),
+    createdAt: daysAgo(50),
+    updatedAt: minutesAgo(4),
   },
   {
-    id: 'agent-006',
+    id: '01930000-0000-7000-a006-000000000006',
+    sectionId: '01930000-0000-7000-0000-000000000001',
     name: 'cache-01',
-    hostname: 'cache-01.infra.example.com',
-    ip: '10.0.4.10',
-    status: 'online',
-    lastSeen: now - 2,
-    metrics: { latency: 3, uptime: 864000, reachability: 100, responseTime: 4, lastCheck: now - 2 },
-    tags: ['production', 'cache'],
-    version: '1.4.2',
+    configVersion: 4,
+    agentVersion: '1.4.2',
+    ipAddresses: [
+      { ip: '10.0.4.10', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(1), // online
+    lastResultSubmittedAt: minutesAgo(2),
+    createdAt: daysAgo(10),
+    updatedAt: minutesAgo(1),
   },
   {
-    id: 'agent-007',
+    id: '01930000-0000-7000-a007-000000000007',
+    sectionId: '01930000-0000-7000-0000-000000000002',
     name: 'worker-staging-01',
-    hostname: 'worker-staging-01.infra.example.com',
-    ip: '10.1.1.10',
-    status: 'offline',
-    lastSeen: now - 3720,
-    metrics: { latency: 0, uptime: 0, reachability: 0, responseTime: 0, lastCheck: now - 3720 },
-    tags: ['staging', 'worker'],
-    version: '1.5.0-beta',
+    configVersion: 1,
+    agentVersion: '1.5.0-beta',
+    ipAddresses: [
+      { ip: '10.1.1.10', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: hoursAgo(2), // offline (2 hours ago)
+    lastResultSubmittedAt: hoursAgo(2),
+    createdAt: daysAgo(5),
+    updatedAt: hoursAgo(2),
   },
   {
-    id: 'agent-008',
+    id: '01930000-0000-7000-a008-000000000008',
+    sectionId: '01930000-0000-7000-0000-000000000003',
     name: 'monitor-eu-01',
-    hostname: 'monitor-eu-01.infra.example.com',
-    ip: '185.12.44.100',
-    status: 'online',
-    lastSeen: now - 20,
-    metrics: { latency: 68, uptime: 3456000, reachability: 99.5, responseTime: 72, lastCheck: now - 20 },
-    tags: ['monitoring', 'eu-west'],
-    version: '1.4.1',
+    configVersion: 3,
+    agentVersion: '1.4.1',
+    ipAddresses: [
+      { ip: '185.12.44.100', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(1), // online
+    lastResultSubmittedAt: minutesAgo(2),
+    createdAt: daysAgo(40),
+    updatedAt: minutesAgo(1),
   },
   {
-    id: 'agent-009',
+    id: '01930000-0000-7000-a009-000000000009',
+    sectionId: '01930000-0000-7000-0000-000000000003',
     name: 'monitor-us-01',
-    hostname: 'monitor-us-01.infra.example.com',
-    ip: '54.210.33.77',
-    status: 'online',
-    lastSeen: now - 18,
-    metrics: { latency: 34, uptime: 3456000, reachability: 99.8, responseTime: 37, lastCheck: now - 18 },
-    tags: ['monitoring', 'us-east'],
-    version: '1.4.1',
+    configVersion: 3,
+    agentVersion: '1.4.1',
+    ipAddresses: [
+      { ip: '54.210.33.77', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(2), // online
+    lastResultSubmittedAt: minutesAgo(3),
+    createdAt: daysAgo(40),
+    updatedAt: minutesAgo(2),
   },
   {
-    id: 'agent-010',
+    id: '01930000-0000-7000-a010-000000000010',
+    sectionId: '01930000-0000-7000-0000-000000000004',
     name: 'edge-cdn-01',
-    hostname: 'edge-cdn-01.infra.example.com',
-    ip: '104.21.55.200',
-    status: 'error',
-    lastSeen: now - 610,
-    metrics: { latency: 999, uptime: 0, reachability: 12, responseTime: 999, lastCheck: now - 610 },
-    tags: ['cdn', 'edge'],
-    version: '1.4.0',
+    configVersion: 2,
+    agentVersion: '1.4.0',
+    ipAddresses: [
+      { ip: '104.21.55.200', iface: 'eth0', family: 'ipv4', recommended: true },
+    ],
+    lastSeenAt: minutesAgo(15), // offline (15 minutes ago, beyond 5 min threshold)
+    lastResultSubmittedAt: minutesAgo(20),
+    createdAt: daysAgo(15),
+    updatedAt: minutesAgo(15),
   },
 ];
 

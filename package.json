@@ -36,8 +36,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start": "browser-sync start --server 'public' --files 'public' --single",
-    "dev": "browser-sync start --server 'public' --files 'public' --single --port 3000 --no-notify",
+    "start": "browser-sync start --server public --files public --single",
+    "dev": "browser-sync start --server public --files public --single --port 3000 --no-notify",
     "openapi-ts": "openapi-ts -f ./api/openapi-ts.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",

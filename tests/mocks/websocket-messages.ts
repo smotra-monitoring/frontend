@@ -4,20 +4,25 @@
 
 import type {
     WebSocketMessage,
-    AgentUpdateMessage,
+    Agent,
     SystemNotificationMessage,
 } from '../../src/types/websocket-types.js';
 
-export const mockAgentUpdateMessage: WebSocketMessage<AgentUpdateMessage> = {
+export const mockAgentUpdateMessage: WebSocketMessage<Agent> = {
     type: 'agent:update',
     payload: {
-        id: 'agent-1',
-        status: 'online',
-        metrics: {
-            latency: 30,
-            reachability: 99.8,
-        },
-        lastSeen: Date.now(),
+        id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id
+        sectionId: '01930000-0000-7000-0000-000000000001',
+        name: 'Test Agent 1',
+        configVersion: 4,
+        agentVersion: '1.0.1',
+        ipAddresses: [
+            { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
+        ],
+        lastSeenAt: new Date(),
+        lastResultSubmittedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     },
     timestamp: Date.now(),
 };
@@ -26,19 +31,19 @@ export const mockAgentAddedMessage: WebSocketMessage<any> = {
     type: 'agent:added',
     payload: {
         id: 'agent-new',
+        sectionId: '01930000-0000-7000-0000-000000000001',
         name: 'New Agent',
-        hostname: 'new-host',
-        ipAddress: '192.168.1.200',
-        status: 'online',
-        version: '1.0.0',
-        lastSeen: Date.now(),
-        metrics: {
-            latency: 20,
-            uptime: 100,
-            reachability: 100,
-            responseTime: 100,
-        },
-        tags: [],
+        agentVersion: '1.0.0',
+        configVersion: 2,
+        lastSeenAt: new Date(),
+        ipAddresses: [
+            {
+                ip: '192.168.1.200',
+                interface: 'eth0',
+            }
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
     },
     timestamp: Date.now(),
 };
@@ -46,7 +51,7 @@ export const mockAgentAddedMessage: WebSocketMessage<any> = {
 export const mockAgentRemovedMessage: WebSocketMessage<any> = {
     type: 'agent:removed',
     payload: {
-        id: 'agent-1',
+        id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id
     },
     timestamp: Date.now(),
 };

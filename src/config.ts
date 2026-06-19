@@ -5,6 +5,12 @@ interface AppConfig {
     apiBaseUrl: string;
 }
 
+
+/**
+ * Agent monitoring thresholds
+ */
+export const AGENT_ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
 const CONFIG_MAP: Record<FrontendURL, AppConfig> = {
     "localhost:3000": {
         example: "This is the development config",

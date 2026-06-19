@@ -5,7 +5,7 @@
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { AgentStatus } from '../types/dashboard-types.js';
+import type { AgentStatus } from '../types/agent-types.js';
 
 interface StatusIndicatorState extends ComponentState {
   status: AgentStatus;
@@ -50,8 +50,6 @@ export class StatusIndicator extends BaseComponent<StatusIndicatorState> {
     const labels: Record<AgentStatus, string> = {
       online: 'Online - Agent is reachable',
       offline: 'Offline - Agent is not reachable',
-      warning: 'Warning - Agent experiencing issues',
-      error: 'Error - Agent has critical issues',
       unknown: 'Unknown - Agent status unavailable',
     };
     return labels[status] || 'Unknown status';

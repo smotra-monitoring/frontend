@@ -40,6 +40,20 @@ Welcome to the Smotra Frontend documentation! This guide will help you navigate 
 
 Located in the [`features/`](features/) directory:
 
+- **[Agent States Widget](features/agent-states-widget.md)** - Table-based agent list component
+  - Table layout with sortable columns
+  - CSS-only expandable rows for agent details
+  - Status derivation from lastSeenAt timestamp
+  - Real-time updates and accessibility
+  - Performance optimizations
+
+- **[Refresh State](features/refresh-manager.md)** - Periodic data polling system
+  - Centralized refresh control for dashboard widgets
+  - User-configurable refresh frequencies (Off, 5s, 15s, 30s)
+  - State-based pub/sub architecture
+  - Automatic subscription cleanup
+  - Widget integration guide
+
 - **[OAuth Authentication](features/oauth-authentication.md)** - OAuth2 with PKCE implementation
   - OAuth flow explanation
   - PKCE security

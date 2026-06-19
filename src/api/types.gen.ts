@@ -4,55 +4,6 @@ export type ClientOptions = {
     baseUrl: 'https://api.smotra.net/v1' | 'https://staging-api.smotra.net/v1' | 'http://localhost:8080/v1' | (string & {});
 };
 
-export type AgentStatus = {
-    agent_id: UuiDv7;
-    /**
-     * Version of the agent
-     */
-    agent_version: string;
-    /**
-     * Version of the agent configuration
-     */
-    config_version: number;
-    /**
-     * Whether the agent is currently running
-     */
-    is_running: boolean;
-    /**
-     * Timestamp when the agent started in UTC (RFC3339), null if never started
-     */
-    started_at: Date;
-    /**
-     * Timestamp when the agent stopped in UTC (RFC3339), null if running
-     */
-    stopped_at: Date | null;
-    /**
-     * Total number of checks performed by the agent
-     */
-    checks_performed: number;
-    /**
-     * Number of successful checks
-     */
-    checks_successful: number;
-    /**
-     * Number of failed checks
-     */
-    checks_failed: number;
-    /**
-     * Timestamp of the last report received from the agent (RFC3339)
-     */
-    last_report_at: Date;
-    /**
-     * Number of consecutive failed report attempts
-     */
-    failed_report_count: number;
-    /**
-     * Whether the agent is currently connected to the server
-     */
-    server_connected: boolean;
-    cache_stats: AgentCacheStats;
-};
-
 export type AgentCacheStats = {
     /**
      * Number of results currently buffered in the local cache
@@ -430,6 +381,51 @@ export type AgentNetworkInterface = {
     recommended: boolean;
 };
 
+export type Agent = {
+    id: UuiDv7;
+    /**
+     * Section (organizational unit) this agent belongs to
+     */
+    sectionId: string;
+    /**
+     * Human-readable agent name
+     */
+    name: string;
+    /**
+     * Current configuration version
+     */
+    configVersion: number;
+    /**
+     * Version of the agent software, null if not yet reported
+     */
+    agentVersion?: string | null;
+    /**
+     * Network interfaces reported by the agent
+     */
+    ipAddresses?: Array<AgentNetworkInterface>;
+    /**
+     * Timestamp of the last heartbeat received from the agent
+     */
+    lastSeenAt?: Date | null;
+    /**
+     * Timestamp of the last monitoring result submission
+     */
+    lastResultSubmittedAt?: Date | null;
+    /**
+     * Timestamp when the agent was registered
+     */
+    createdAt: Date;
+    /**
+     * Timestamp when the agent record was last updated
+     */
+    updatedAt: Date;
+};
+
+export type AgentListResponse = {
+    agents: Array<Agent>;
+    pagination: Pagination;
+};
+
 export type AgentSelfRegistration = {
     agentId: UuiDv7;
     /**
@@ -538,20 +534,6 @@ export type RetryPolicy = {
     max_retries?: number;
     retry_delay_seconds?: number;
     backoff_multiplier?: number;
-};
-
-export type ReportAcknowledgment = {
-    request_id: UuiDv7;
-    status: ReportAckStatus;
-    received_at: Date;
-    /**
-     * Latest configuration version available
-     */
-    configuration_version?: number;
-    /**
-     * Whether agent update is available
-     */
-    update_available?: boolean;
 };
 
 export type ResultsBatchAcknowledgment = {
@@ -1045,43 +1027,6 @@ export type UserId = string;
  */
 export type OrganizationId = string;
 
-export type SubmitAgentStatusData = {
-    body: AgentStatus;
-    path?: never;
-    query?: never;
-    url: '/agent/report';
-};
-
-export type SubmitAgentStatusErrors = {
-    /**
-     * Bad request - Invalid parameters
-     */
-    400: Error;
-    /**
-     * Unauthorized - Invalid or missing authentication
-     */
-    401: Error;
-    /**
-     * Rate limit exceeded
-     */
-    429: Error;
-    /**
-     * Internal server error
-     */
-    500: Error;
-};
-
-export type SubmitAgentStatusError = SubmitAgentStatusErrors[keyof SubmitAgentStatusErrors];
-
-export type SubmitAgentStatusResponses = {
-    /**
-     * Report accepted for processing
-     */
-    202: ReportAcknowledgment;
-};
-
-export type SubmitAgentStatusResponse = SubmitAgentStatusResponses[keyof SubmitAgentStatusResponses];
-
 export type RegisterAgentSelfData = {
     body: AgentSelfRegistration;
     path?: never;
@@ -1236,52 +1181,6 @@ export type GetAgentConfigurationResponses = {
 
 export type GetAgentConfigurationResponse = GetAgentConfigurationResponses[keyof GetAgentConfigurationResponses];
 
-export type UpdateAgentConfigurationData = {
-    body: AgentConfig;
-    path: {
-        /**
-         * Unique identifier for the agent
-         */
-        agentId: UuiDv7;
-    };
-    query?: never;
-    url: '/agent/{agentId}/configuration';
-};
-
-export type UpdateAgentConfigurationErrors = {
-    /**
-     * Bad request - Invalid parameters
-     */
-    400: Error;
-    /**
-     * Forbidden - Insufficient permissions
-     */
-    403: Error;
-    /**
-     * Resource not found
-     */
-    404: Error;
-    /**
-     * Not implemented
-     */
-    501: Error;
-    /**
-     * Internal server error
-     */
-    503: Error;
-};
-
-export type UpdateAgentConfigurationError = UpdateAgentConfigurationErrors[keyof UpdateAgentConfigurationErrors];
-
-export type UpdateAgentConfigurationResponses = {
-    /**
-     * Configuration updated successfully
-     */
-    200: AgentConfig;
-};
-
-export type UpdateAgentConfigurationResponse = UpdateAgentConfigurationResponses[keyof UpdateAgentConfigurationResponses];
-
 export type SendAgentHeartbeatData = {
     body: AgentHeartbeat;
     path: {
@@ -1361,6 +1260,44 @@ export type SubmitAgentResultsResponses = {
 };
 
 export type SubmitAgentResultsResponse = SubmitAgentResultsResponses[keyof SubmitAgentResultsResponses];
+
+export type ListAgentsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number (1-based)
+         */
+        page?: number;
+        /**
+         * Number of agents per page
+         */
+        page_size?: number;
+    };
+    url: '/agents';
+};
+
+export type ListAgentsErrors = {
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: Error;
+    /**
+     * Internal server error
+     */
+    500: Error;
+};
+
+export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
+
+export type ListAgentsResponses = {
+    /**
+     * Agent list retrieved successfully
+     */
+    200: AgentListResponse;
+};
+
+export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
 
 export type GetResultReportData = {
     body?: never;
