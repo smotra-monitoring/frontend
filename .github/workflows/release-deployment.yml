@@ -55,6 +55,10 @@ jobs:
     name: Deploy Container
     needs: [create-release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
