@@ -48,7 +48,7 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "^0",
     "@types/node": "^26",
-    "typescript": "^6",
+    "typescript": "^7",
     "browser-sync": "^3",
     "vitest": "^4",
     "@vitest/coverage-v8": "^4",
