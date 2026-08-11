@@ -48,11 +48,14 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "^0",
     "@types/node": "^26",
-    "typescript": "^7",
-    "browser-sync": "^3",
-    "vitest": "^4",
     "@vitest/coverage-v8": "^4",
+    "browser-sync": "^3",
     "jsdom": "^30",
-    "prettier": "^3"
+    "prettier": "^3",
+    "typescript": "^7",
+    "vitest": "^4"
+  },
+  "dependencies": {
+    "npm": "^12.0.2"
   }
 }
