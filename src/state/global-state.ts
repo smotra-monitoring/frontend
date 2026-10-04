@@ -6,7 +6,7 @@
 export type Subscriber<T> = (state: T) => void;
 export type UnsubscribeFn = () => void;
 
-export class GlobalState<T = any> {
+class GlobalState<T = any> {
   private state: T;
   private subscribers: Set<Subscriber<T>> = new Set();
 
