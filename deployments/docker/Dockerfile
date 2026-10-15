@@ -1,11 +1,22 @@
-# Use the official Nginx image from the Docker Hub
+# Build stage: compile TypeScript into public/dist
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY tsconfig.build.json ./
+COPY src ./src
+COPY public ./public
+
+RUN npm run build
+
+# Runtime stage: serve static assets with Nginx
 FROM nginx:alpine
 
-# Copy the contents of the /public folder to the Nginx html directory
-COPY public /usr/share/nginx/html
+COPY --from=build /app/public /usr/share/nginx/html
 
-# Expose port 80 to the outside world
 EXPOSE 80
 
-# Start Nginx when the container launches
 CMD ["nginx", "-g", "daemon off;"]

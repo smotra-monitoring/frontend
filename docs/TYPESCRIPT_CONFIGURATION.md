@@ -56,7 +56,7 @@ Smotra Frontend uses a **three-config TypeScript setup** to separate concerns be
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist",
+    "outDir": "./public/dist",
     "target": "ES2020",
     "module": "NodeNext",
     "types": ["node"],  // ❌ No vitest/globals
@@ -75,7 +75,7 @@ Smotra Frontend uses a **three-config TypeScript setup** to separate concerns be
 
 **Build-Specific Features**:
 - **`rootDir: "./src"`**: Only source code, excludes tests
-- **`outDir: "./dist"`**: Compiled output directory
+- **`outDir: "./public/dist"`**: Compiled output directory served by static hosting
 - **`sourceMap: true`**: Debug original TypeScript in browser
 - **`declaration: true`**: Generate `.d.ts` files for type checking
 - **`declarationMap: true`**: Map `.d.ts` back to source for IDE navigation
@@ -277,12 +277,12 @@ export default defineConfig({
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"  // Relative to project root
+    "outDir": "./public/dist"  // Relative to project root
   }
 }
 ```
 
-Files in `src/components/foo.ts` → `dist/components/foo.js`
+Files in `src/components/foo.ts` → `public/dist/components/foo.js`
 
 ## Best Practices
 
@@ -317,7 +317,7 @@ npm run build
 npm test
 
 # 4. Clean and rebuild
-rm -rf dist public/src
+rm -rf public/dist
 npm run build
 ```
 
