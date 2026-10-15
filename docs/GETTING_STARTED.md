@@ -36,7 +36,7 @@ This will install:
 npm run build
 ```
 
-This compiles TypeScript to JavaScript using `tsconfig.build.json` (production configuration) and outputs to the `dist/` directory.
+This compiles TypeScript to JavaScript using `tsconfig.build.json` (production configuration) and outputs to the `public/dist/` directory.
 
 > **Note**: The project uses three TypeScript configurations:
 > - `tsconfig.json` - IDE type-checking (both src and tests)
@@ -95,7 +95,7 @@ Ensure no compilation errors:
 npm run build
 ```
 
-You should see no errors in the output. The compiled JavaScript will be in the `dist/` directory.
+You should see no errors in the output. The compiled JavaScript will be in the `public/dist/` directory.
 
 > **Tip**: To type-check without compiling (faster), use: `npx tsc --noEmit`
 > 
@@ -163,7 +163,7 @@ Ensure your OAuth provider has `http://localhost:3000/oauth/callback` in its all
 Try cleaning and rebuilding:
 
 ```bash
-rm -rf dist
+rm -rf public/dist
 npm run build
 ```
 

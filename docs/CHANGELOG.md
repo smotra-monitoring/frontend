@@ -1,7 +1,6 @@
 # Changelog
 
 All notable changes to the Smotra Frontend project will be documented in this file.
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -91,6 +90,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Integration Tests**: Updated all assertions for new Agent structure (dashboard.test.ts)
 - **Unit Tests**: Updated agent-state.test.ts for new fields and null-safety
 - **WebSocket Types**: Updated AgentUpdateMessage to include lastSeenAt, agentVersion, configVersion
+
+### Fixed
+- **Docker static asset packaging**: Removed symlink dependency from `public/` to prevent broken links in container images
+  - Root cause: `public/dist -> ../dist` and `public/src -> ../src` symlinks were copied as links into the Nginx image, but the target paths were not present in the image
+  - `tsconfig.build.json` now emits runtime assets directly to `public/dist`
+  - Docker build now compiles frontend assets in a build stage and copies the resulting `public/` directory into the runtime Nginx image
 
 ### Planned
 - Backend API integration for token refresh, user info, agent data
