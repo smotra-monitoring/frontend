@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents Page (`/agent`)**: New private route rendering the `AgentStatesWidget` as a dedicated full-width page
   - `AgentsPage` component (`src/pages/agents.ts`) with sidebar, refresh control, theme toggle, command palette and toasts
   - Route table exported as `ROUTES` from `src/pages/router.ts`
-  - Sidebar "Agents" link now points to `/agent` (previously the non-existent `/agents` route)
+  - Sidebar "Agents" link now points to `/agent`
   - Unit and integration tests; documentation in `docs/features/agents-page.md`
 - **Refresh Manager**: Centralized periodic data polling system for dashboard widgets
   - Built on global-state pattern for consistent pub/sub functionality
