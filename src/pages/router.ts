@@ -6,30 +6,41 @@
 import { LoginPage } from './login.js';
 import { OAuthCallbackPage } from './oauth-callback.js';
 import { DashboardPage } from './dashboard.js';
+import { AgentsPage } from './agents.js';
 import { protectRoute, canAccessPublicRoute } from '../auth/auth-guard.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
 import { isAuthenticated } from '../state/auth-state.js';
 import { registerNavigate } from '../utils/navigation.js';
+import type { BaseComponent } from '../components/base-component.js';
 
-interface Route {
+type Strategy = 'private' | 'guest-only' | 'anyone';
+
+export interface Route {
   path: string;
-  component: typeof LoginPage | typeof OAuthCallbackPage | typeof DashboardPage;
+  component: new (root: HTMLElement) => BaseComponent;
   strategy: Strategy;
 }
 
 /**
+ * Application route table
+ */
+const ROUTES: readonly Route[] = [
+  { path: '/', component: DashboardPage, strategy: 'private' },
+  { path: '/dashboard', component: DashboardPage, strategy: 'private' },
+  { path: '/agent', component: AgentsPage, strategy: 'private' },
+  { path: '/login', component: LoginPage, strategy: 'guest-only' },
+  { path: '/auth/callback', component: OAuthCallbackPage, strategy: 'guest-only' },
+];
+export const ROUTES_for_tests = ROUTES;
+
+
+/**
  * Simple client-side router
  */
-type Strategy = 'private' | 'guest-only' | 'anyone';
 class Router {
-  private routes: Route[] = [
-    { path: '/', component: DashboardPage, strategy: 'private' },
-    { path: '/dashboard', component: DashboardPage, strategy: 'private' },
-    { path: '/login', component: LoginPage, strategy: 'guest-only' },
-    { path: '/auth/callback', component: OAuthCallbackPage, strategy: 'guest-only' },
-  ];
+  private routes: readonly Route[] = ROUTES;
 
-  private currentPage: LoginPage | OAuthCallbackPage | DashboardPage | null = null;
+  private currentPage: BaseComponent | null = null;
   private appRoot: HTMLElement;
   /** Guards against pushState/replaceState re-triggering the Navigation API 'navigate' event */
   private isInternalNavigating = false;

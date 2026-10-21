@@ -7,7 +7,7 @@ import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import { isAuthenticated, getUserInfo } from '../state/auth-state.js';
 import { logout } from '../services/auth-service.js';
-import { navigate } from '../pages/router.js';
+import { navigateTo } from '../utils/navigation.js';
 
 interface SidebarState extends ComponentState {
   expanded: boolean;
@@ -27,7 +27,7 @@ interface NavItem {
 export class Sidebar extends BaseComponent<SidebarState> {
   private navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-th', route: '/dashboard' },
-    { id: 'agents', label: 'Agents', icon: 'fa-server', route: '/agents' },
+    { id: 'agents', label: 'Agents', icon: 'fa-server', route: '/agent' },
     { id: 'settings', label: 'Settings', icon: 'fa-cog', route: '/settings' },
   ];
 
@@ -206,7 +206,7 @@ export class Sidebar extends BaseComponent<SidebarState> {
       this.addEventListener(link, 'click', async (e) => {
         e.preventDefault();
         const route = (link as HTMLAnchorElement).dataset.route!;
-        await navigate(route);
+        await navigateTo(route, 'push');
       });
     });
 
