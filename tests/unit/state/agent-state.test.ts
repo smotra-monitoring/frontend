@@ -2,7 +2,10 @@
  * Tests for agent state management
  */
 
+import { vi } from 'vitest';
 import type { Agent } from '../../../src/types/agent-types.js';
+import { listAgents } from '../../../src/api/index.js';
+import { getValidAccessToken } from '../../../src/auth/token-manager.js';
 import {
   setAgents,
   addAgent,
@@ -18,6 +21,9 @@ import {
 } from '../../../src/state/agent-state.js';
 import { deriveAgentStatus } from '../../../src/utils/agent-utils.js';
 import { mockAgent, mockAgents, mockAgentUpdate } from '../../mocks/agent-data.js';
+
+vi.mock('../../../src/api/index.js', () => ({ listAgents: vi.fn() }));
+vi.mock('../../../src/auth/token-manager.js', () => ({ getValidAccessToken: vi.fn() }));
 
 describe('agent-state', () => {
   beforeEach(() => {
@@ -195,8 +201,100 @@ describe('agent-state', () => {
   });
 
   describe('loadAgents', () => {
-    it('resolves without error', async () => {
-      await expect(loadAgents()).resolves.not.toThrow();
+    const pagination = (page: number, totalPages: number) => ({
+      page,
+      page_size: 100,
+      total_items: mockAgents.length,
+      total_pages: totalPages,
+      has_next: page < totalPages,
+      has_previous: page > 1,
+    });
+
+    beforeEach(() => {
+      vi.mocked(listAgents).mockReset();
+      vi.mocked(getValidAccessToken).mockReset().mockResolvedValue('st_live_token');
+    });
+
+    it('stores agents returned by the API', async () => {
+      vi.mocked(listAgents).mockResolvedValue({
+        data: { agents: mockAgents, pagination: pagination(1, 1) },
+      } as never);
+
+      await loadAgents();
+
+      expect(getAgents()).toEqual(mockAgents);
+    });
+
+    it('requests the first page with the maximum page size', async () => {
+      vi.mocked(listAgents).mockResolvedValue({
+        data: { agents: [], pagination: pagination(1, 1) },
+      } as never);
+
+      await loadAgents();
+
+      expect(listAgents).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(listAgents).mock.calls[0]?.[0]?.query).toEqual({ page: 1, page_size: 100 });
+    });
+
+    it('supplies the session token via the auth callback', async () => {
+      vi.mocked(listAgents).mockResolvedValue({
+        data: { agents: [], pagination: pagination(1, 1) },
+      } as never);
+
+      await loadAgents();
+
+      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as () => Promise<string | undefined>;
+      await expect(auth()).resolves.toBe('st_live_token');
+    });
+
+    it('passes undefined to the auth callback when no valid token exists', async () => {
+      vi.mocked(getValidAccessToken).mockResolvedValue(null);
+      vi.mocked(listAgents).mockResolvedValue({
+        data: { agents: [], pagination: pagination(1, 1) },
+      } as never);
+
+      await loadAgents();
+
+      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as () => Promise<string | undefined>;
+      await expect(auth()).resolves.toBeUndefined();
+    });
+
+    it('fetches all pages and combines the agents', async () => {
+      vi.mocked(listAgents)
+        .mockResolvedValueOnce({
+          data: { agents: [mockAgents[0]], pagination: pagination(1, 2) },
+        } as never)
+        .mockResolvedValueOnce({
+          data: { agents: [mockAgents[1]], pagination: pagination(2, 2) },
+        } as never);
+
+      await loadAgents();
+
+      expect(listAgents).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(listAgents).mock.calls[1]?.[0]?.query).toEqual({ page: 2, page_size: 100 });
+      expect(getAgents()).toEqual([mockAgents[0], mockAgents[1]]);
+    });
+
+    it('throws the API error message and keeps existing agents on failure', async () => {
+      setAgents([mockAgent]);
+      vi.mocked(listAgents).mockResolvedValue({
+        error: { error: 'unauthorized', message: 'Invalid or missing authentication' },
+      } as never);
+
+      await expect(loadAgents()).rejects.toThrow('Invalid or missing authentication');
+      expect(getAgents()).toEqual([mockAgent]);
+    });
+
+    it('throws a default message when the response has no data', async () => {
+      vi.mocked(listAgents).mockResolvedValue({} as never);
+
+      await expect(loadAgents()).rejects.toThrow('Failed to load agents');
+    });
+
+    it('propagates network errors', async () => {
+      vi.mocked(listAgents).mockRejectedValue(new Error('Network down'));
+
+      await expect(loadAgents()).rejects.toThrow('Network down');
     });
   });
 });

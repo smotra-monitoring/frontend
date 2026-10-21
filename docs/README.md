@@ -47,6 +47,11 @@ Located in the [`features/`](features/) directory:
   - Real-time updates and accessibility
   - Performance optimizations
 
+- **[Agents Page](features/agents-page.md)** - Dedicated `/agent` route
+  - Full-width page hosting the Agent States Widget
+  - Private (auth-guarded) route linked from the sidebar
+  - Shares dashboard shell: refresh control, theme toggle, command palette
+
 - **[Refresh State](features/refresh-manager.md)** - Periodic data polling system
   - Centralized refresh control for dashboard widgets
   - User-configurable refresh frequencies (Off, 5s, 15s, 30s)

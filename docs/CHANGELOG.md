@@ -6,7 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
+  - Removed the unused fake data and the no-op `tags` filter branch from `src/state/agent-state.ts`
+  - Unit tests for `loadAgents()`; `/agent` integration test now mocks the API; see `docs/features/agents-page.md`
+
 ### Added
+- **Agents Page (`/agent`)**: New private route rendering the `AgentStatesWidget` as a dedicated full-width page
+  - `AgentsPage` component (`src/pages/agents.ts`) with sidebar, refresh control, theme toggle, command palette and toasts
+  - Route table exported as `ROUTES` from `src/pages/router.ts`
+  - Sidebar "Agents" link now points to `/agent`
+  - Unit and integration tests; documentation in `docs/features/agents-page.md`
 - **Refresh Manager**: Centralized periodic data polling system for dashboard widgets
   - Built on global-state pattern for consistent pub/sub functionality
   - Configurable refresh frequencies (Off, 5s, 15s, 30s) via UI dropdown
