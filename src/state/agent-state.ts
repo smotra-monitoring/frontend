@@ -6,6 +6,11 @@ import { createState, type Subscriber, type UnsubscribeFn } from './global-state
 import type { Agent, AgentListState, FilterOptions, SortOptions, ViewMode } from '../types/agent-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 import type { AgentUpdateMessage } from '../types/websocket-types.js';
+import { listAgents } from '../api/index.js';
+import { getValidAccessToken } from '../auth/token-manager.js';
+
+// Server-side maximum page size (see listAgents in the OpenAPI spec)
+const AGENTS_PAGE_SIZE = 100;
 
 // Initial widget state
 const initialWidgetState: AgentListState = {
@@ -110,7 +115,7 @@ export function selectAgent(agentId: string | null): void {
 }
 
 /**
- * Get all agents (legacy - use getAgents)
+ * Get all agents
  */
 export function getAgents(): Agent[] {
   return widgetState.getState().agents;
@@ -139,12 +144,6 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
   // Apply agentVersion filter
   if (filter.agentVersion) {
     filtered = filtered.filter(agent => agent.agentVersion === filter.agentVersion);
-  }
-
-  // Apply tags filter (not in AgentListItem, but kept for future extension)
-  if (filter.tags && filter.tags.length > 0) {
-    // Tags not in AgentListItem schema, skip for now
-    // Can be added later if needed
   }
 
   // Apply search filter
@@ -281,175 +280,31 @@ export function getAgentCountByStatus(): Record<string, number> {
   return counts;
 }
 
-/*
-  * Mock data and API loading function for development/testing
-  * Replace with actual API calls when backend is ready
-  * Provides a variety of agents with different statuses, versions, and timestamps for UI testing
-*/
-
-const now = new Date();
-const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
-const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000);
-const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-
-const fakeAgents: Agent[] = [
-  {
-    id: '01930000-0000-7000-a001-000000000001',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'web-prod-01',
-    configVersion: 3,
-    agentVersion: '1.4.2',
-    ipAddresses: [
-      { ip: '10.0.1.10', iface: 'eth0', family: 'ipv4', recommended: true },
-      { ip: '2001:db8::1', iface: 'eth0', family: 'ipv6', recommended: false },
-    ],
-    lastSeenAt: minutesAgo(1), // online
-    lastResultSubmittedAt: minutesAgo(2),
-    createdAt: daysAgo(30),
-    updatedAt: minutesAgo(1),
-  },
-  {
-    id: '01930000-0000-7000-a002-000000000002',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'web-prod-02',
-    configVersion: 3,
-    agentVersion: '1.4.2',
-    ipAddresses: [
-      { ip: '10.0.1.11', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(2), // online
-    lastResultSubmittedAt: minutesAgo(3),
-    createdAt: daysAgo(29),
-    updatedAt: minutesAgo(2),
-  },
-  {
-    id: '01930000-0000-7000-a003-000000000003',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'api-prod-01',
-    configVersion: 5,
-    agentVersion: '1.4.2',
-    ipAddresses: [
-      { ip: '10.0.2.10', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(0.5), // online (30 seconds ago)
-    lastResultSubmittedAt: minutesAgo(1),
-    createdAt: daysAgo(20),
-    updatedAt: minutesAgo(0.5),
-  },
-  {
-    id: '01930000-0000-7000-a004-000000000004',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'db-primary',
-    configVersion: 2,
-    agentVersion: '1.3.9',
-    ipAddresses: [
-      { ip: '10.0.3.10', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(3), // online
-    lastResultSubmittedAt: minutesAgo(4),
-    createdAt: daysAgo(60),
-    updatedAt: minutesAgo(3),
-  },
-  {
-    id: '01930000-0000-7000-a005-000000000005',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'db-replica-01',
-    configVersion: 2,
-    agentVersion: '1.4.0',
-    ipAddresses: [
-      { ip: '10.0.3.11', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(4), // online
-    lastResultSubmittedAt: minutesAgo(5),
-    createdAt: daysAgo(50),
-    updatedAt: minutesAgo(4),
-  },
-  {
-    id: '01930000-0000-7000-a006-000000000006',
-    sectionId: '01930000-0000-7000-0000-000000000001',
-    name: 'cache-01',
-    configVersion: 4,
-    agentVersion: '1.4.2',
-    ipAddresses: [
-      { ip: '10.0.4.10', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(1), // online
-    lastResultSubmittedAt: minutesAgo(2),
-    createdAt: daysAgo(10),
-    updatedAt: minutesAgo(1),
-  },
-  {
-    id: '01930000-0000-7000-a007-000000000007',
-    sectionId: '01930000-0000-7000-0000-000000000002',
-    name: 'worker-staging-01',
-    configVersion: 1,
-    agentVersion: '1.5.0-beta',
-    ipAddresses: [
-      { ip: '10.1.1.10', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: hoursAgo(2), // offline (2 hours ago)
-    lastResultSubmittedAt: hoursAgo(2),
-    createdAt: daysAgo(5),
-    updatedAt: hoursAgo(2),
-  },
-  {
-    id: '01930000-0000-7000-a008-000000000008',
-    sectionId: '01930000-0000-7000-0000-000000000003',
-    name: 'monitor-eu-01',
-    configVersion: 3,
-    agentVersion: '1.4.1',
-    ipAddresses: [
-      { ip: '185.12.44.100', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(1), // online
-    lastResultSubmittedAt: minutesAgo(2),
-    createdAt: daysAgo(40),
-    updatedAt: minutesAgo(1),
-  },
-  {
-    id: '01930000-0000-7000-a009-000000000009',
-    sectionId: '01930000-0000-7000-0000-000000000003',
-    name: 'monitor-us-01',
-    configVersion: 3,
-    agentVersion: '1.4.1',
-    ipAddresses: [
-      { ip: '54.210.33.77', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(2), // online
-    lastResultSubmittedAt: minutesAgo(3),
-    createdAt: daysAgo(40),
-    updatedAt: minutesAgo(2),
-  },
-  {
-    id: '01930000-0000-7000-a010-000000000010',
-    sectionId: '01930000-0000-7000-0000-000000000004',
-    name: 'edge-cdn-01',
-    configVersion: 2,
-    agentVersion: '1.4.0',
-    ipAddresses: [
-      { ip: '104.21.55.200', iface: 'eth0', family: 'ipv4', recommended: true },
-    ],
-    lastSeenAt: minutesAgo(15), // offline (15 minutes ago, beyond 5 min threshold)
-    lastResultSubmittedAt: minutesAgo(20),
-    createdAt: daysAgo(15),
-    updatedAt: minutesAgo(15),
-  },
-];
-
 /**
- * Load agents from API
- * TODO: Replace fake data with actual API call when backend is ready
+ * Load all agents from the API server (authenticated) and replace the agent list.
+ * Fetches every page, so filtering and sorting can stay client-side.
+ *
+ * @throws Error if the request fails (e.g. 401 or network error)
  */
 export async function loadAgents(): Promise<void> {
-  try {
-    // Future: const response = await fetch('/api/v1/agents');
-    // Future: const agents = await response.json();
-    // Future: setAgents(agents);
+  const agents: Agent[] = [];
+  let page = 1;
+  let hasNext = true;
 
-    // Temporary: seed with fake agents for UI development
-    setAgents(fakeAgents);
-  } catch (error) {
-    console.error('Failed to load agents:', error);
-    throw error;
+  while (hasNext) {
+    const { data, error } = await listAgents({
+      query: { page, page_size: AGENTS_PAGE_SIZE },
+      auth: async () => (await getValidAccessToken()) ?? undefined,
+    });
+
+    if (error || !data) {
+      throw new Error(error?.message ?? 'Failed to load agents');
+    }
+
+    agents.push(...data.agents);
+    hasNext = data.pagination.has_next ?? page < data.pagination.total_pages;
+    page++;
   }
+
+  setAgents(agents);
 }

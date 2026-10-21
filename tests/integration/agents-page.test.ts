@@ -9,8 +9,23 @@ vi.mock('../../src/auth/auth-guard.js', () => ({
   canAccessPublicRoute: vi.fn().mockReturnValue({ allowed: true }),
 }));
 
+vi.mock('../../src/api/index.js', async (importOriginal) => {
+  const { mockAgents } = await import('../mocks/agent-data.js');
+  const actual = await importOriginal<typeof import('../../src/api/index.js')>();
+  return {
+    ...actual,
+    listAgents: vi.fn().mockResolvedValue({
+      data: {
+        agents: mockAgents,
+        pagination: { page: 1, page_size: 100, total_items: mockAgents.length, total_pages: 1, has_next: false },
+      },
+    }),
+  };
+});
+
 import { initializeRouter, navigate } from '../../src/pages/router.js';
 import { protectRoute } from '../../src/auth/auth-guard.js';
+import { mockAgents } from '../mocks/agent-data.js';
 
 describe('Agents page routing (Integration)', () => {
   let appRoot: HTMLElement;
@@ -27,7 +42,7 @@ describe('Agents page routing (Integration)', () => {
 
   it('renders AgentStatesWidget when loading /agent directly', async () => {
     await vi.waitFor(() => {
-      expect(appRoot.querySelectorAll('.agent-states-row').length).toBeGreaterThan(0);
+      expect(appRoot.querySelectorAll('.agent-states-row')).toHaveLength(mockAgents.length);
     });
 
     expect(appRoot.querySelector('.agents-page')).toBeTruthy();

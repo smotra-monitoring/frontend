@@ -24,6 +24,8 @@ export async function getValidAccessToken(): Promise<string | null> {
     return refreshResult.tokens.opaque_token;
   }
 
+  console.warn('Failed to refresh access token', refreshResult.error);
+
   return null;
 }
 

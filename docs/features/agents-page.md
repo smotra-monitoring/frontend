@@ -26,6 +26,18 @@ command palette, toast notifications).
   and mounts `AgentStatesWidget` into `#agent-states-container` with the current `getAgents()` data.
 - `onMount()` calls `loadAgents()`; the widget updates itself through its agent-state subscription.
   Failures surface as an error toast.
+
+### Loading agents (`loadAgents()` in `src/state/agent-state.ts`)
+
+`loadAgents()` fetches agents from the API server using the generated `listAgents` SDK call
+(`GET /agents`, bearer-authenticated):
+
+- The session token comes from `getValidAccessToken()` (`src/auth/token-manager.ts`), supplied through
+  the SDK's `auth` callback, so an expiring token is refreshed before the request is sent.
+- All pages are fetched (`page_size=100`, the server maximum) and combined, so filtering and sorting stay
+  client-side. The agent list is replaced only after every page succeeded.
+- API errors (e.g. `401`) are thrown as `Error` with the server's `message`; network errors propagate
+  unchanged. Callers (`AgentsPage`, `DashboardPage`, `AgentStatesWidget`) handle them with toasts or logging.
 - `onDestroy()` destroys all child components (widget, sidebar, toolbar controls, palette, toasts).
 
 Periodic refresh works exactly as on the dashboard: the widget subscribes to the
