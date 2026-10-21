@@ -249,7 +249,7 @@ function attemptReconnect(): void {
     console.log(`Attempting to reconnect (${reconnectAttempts}/${config.maxReconnectAttempts})...`);
 
     reconnectTimeout = setTimeout(() => {
-        connect();
+        connect(config);
     }, config.reconnectInterval * reconnectAttempts); // Exponential backoff
 }
 

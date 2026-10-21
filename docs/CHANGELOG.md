@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
+
 ### Changed
 - **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
   - Removed the unused fake data and the no-op `tags` filter branch from `src/state/agent-state.ts`
