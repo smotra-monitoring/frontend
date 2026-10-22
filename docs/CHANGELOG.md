@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Stale session on 401**: When the server rejected the session token (e.g. all sessions purged server-side), API calls only logged errors and the user stayed on a broken page. Root cause: no global handling of `401 Unauthorized` responses. A response interceptor (`installUnauthorizedInterceptor()` in `src/services/auth-service.ts`) now clears the local session, stops token refresh and redirects to `/login`; login-flow endpoints (`/auth/oauth2/token`, `/auth/oauth2/revoke`, `/auth/logout`) are excluded
+
 ### Changed
 - **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
   - Removed the unused fake data and the no-op `tags` filter branch from `src/state/agent-state.ts`

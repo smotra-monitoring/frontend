@@ -9,6 +9,7 @@ import { oauth2Token, getUserInfo as apiGetUserInfo } from '../api/index.js';
 import { revokeTokens, scheduleTokenRefresh } from '../auth/token-manager.js';
 import { saveAuthState, clearAuthState, setAuthLoading, setAuthError, getTokensFromState } from '../state/auth-state.js';
 import { navigateTo } from '../utils/navigation.js';
+import { client } from '../api/client.gen.js';
 
 // Token refresh cleanup function (tracks the current pending scheduled timeout)
 let tokenRefreshCleanup: (() => void) | null = null;
@@ -185,10 +186,59 @@ export async function logout(): Promise<void> {
 }
 
 /**
+ * End the local session after the server rejected our token (revoked/purged).
+ * Does not call the server: the token is already invalid, so revoke would 401 too.
+ */
+async function handleSessionExpired(): Promise<void> {
+    if (tokenRefreshCleanup) {
+        tokenRefreshCleanup();
+        tokenRefreshCleanup = null;
+    }
+
+    clearAuthState();
+    await navigateTo('/login', 'replace');
+}
+
+// Auth endpoints where a 401 means bad credentials/token in a login flow, not an expired session
+const UNAUTHORIZED_IGNORED_PATHS = /\/auth\/(oauth2\/token|oauth2\/revoke|logout)(\/|$)/;
+
+let unauthorizedInterceptorInstalled = false;
+
+/**
+ * Log the user out whenever an API call returns 401 while a session exists.
+ * Call once on app bootstrap, after the API client is configured.
+ */
+function installUnauthorizedInterceptor(): void {
+    if (unauthorizedInterceptorInstalled) {
+        return;
+    }
+    unauthorizedInterceptorInstalled = true;
+
+    client.interceptors.response.use((response, request) => {
+        if (response.status !== 401 || !getTokensFromState()) {
+            return response;
+        }
+
+        if (UNAUTHORIZED_IGNORED_PATHS.test(new URL(request.url, window.location.origin).pathname)) {
+            return response;
+        }
+
+        console.warn('API returned 401 Unauthorized, ending session');
+        void handleSessionExpired();
+
+        return response;
+    });
+}
+
+export const installUnauthorizedInterceptor_for_testing = installUnauthorizedInterceptor;
+
+/**
  * Initialize authentication service
  * Call this on app bootstrap
  */
 export function initializeAuthService(): void {
+    installUnauthorizedInterceptor();
+
     // Load saved authentication state from localStorage
     const tokens = getTokensFromState();
 
