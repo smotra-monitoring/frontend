@@ -1,15 +1,12 @@
 /**
  * Dashboard grid container component
- * Widget layout shell for dashboard widgets (AgentStatesWidget, etc.)
- * 
- * Refactored from agent-card factory to generic widget layout container.
- * Now mounts self-contained widgets like AgentStatesWidget instead of
- * creating individual agent cards.
+ * Widget layout shell for compact dashboard tiles (AgentsSummaryWidget, etc.)
+ * Full-size views (e.g. the agents table) live on their own pages.
  */
 
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
-import { AgentStatesWidget } from '../widgets/agent-states.js';
+import { AgentsSummaryWidget } from '../widgets/agents-summary.js';
 import { getAgents } from '../state/agent-state.js';
 
 interface DashboardGridState extends ComponentState {
@@ -18,10 +15,10 @@ interface DashboardGridState extends ComponentState {
 
 /**
  * Dashboard grid container with widget layout
- * Currently hosts a single full-width AgentStatesWidget
+ * Currently hosts a single AgentsSummaryWidget tile
  */
 export class DashboardGrid extends BaseComponent<DashboardGridState> {
-  private agentStatesWidget: AgentStatesWidget | null = null;
+  private agentsSummaryWidget: AgentsSummaryWidget | null = null;
 
   constructor(root: HTMLElement) {
     super(root, {
@@ -34,28 +31,18 @@ export class DashboardGrid extends BaseComponent<DashboardGridState> {
     this.root.innerHTML = '';
     this.root.className = 'dashboard-grid';
 
-    // Set CSS Grid properties (preserved for future multi-widget scenarios)
-    this.root.style.display = 'grid';
-    this.root.style.gridTemplateColumns = `repeat(auto-fit, minmax(300px, 1fr))`;
-    this.root.style.gap = '1.5rem';
-
-    // Create single full-width widget container
     const widgetContainer = document.createElement('div');
-    widgetContainer.className = 'dashboard-grid__widget dashboard-grid__widget--full';
-    widgetContainer.style.gridColumn = '1 / -1'; // Full width
+    widgetContainer.className = 'dashboard-grid__widget';
     this.root.appendChild(widgetContainer);
 
-    // Mount AgentStatesWidget
-    const agents = getAgents();
-    this.agentStatesWidget = new AgentStatesWidget(widgetContainer, agents);
-    this.agentStatesWidget.mount();
+    this.agentsSummaryWidget = new AgentsSummaryWidget(widgetContainer, getAgents());
+    this.agentsSummaryWidget.mount();
   }
 
   onDestroy(): void {
-    // Clean up widget
-    if (this.agentStatesWidget) {
-      this.agentStatesWidget.destroy();
-      this.agentStatesWidget = null;
+    if (this.agentsSummaryWidget) {
+      this.agentsSummaryWidget.destroy();
+      this.agentsSummaryWidget = null;
     }
   }
 }

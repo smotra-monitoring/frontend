@@ -47,6 +47,10 @@ Located in the [`features/`](features/) directory:
   - Real-time updates and accessibility
   - Performance optimizations
 
+- **[Agents Summary Widget](features/agents-summary-widget.md)** - Compact dashboard tile
+  - Shows online / total agents with a health pulse
+  - Whole tile links to `/agent`
+
 - **[Agents Page](features/agents-page.md)** - Dedicated `/agent` route
   - Full-width page hosting the Agent States Widget
   - Private (auth-guarded) route linked from the sidebar
