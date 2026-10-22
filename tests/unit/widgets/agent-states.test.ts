@@ -138,6 +138,89 @@ describe('AgentStatesWidget', () => {
     });
 
     describe('Expand/Collapse (CSS-only)', () => {
+        it.each([
+            '.agent-states-row',
+            '.agent-states-row__name',
+            '.agent-states-row__status',
+            '.status-label',
+            '.agent-states-row__last-seen',
+            '.agent-states-row__actions',
+            '.chevron-btn',
+            '.chevron-btn .icon',
+            '.chevron-btn i',
+        ])('toggles details exactly once when clicking %s', (selector) => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            const row = container.querySelector<HTMLTableRowElement>('.agent-states-row')!;
+            const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
+            const icon = button.querySelector('i')!;
+            const detailsRow = document.getElementById(button.getAttribute('aria-controls')!)!;
+            const target = container.querySelector<HTMLElement>(selector)!;
+
+            target.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
+            expect(detailsRow.getAttribute('aria-hidden')).toBe('false');
+            expect(button.getAttribute('aria-expanded')).toBe('true');
+            expect(icon.classList.contains('fa-chevron-up')).toBe(true);
+            expect(icon.classList.contains('fa-chevron-down')).toBe(false);
+            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(1);
+            expect(container.querySelector('.agent-states-row')).toBe(row);
+
+            target.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(false);
+            expect(detailsRow.getAttribute('aria-hidden')).toBe('true');
+            expect(button.getAttribute('aria-expanded')).toBe('false');
+            expect(icon.classList.contains('fa-chevron-down')).toBe(true);
+            expect(icon.classList.contains('fa-chevron-up')).toBe(false);
+        });
+
+        it('does not collapse when clicking expanded detail content', () => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            container.querySelector<HTMLElement>('.agent-states-row')!.click();
+            const detailsRow = container.querySelector<HTMLElement>('.agent-states-row__details')!;
+            detailsRow.querySelector<HTMLElement>('code')!.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
+            expect(detailsRow.getAttribute('aria-hidden')).toBe('false');
+        });
+
+        it('keeps row clicks and chevrons in sync after toggling all details', () => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            const row = container.querySelector<HTMLTableRowElement>('.agent-states-row')!;
+            const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
+            const detailsRow = document.getElementById(button.getAttribute('aria-controls')!)!;
+            const toggleAll = container.querySelector<HTMLButtonElement>('[data-action="toggle-all"]')!;
+
+            toggleAll.click();
+            row.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(false);
+            expect(button.getAttribute('aria-expanded')).toBe('false');
+            expect(button.querySelector('.fa-chevron-down')).toBeTruthy();
+            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(mockAgents.length - 1);
+
+            toggleAll.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
+            expect(button.getAttribute('aria-expanded')).toBe('true');
+            expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
+
+            toggleAll.click();
+            row.click();
+
+            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
+            expect(button.getAttribute('aria-expanded')).toBe('true');
+            expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
+            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(1);
+        });
+
         it('expands single agent details on chevron click', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
