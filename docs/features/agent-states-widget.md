@@ -12,7 +12,7 @@ The **Agent States Widget** is a self-contained table-based component that displ
 
 - **Table Layout**: Clean, responsive table showing agent name, status, and last seen timestamp
 - **Sortable Columns**: Click column headers to sort by Name, Status, or Last Seen (ascending/descending)
-- **Expandable Details**: Click chevron button to reveal full agent information with smooth CSS transitions
+- **Expandable Details**: Click anywhere on an agent's summary row to expand or collapse full agent information with smooth CSS transitions; the chevron always reflects the current state
 - **Status Derivation**: Agent status (online/offline/unknown) is derived from `lastSeenAt` timestamp using a configurable threshold
 - **Real-Time Updates**: Subscribes to agent state changes for automatic updates
 - **Toggle All**: Single button to expand or collapse all agent details at once
@@ -87,7 +87,7 @@ AgentStatesWidget (extends BaseComponent)
 2. **Subscription**: Widget subscribes to `subscribeToAgents()` for real-time updates
 3. **State Update**: When agents change, `setState({ agents })` triggers re-render
 4. **Sorting**: User clicks column header → `handleSort()` → `setState({ sort })` → re-render with new order
-5. **Expand/Collapse**: User clicks chevron → `toggleAgentDetails()` → **direct DOM manipulation** (no state, no re-render)
+5. **Expand/Collapse**: User clicks anywhere on the summary row (including the chevron) → `toggleAgentDetails()` → **direct DOM manipulation** (no state, no re-render). Clicking inside the expanded details does not collapse them.
 
 ### CSS Transitions
 
@@ -222,6 +222,7 @@ interface Agent {
 
 - **Tab**: Navigate between sortable headers and chevron buttons
 - **Enter/Space**: Activate sort or toggle expand/collapse
+- The chevron remains a native, focusable button for keyboard and screen reader users; its activation bubbles to the same row click handler, toggling exactly once.
 - **Arrow Keys**: Navigate within table (browser default)
 
 ### ARIA Attributes

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Agent detail expansion**: Clicking anywhere on an agent's summary row now expands or collapses its details; previously the click handler was attached only to the chevron button. Chevron icons and ARIA state stay synchronized, and keyboard button activation still toggles exactly once.
+
 ### Changed
 - **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
   - Removed the unused fake data and the no-op `tags` filter branch from `src/state/agent-state.ts`

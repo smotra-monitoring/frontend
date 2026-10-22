@@ -1545,6 +1545,10 @@
   background-color: var(--color-bg-secondary);
 }
 
+.agent-states-row {
+  cursor: pointer;
+}
+
 .agent-states-row td {
   padding: var(--spacing-md);
   vertical-align: middle;
