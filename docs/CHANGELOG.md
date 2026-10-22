@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unit tests for `loadAgents()`; `/agent` integration test now mocks the API; see `docs/features/agents-page.md`
 
 ### Added
+- **Agents Summary Widget**: The dashboard now shows a compact "online / total" agents tile instead of the full agent list; clicking it navigates to `/agent`
+  - `AgentsSummaryWidget` (`src/widgets/agents-summary.ts`) hosted by `DashboardGrid`; grid columns narrowed to `minmax(220px, 1fr)` so several tiles fit per row
+  - Unit and integration tests; documentation in `docs/features/agents-summary-widget.md`
 - **Agents Page (`/agent`)**: New private route rendering the `AgentStatesWidget` as a dedicated full-width page
   - `AgentsPage` component (`src/pages/agents.ts`) with sidebar, refresh control, theme toggle, command palette and toasts
   - Route table exported as `ROUTES` from `src/pages/router.ts`
