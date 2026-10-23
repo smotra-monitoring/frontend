@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Stale session on 401**: When the server rejected the session token (e.g. all sessions purged server-side), API calls only logged errors and the user stayed on a broken page. Root cause: no global handling of `401 Unauthorized` responses. A response interceptor (`installUnauthorizedInterceptor()` in `src/services/auth-service.ts`) now clears the local session, stops token refresh and redirects to `/login`; login-flow endpoints (`/auth/oauth2/token`, `/auth/oauth2/revoke`, `/auth/logout`) are excluded
 - **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
 - **Agent detail expansion**: Clicking anywhere on an agent's summary row now expands or collapses its details; previously the click handler was attached only to the chevron button. Chevron icons and ARIA state stay synchronized, and keyboard button activation still toggles exactly once.
 
