@@ -46,7 +46,7 @@ let config: WebSocketConfig = defaultConfig;
 /**
  * Initialize WebSocket connection
  */
-export async function connect(customConfig?: Partial<WebSocketConfig>): Promise<boolean> {
+async function connect(customConfig?: Partial<WebSocketConfig>): Promise<boolean> {
     if (ws && ws.readyState === WebSocket.OPEN) {
         console.warn('WebSocket already connected');
         return true;
@@ -84,6 +84,7 @@ export async function connect(customConfig?: Partial<WebSocketConfig>): Promise<
         return false;
     }
 }
+export const connect_for_tests = connect;
 
 /**
  * Disconnect WebSocket

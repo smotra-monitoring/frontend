@@ -76,7 +76,7 @@ describe('websocket-service', () => {
 
     describe('connect', () => {
         it('opens a socket with the token in the query string', async () => {
-            expect(await ws.connect({ url: 'ws://host/ws' })).toBe(true);
+            expect(await ws.connect_for_tests({ url: 'ws://host/ws' })).toBe(true);
 
             expect(new URL(lastSocket().url).searchParams.get('token')).toBe('tok');
         });
@@ -84,21 +84,21 @@ describe('websocket-service', () => {
         it('fails without opening a socket when not authenticated', async () => {
             getValidAccessToken.mockResolvedValue(null);
 
-            expect(await ws.connect()).toBe(false);
+            expect(await ws.connect_for_tests()).toBe(false);
             expect(FakeWebSocket.instances).toHaveLength(0);
             expect(ws.getWebSocketState().error).toBe('Not authenticated');
         });
 
         it('does not open a second socket while already connected', async () => {
-            await ws.connect();
+            await ws.connect_for_tests();
             lastSocket().open();
 
-            expect(await ws.connect()).toBe(true);
+            expect(await ws.connect_for_tests()).toBe(true);
             expect(FakeWebSocket.instances).toHaveLength(1);
         });
 
         it('marks the state as connected once the socket opens', async () => {
-            await ws.connect();
+            await ws.connect_for_tests();
             lastSocket().open();
 
             expect(ws.isConnected()).toBe(true);
@@ -107,7 +107,7 @@ describe('websocket-service', () => {
 
     describe('messages', () => {
         beforeEach(async () => {
-            await ws.connect();
+            await ws.connect_for_tests();
             lastSocket().open();
         });
 
@@ -174,7 +174,7 @@ describe('websocket-service', () => {
         });
 
         it('serializes the message when connected', async () => {
-            await ws.connect();
+            await ws.connect_for_tests();
             lastSocket().open();
 
             expect(ws.send({ type: 'x', payload: { a: 1 }, timestamp: 1 } as any)).toBe(true);
@@ -182,7 +182,7 @@ describe('websocket-service', () => {
         });
 
         it('sends heartbeats on the configured interval', async () => {
-            await ws.connect({ heartbeatInterval: 1000 });
+            await ws.connect_for_tests({ heartbeatInterval: 1000 });
             lastSocket().open();
 
             vi.advanceTimersByTime(2000);
@@ -193,7 +193,7 @@ describe('websocket-service', () => {
 
     describe('reconnect', () => {
         it('reconnects with backoff after the socket closes', async () => {
-            await ws.connect({ reconnectInterval: 1000 });
+            await ws.connect_for_tests({ reconnectInterval: 1000 });
             lastSocket().open();
 
             lastSocket().drop();
@@ -206,7 +206,7 @@ describe('websocket-service', () => {
         });
 
         it('keeps the custom URL when reconnecting', async () => {
-            await ws.connect({ url: 'ws://custom/ws', reconnectInterval: 1000 });
+            await ws.connect_for_tests({ url: 'ws://custom/ws', reconnectInterval: 1000 });
             lastSocket().open();
 
             lastSocket().drop();
@@ -216,7 +216,7 @@ describe('websocket-service', () => {
         });
 
         it('stops after the maximum number of attempts', async () => {
-            await ws.connect({ reconnectInterval: 10, maxReconnectAttempts: 1 });
+            await ws.connect_for_tests({ reconnectInterval: 10, maxReconnectAttempts: 1 });
             lastSocket().open();
 
             lastSocket().drop();
@@ -227,7 +227,7 @@ describe('websocket-service', () => {
         });
 
         it('does not reconnect after an explicit disconnect', async () => {
-            await ws.connect({ reconnectInterval: 1000 });
+            await ws.connect_for_tests({ reconnectInterval: 1000 });
             lastSocket().open();
             lastSocket().drop();
 
