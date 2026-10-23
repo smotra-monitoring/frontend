@@ -12,7 +12,7 @@ export const mockAgentUpdateMessage: WebSocketMessage<Agent> = {
     type: 'agent:update',
     payload: {
         id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id
-        sectionId: '01930000-0000-7000-0000-000000000001',
+        workspaceId: '01930000-0000-7000-0000-000000000001',
         name: 'Test Agent 1',
         configVersion: 4,
         agentVersion: '1.0.1',
@@ -31,7 +31,7 @@ export const mockAgentAddedMessage: WebSocketMessage<any> = {
     type: 'agent:added',
     payload: {
         id: 'agent-new',
-        sectionId: '01930000-0000-7000-0000-000000000001',
+        workspaceId: '01930000-0000-7000-0000-000000000001',
         name: 'New Agent',
         agentVersion: '1.0.0',
         configVersion: 2,

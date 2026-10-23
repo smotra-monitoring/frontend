@@ -338,7 +338,8 @@ describe('AgentStatesWidget', () => {
 
             // Should contain key agent fields
             expect(detailsContent).toContain('Agent ID');
-            expect(detailsContent).toContain('Section ID');
+            expect(detailsContent).toContain('Workspace ID');
+            expect(detailsContent).not.toContain('Section ID');
             expect(detailsContent).toContain('Agent Version');
             expect(detailsContent).toContain('Config Version');
         });

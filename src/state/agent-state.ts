@@ -136,9 +136,9 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
     });
   }
 
-  // Apply sectionId filter
-  if (filter.sectionId) {
-    filtered = filtered.filter(agent => agent.sectionId === filter.sectionId);
+  // Apply workspaceId filter
+  if (filter.workspaceId) {
+    filtered = filtered.filter(agent => agent.workspaceId === filter.workspaceId);
   }
 
   // Apply agentVersion filter
@@ -153,8 +153,8 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
       // Search in name
       if (agent.name.toLowerCase().includes(searchLower)) return true;
 
-      // Search in sectionId
-      if (agent.sectionId.toLowerCase().includes(searchLower)) return true;
+      // Search in workspaceId
+      if (agent.workspaceId.toLowerCase().includes(searchLower)) return true;
 
       // Search in agentVersion
       if (agent.agentVersion?.toLowerCase().includes(searchLower)) return true;

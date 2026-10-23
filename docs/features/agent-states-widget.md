@@ -185,7 +185,7 @@ The widget uses the `Agent` type, which is a re-export of `AgentListItem` from t
 ```typescript
 interface Agent {
   id: string;                           // UUIDv7
-  sectionId: string;                    // Section this agent belongs to
+  workspaceId: string;                  // Workspace (parent of agents and users) this agent belongs to
   name: string;                         // Display name
   agentVersion: string | null;          // e.g., "1.0.0"
   configVersion: number;                // Config version number
@@ -207,7 +207,7 @@ interface Agent {
 
 **Expanded Details**:
 - Agent ID (UUID)
-- Section ID
+- Workspace ID
 - Agent Version
 - Config Version
 - IP Addresses (all interfaces, with iface name and recommended flag)
@@ -297,7 +297,7 @@ Comprehensive unit tests in `tests/unit/components/agent-states-widget.test.ts`:
 
 ### Short-Term
 
-- [ ] Add filter controls (by status, section, version)
+- [ ] Add filter controls (by status, workspace, version)
 - [ ] Implement search/filter bar above table
 - [ ] Add "Export to CSV" button
 - [ ] Persist sort and filter preferences to localStorage

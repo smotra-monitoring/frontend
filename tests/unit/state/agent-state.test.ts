@@ -133,9 +133,20 @@ describe('agent-state', () => {
       expect(online.every(a => deriveAgentStatus(a.lastSeenAt) === 'online')).toBe(true);
     });
 
-    it('filters by sectionId', () => {
-      const filtered = filterAgents(mockAgents, { sectionId: '01930000-0000-7000-0000-000000000001' });
-      expect(filtered.every(a => a.sectionId === '01930000-0000-7000-0000-000000000001')).toBe(true);
+    it('filters by workspaceId', () => {
+      const filtered = filterAgents(mockAgents, { workspaceId: '01930000-0000-7000-0000-000000000001' });
+      expect(filtered.length).toBeGreaterThan(0);
+      expect(filtered.every(a => a.workspaceId === '01930000-0000-7000-0000-000000000001')).toBe(true);
+    });
+
+    it('excludes agents from other workspaces', () => {
+      const filtered = filterAgents(mockAgents, { workspaceId: '01930000-0000-7000-0000-000000000002' });
+      expect(filtered.map(a => a.id)).toEqual(['01930000-0000-7000-a003-000000000003']);
+    });
+
+    it('matches search text against workspaceId', () => {
+      const filtered = filterAgents(mockAgents, { search: '000000000002' });
+      expect(filtered.map(a => a.id)).toContain('01930000-0000-7000-a003-000000000003');
     });
 
     it('filters by agentVersion', () => {

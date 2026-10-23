@@ -60,11 +60,11 @@ describe('Dashboard (Integration)', () => {
       }
     });
 
-    it('filters by sectionId and sorts by lastSeenAt', () => {
-      const section1 = filterAgents(mockAgents, { sectionId: '01930000-0000-7000-0000-000000000001' });
-      expect(section1.every(a => a.sectionId === '01930000-0000-7000-0000-000000000001')).toBe(true);
+    it('filters by workspaceId and sorts by lastSeenAt', () => {
+      const workspace1 = filterAgents(mockAgents, { workspaceId: '01930000-0000-7000-0000-000000000001' });
+      expect(workspace1.every(a => a.workspaceId === '01930000-0000-7000-0000-000000000001')).toBe(true);
 
-      const sorted = sortAgents(section1, { field: 'lastSeenAt', direction: 'desc' });
+      const sorted = sortAgents(workspace1, { field: 'lastSeenAt', direction: 'desc' });
 
       // Verify descending order (most recent first)
       for (let i = 1; i < sorted.length; i++) {

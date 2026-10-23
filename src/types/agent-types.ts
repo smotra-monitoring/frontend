@@ -21,7 +21,7 @@ export interface AgentListState {
 
 export interface FilterOptions {
   status?: AgentStatus | AgentStatus[];
-  sectionId?: string;
+  workspaceId?: string;
   agentVersion?: string;
   tags?: string[];
   search?: string;

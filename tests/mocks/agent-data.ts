@@ -12,7 +12,7 @@ const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 *
 
 export const mockAgent: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
-  sectionId: '01930000-0000-7000-0000-000000000001',
+  workspaceId: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
   configVersion: 3,
   agentVersion: '1.0.0',
@@ -29,7 +29,7 @@ export const mockAgents: Agent[] = [
   mockAgent,
   {
     id: '01930000-0000-7000-a002-000000000002',
-    sectionId: '01930000-0000-7000-0000-000000000001',
+    workspaceId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 2',
     configVersion: 2,
     agentVersion: '1.0.0',
@@ -43,7 +43,7 @@ export const mockAgents: Agent[] = [
   },
   {
     id: '01930000-0000-7000-a003-000000000003',
-    sectionId: '01930000-0000-7000-0000-000000000002',
+    workspaceId: '01930000-0000-7000-0000-000000000002',
     name: 'Test Agent 3',
     configVersion: 1,
     agentVersion: '1.0.1',
@@ -57,7 +57,7 @@ export const mockAgents: Agent[] = [
   },
   {
     id: '01930000-0000-7000-a004-000000000004',
-    sectionId: '01930000-0000-7000-0000-000000000001',
+    workspaceId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 4',
     configVersion: 4,
     agentVersion: '1.0.0',
@@ -73,7 +73,7 @@ export const mockAgents: Agent[] = [
 
 export const mockAgentUpdate: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
-  sectionId: '01930000-0000-7000-0000-000000000001',
+  workspaceId: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
   configVersion: 4,
   agentVersion: '1.0.1',
