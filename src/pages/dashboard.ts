@@ -10,7 +10,6 @@ import { Sidebar } from '../components/sidebar.js';
 import { ThemeToggle } from '../components/theme-toggle.js';
 import { CommandPalette } from '../components/command-palette.js';
 import { ToastNotification } from '../components/toast-notification.js';
-import { connect as connectWebSocket, disconnect as disconnectWebSocket } from '../services/websocket-service.js';
 import { loadAgents } from '../state/agent-state.js';
 import { RefreshControl } from '../components/refresh-control.js';
 

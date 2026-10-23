@@ -12,7 +12,13 @@ vi.mock('../../../src/api/index.js', () => ({
 
 import { authRefresh } from '../../../src/api/index.js';
 
-import { canAccessRoute_ForTest, protectRoute } from '../../../src/auth/auth-guard.js';
+import {
+    canAccessRoute_ForTest,
+    protectRoute,
+    canAccessPublicRoute,
+    getRedirectAfterLogin,
+    withAuthGuard,
+} from '../../../src/auth/auth-guard.js';
 import { saveAuthState, clearAuthState } from '../../../src/state/auth-state.js';
 import { mockToken, mockUserInfo } from '../../mocks/oauth-responses.js';
 import { navigateTo } from '../../../src/utils/navigation.js';
@@ -107,6 +113,67 @@ describe('auth-guard', () => {
 
             const stored = sessionStorage.getItem('redirect_after_login');
             expect(stored).toBe(currentPath);
+        });
+
+        it('returns true and does not redirect when authenticated', async () => {
+            saveAuthState(mockUserInfo, mockToken);
+
+            expect(await protectRoute('/dashboard')).toBe(true);
+            expect(mockNavigateTo).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('canAccessPublicRoute', () => {
+        it('allows unauthenticated users', () => {
+            expect(canAccessPublicRoute()).toEqual({ allowed: true });
+        });
+
+        it('redirects authenticated users to the dashboard', () => {
+            saveAuthState(mockUserInfo, mockToken);
+
+            expect(canAccessPublicRoute()).toEqual({ allowed: false, redirectTo: '/dashboard' });
+        });
+    });
+
+    describe('getRedirectAfterLogin', () => {
+        it('returns the stored path and clears it', () => {
+            sessionStorage.setItem('redirect_after_login', '/agent');
+
+            expect(getRedirectAfterLogin()).toBe('/agent');
+            expect(sessionStorage.getItem('redirect_after_login')).toBeNull();
+        });
+
+        it('returns null when nothing is stored', () => {
+            expect(getRedirectAfterLogin()).toBeNull();
+        });
+    });
+
+    describe('withAuthGuard', () => {
+        it('runs the handler when access is allowed', async () => {
+            saveAuthState(mockUserInfo, mockToken);
+            const handler = vi.fn();
+
+            await withAuthGuard(handler)();
+
+            expect(handler).toHaveBeenCalled();
+            expect(mockNavigateTo).not.toHaveBeenCalled();
+        });
+
+        it('redirects to login without running the handler when denied', async () => {
+            const handler = vi.fn();
+
+            await withAuthGuard(handler)();
+
+            expect(handler).not.toHaveBeenCalled();
+            expect(mockNavigateTo).toHaveBeenCalledWith('/login', 'replace');
+        });
+
+        it('runs the handler without auth when requireAuth is false', async () => {
+            const handler = vi.fn();
+
+            await withAuthGuard(handler, false)();
+
+            expect(handler).toHaveBeenCalled();
         });
     });
 });
