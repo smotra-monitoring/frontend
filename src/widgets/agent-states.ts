@@ -325,12 +325,13 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       });
     });
 
-    // Toggle details handlers (CSS-only, no setState)
-    const chevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
-    chevronButtons.forEach(button => {
-      this.addEventListener(button, 'click', () => {
-        const agentId = button.dataset.agentId;
-        if (agentId) {
+    // Button clicks (including keyboard activation) bubble to the row.
+    const agentRows = this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row');
+    agentRows.forEach(row => {
+      const button = row.querySelector<HTMLButtonElement>('[data-action="toggle-details"]');
+      this.addEventListener(row, 'click', () => {
+        const agentId = row.dataset.agentId;
+        if (agentId && button) {
           this.toggleAgentDetails(agentId, button);
         }
       });
