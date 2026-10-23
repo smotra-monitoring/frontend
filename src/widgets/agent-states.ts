@@ -222,10 +222,10 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             <dd><code>${this.escapeHtml(agent.id)}</code></dd>
           </div>
 
-          ${agent.sectionId ? `
+          ${agent.workspaceId ? `
             <div class="agent-details__item">
-              <dt>Section ID</dt>
-              <dd><code>${this.escapeHtml(agent.sectionId)}</code></dd>
+              <dt>Workspace ID</dt>
+              <dd><code>${this.escapeHtml(agent.workspaceId)}</code></dd>
             </div>
           ` : ''}
 

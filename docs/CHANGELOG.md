@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Section replaced by Workspace**: Following the OpenAPI spec update, `sectionId` is now `workspaceId`; agents and users are children of a workspace, so the workspace is derived from them (the claim request no longer carries a section)
+  - `Agent.workspaceId` (generated client), `FilterOptions.workspaceId`, `filterAgents()` filter and search, command palette search, and the "Workspace ID" field in agent details (`AgentCard`, `AgentStatesWidget`)
+  - Test mocks, unit/integration tests and `docs/features/agent-states-widget.md` updated
+
 ### Fixed
 - **Stale session on 401**: When the server rejected the session token (e.g. all sessions purged server-side), API calls only logged errors and the user stayed on a broken page. Root cause: no global handling of `401 Unauthorized` responses. A response interceptor (`installUnauthorizedInterceptor()` in `src/services/auth-service.ts`) now clears the local session, stops token refresh and redirects to `/login`; login-flow endpoints (`/auth/oauth2/token`, `/auth/oauth2/revoke`, `/auth/logout`) are excluded
 - **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults

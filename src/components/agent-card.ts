@@ -38,7 +38,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
   }
 
   render(): void {
-    const { agent, expanded } = this.state;
+    const { agent, expanded } = this.getState();
     const status = deriveAgentStatus(agent.lastSeenAt);
 
     this.root.innerHTML = `
@@ -73,10 +73,10 @@ export class AgentCard extends BaseComponent<AgentCardState> {
           class="button is-small is-ghost" 
           data-action="toggle-details"
           aria-label="Toggle details"
-          aria-expanded="${this.state.expanded}"
+          aria-expanded="${this.getState().expanded}"
         >
           <span class="icon">
-            <i class="fas fa-chevron-${this.state.expanded ? 'up' : 'down'}"></i>
+            <i class="fas fa-chevron-${this.getState().expanded ? 'up' : 'down'}"></i>
           </span>
         </button>
       </div>
@@ -84,7 +84,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
   }
 
   private renderMetrics(): string {
-    const { agent } = this.state;
+    const { agent } = this.getState();
 
     return `
       ${agent.agentVersion ? `
@@ -117,7 +117,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
   }
 
   private renderDetails(): string {
-    const { agent } = this.state;
+    const { agent } = this.getState();
     const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
 
     return `
@@ -126,9 +126,9 @@ export class AgentCard extends BaseComponent<AgentCardState> {
           <dt>ID</dt>
           <dd><code>${this.escapeHtml(agent.id)}</code></dd>
           
-          ${agent.sectionId ? `
-            <dt>Section ID</dt>
-            <dd><code>${this.escapeHtml(agent.sectionId)}</code></dd>
+          ${agent.workspaceId ? `
+            <dt>Workspace ID</dt>
+            <dd><code>${this.escapeHtml(agent.workspaceId)}</code></dd>
           ` : ''}
           
           ${primaryIP ? `
@@ -156,7 +156,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
   }
 
   private toggleDetails(): void {
-    this.setState({ expanded: !this.state.expanded });
+    this.setState({ expanded: !this.getState().expanded });
   }
 
   /**

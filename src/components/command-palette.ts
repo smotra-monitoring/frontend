@@ -204,7 +204,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
         return (
           agent.name.toLowerCase().includes(lowerQuery) ||
           agent.agentVersion?.toLowerCase().includes(lowerQuery) ||
-          agent.sectionId?.toLowerCase().includes(lowerQuery) ||
+          agent.workspaceId?.toLowerCase().includes(lowerQuery) ||
           primaryIP?.ip.toLowerCase().includes(lowerQuery)
         );
       })
@@ -214,7 +214,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
           id: agent.id,
           type: 'agent' as const,
           label: agent.name,
-          description: primaryIP?.ip || agent.sectionId || 'No IP',
+          description: primaryIP?.ip || agent.workspaceId || 'No IP',
           action: () => this.navigateToAgent(agent),
         };
       });
