@@ -42,10 +42,14 @@ Located in the [`features/`](features/) directory:
 
 - **[Agent States Widget](features/agent-states-widget.md)** - Table-based agent list component
   - Table layout with sortable columns
-  - CSS-only expandable rows for agent details
+  - Whole-row click to expand/collapse agent details, with synchronized chevrons and keyboard-accessible buttons
   - Status derivation from lastSeenAt timestamp
   - Real-time updates and accessibility
   - Performance optimizations
+
+- **[Agents Summary Widget](features/agents-summary-widget.md)** - Compact dashboard tile
+  - Shows online / total agents with a health pulse
+  - Whole tile links to `/agent`
 
 - **[Agents Page](features/agents-page.md)** - Dedicated `/agent` route
   - Full-width page hosting the Agent States Widget

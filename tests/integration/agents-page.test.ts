@@ -54,6 +54,37 @@ describe('Agents page routing (Integration)', () => {
     expect(active?.getAttribute('data-route')).toBe('/agent');
   });
 
+  it('toggles agent details from the whole row and keeps the chevron in sync', async () => {
+    await vi.waitFor(() => {
+      expect(appRoot.querySelectorAll('.agent-states-row')).toHaveLength(mockAgents.length);
+    });
+
+    const row = appRoot.querySelector<HTMLTableRowElement>('.agent-states-row')!;
+    const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
+    const details = document.getElementById(button.getAttribute('aria-controls')!)!;
+
+    row.querySelector<HTMLElement>('.agent-states-row__name')!.click();
+
+    expect(details.classList.contains('is-expanded')).toBe(true);
+    expect(details.getAttribute('aria-hidden')).toBe('false');
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
+
+    row.querySelector<HTMLElement>('.agent-states-row__last-seen')!.click();
+
+    expect(details.classList.contains('is-expanded')).toBe(false);
+    expect(details.getAttribute('aria-hidden')).toBe('true');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(button.querySelector('.fa-chevron-down')).toBeTruthy();
+
+    button.click();
+
+    expect(details.classList.contains('is-expanded')).toBe(true);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
+    button.click();
+  });
+
   it('navigates from /dashboard to /agent via the router', async () => {
     await navigate('/dashboard');
     expect(appRoot.querySelector('.agents-page')).toBeNull();

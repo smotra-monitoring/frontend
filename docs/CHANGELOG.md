@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+<<<<<<< HEAD
 - **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
+=======
+- **Agent detail expansion**: Clicking anywhere on an agent's summary row now expands or collapses its details; previously the click handler was attached only to the chevron button. Chevron icons and ARIA state stay synchronized, and keyboard button activation still toggles exactly once.
+>>>>>>> 6864ae91f25e11e2cbb1f2c96ea798e4003c70a3
 
 ### Changed
 - **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
@@ -15,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unit tests for `loadAgents()`; `/agent` integration test now mocks the API; see `docs/features/agents-page.md`
 
 ### Added
+- **Agents Summary Widget**: The dashboard now shows a compact "online / total" agents tile instead of the full agent list; clicking it navigates to `/agent`
+  - `AgentsSummaryWidget` (`src/widgets/agents-summary.ts`) hosted by `DashboardGrid`; grid columns narrowed to `minmax(220px, 1fr)` so several tiles fit per row
+  - Unit and integration tests; documentation in `docs/features/agents-summary-widget.md`
 - **Agents Page (`/agent`)**: New private route rendering the `AgentStatesWidget` as a dedicated full-width page
   - `AgentsPage` component (`src/pages/agents.ts`) with sidebar, refresh control, theme toggle, command palette and toasts
   - Route table exported as `ROUTES` from `src/pages/router.ts`

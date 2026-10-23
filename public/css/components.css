@@ -1545,6 +1545,10 @@
   background-color: var(--color-bg-secondary);
 }
 
+.agent-states-row {
+  cursor: pointer;
+}
+
 .agent-states-row td {
   padding: var(--spacing-md);
   vertical-align: middle;
@@ -1732,4 +1736,119 @@
 
 .agent-card-container:nth-child(n+7) {
   animation-delay: 240ms;
+}
+
+/* ===================================================================
+   Agents Summary Widget - compact "online / total" dashboard tile
+   =================================================================== */
+
+.agents-summary {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--spacing-xs) var(--spacing-md);
+  min-height: 120px;
+  padding: var(--spacing-lg);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  contain: layout style;
+  transition:
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.agents-summary:hover {
+  border-color: var(--color-info);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+.agents-summary:active {
+  transform: translateY(0);
+}
+
+.agents-summary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.agents-summary__label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.agents-summary__value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.agents-summary__total {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.agents-summary__caption {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.agents-summary--degraded .agents-summary__caption {
+  color: var(--color-warning);
+}
+
+.agents-summary--down .agents-summary__caption {
+  color: var(--color-error);
+}
+
+.agents-summary__chevron {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.agents-summary__pulse--ok {
+  background-color: var(--color-success);
+  animation: pulse-online 2s infinite;
+}
+
+.agents-summary__pulse--degraded {
+  background-color: var(--color-warning);
+  animation: pulse-warning 2s infinite;
+}
+
+.agents-summary__pulse--down {
+  background-color: var(--color-error);
+}
+
+.agents-summary__pulse--empty {
+  background-color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agents-summary,
+  .agents-summary__pulse {
+    animation: none;
+    transition: none;
+  }
+
+  .agents-summary:hover {
+    transform: none;
+  }
 }
