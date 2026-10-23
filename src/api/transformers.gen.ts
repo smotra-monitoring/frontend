@@ -3,224 +3,237 @@
 import type { AcknowledgeAlertResponse, AuthRefreshResponse, GetAgentConfigurationResponse, GetAlertResponse, GetMetricsResponse, GetOrganizationResponse, GetResultReportResponse, GetUserResponse, GetWebSocketTokenResponse, HealthCheckResponse, ListAgentsResponse, ListAlertsResponse, ListOrganizationsResponse, ListUsersResponse, Oauth2TokenResponse, PatchUserResponse, PostCreateOrganizationResponse, PostCreateUserResponse, RegisterAgentSelfResponse, SubmitAgentResultsResponse, UpdateUserRolesResponse } from './types.gen.js';
 
 const agentRegistrationResponseSchemaResponseTransformer = (data: any) => {
-    data.expiresAt = new Date(data.expiresAt);
-    return data;
+  data.expiresAt = new Date(data.expiresAt);
+  return data;
 };
 
 export const registerAgentSelfResponseTransformer = async (data: any): Promise<RegisterAgentSelfResponse> => {
-    data = agentRegistrationResponseSchemaResponseTransformer(data);
-    return data;
+  data = agentRegistrationResponseSchemaResponseTransformer(data);
+  return data;
 };
 
 const monitoringConfigSchemaResponseTransformer = (data: any) => {
-    data.interval_secs = BigInt(data.interval_secs.toString());
-    data.timeout_secs = BigInt(data.timeout_secs.toString());
-    return data;
+  data.interval_secs = BigInt(data.interval_secs.toString());
+  data.timeout_secs = BigInt(data.timeout_secs.toString());
+  return data;
+};
+
+const claimConfigSchemaResponseTransformer = (data: any) => {
+  data.max_registration_retries = BigInt(data.max_registration_retries.toString());
+  return data;
 };
 
 const serverConfigSchemaResponseTransformer = (data: any) => {
-    data.report_interval_secs = BigInt(data.report_interval_secs.toString());
-    data.heartbeat_interval_secs = BigInt(data.heartbeat_interval_secs.toString());
-    data.timeout_secs = BigInt(data.timeout_secs.toString());
-    return data;
+  data.heartbeat_interval_secs = BigInt(data.heartbeat_interval_secs.toString());
+  data.timeout_secs = BigInt(data.timeout_secs.toString());
+  data.claiming = claimConfigSchemaResponseTransformer(data.claiming);
+  return data;
 };
 
 const storageConfigSchemaResponseTransformer = (data: any) => {
-    data.max_cache_age_secs = BigInt(data.max_cache_age_secs.toString());
-    return data;
+  data.max_cache_age_secs = BigInt(data.max_cache_age_secs.toString());
+  data.cache_batch_size = BigInt(data.cache_batch_size.toString());
+  data.cache_report_interval_secs = BigInt(data.cache_report_interval_secs.toString());
+  return data;
+};
+
+const selfUpgradeConfigSchemaResponseTransformer = (data: any) => {
+  data.check_interval_secs = BigInt(data.check_interval_secs.toString());
+  return data;
 };
 
 const agentConfigSchemaResponseTransformer = (data: any) => {
-    data.monitoring = monitoringConfigSchemaResponseTransformer(data.monitoring);
-    data.server = serverConfigSchemaResponseTransformer(data.server);
-    data.storage = storageConfigSchemaResponseTransformer(data.storage);
-    return data;
+  data.monitoring = monitoringConfigSchemaResponseTransformer(data.monitoring);
+  data.server = serverConfigSchemaResponseTransformer(data.server);
+  data.storage = storageConfigSchemaResponseTransformer(data.storage);
+  data.self_upgrade = selfUpgradeConfigSchemaResponseTransformer(data.self_upgrade);
+  return data;
 };
 
 export const getAgentConfigurationResponseTransformer = async (data: any): Promise<GetAgentConfigurationResponse> => {
-    data = agentConfigSchemaResponseTransformer(data);
-    return data;
+  data = agentConfigSchemaResponseTransformer(data);
+  return data;
 };
 
 const resultsBatchAcknowledgmentSchemaResponseTransformer = (data: any) => {
-    data.received_at = new Date(data.received_at);
-    return data;
+  data.received_at = new Date(data.received_at);
+  return data;
 };
 
 export const submitAgentResultsResponseTransformer = async (data: any): Promise<SubmitAgentResultsResponse> => {
-    data = resultsBatchAcknowledgmentSchemaResponseTransformer(data);
-    return data;
+  data = resultsBatchAcknowledgmentSchemaResponseTransformer(data);
+  return data;
 };
 
 const agentSchemaResponseTransformer = (data: any) => {
-    if (data.lastSeenAt) {
-        data.lastSeenAt = new Date(data.lastSeenAt);
-    }
-    if (data.lastResultSubmittedAt) {
-        data.lastResultSubmittedAt = new Date(data.lastResultSubmittedAt);
-    }
-    data.createdAt = new Date(data.createdAt);
-    data.updatedAt = new Date(data.updatedAt);
-    return data;
+  if (data.lastSeenAt) {
+    data.lastSeenAt = new Date(data.lastSeenAt);
+  }
+  if (data.lastResultSubmittedAt) {
+    data.lastResultSubmittedAt = new Date(data.lastResultSubmittedAt);
+  }
+  data.createdAt = new Date(data.createdAt);
+  data.updatedAt = new Date(data.updatedAt);
+  return data;
 };
 
 const agentListResponseSchemaResponseTransformer = (data: any) => {
-    data.agents = data.agents.map((item: any) => agentSchemaResponseTransformer(item));
-    return data;
+  data.agents = data.agents.map((item: any) => agentSchemaResponseTransformer(item));
+  return data;
 };
 
 export const listAgentsResponseTransformer = async (data: any): Promise<ListAgentsResponse> => {
-    data = agentListResponseSchemaResponseTransformer(data);
-    return data;
+  data = agentListResponseSchemaResponseTransformer(data);
+  return data;
 };
 
 const aggregatedMetricSchemaResponseTransformer = (data: any) => {
-    data.timestamp = new Date(data.timestamp);
-    return data;
+  data.timestamp = new Date(data.timestamp);
+  return data;
 };
 
 const resultReportSchemaResponseTransformer = (data: any) => {
-    data.time_range.start = new Date(data.time_range.start);
-    data.time_range.end = new Date(data.time_range.end);
-    data.data = data.data.map((item: any) => aggregatedMetricSchemaResponseTransformer(item));
-    return data;
+  data.time_range.start = new Date(data.time_range.start);
+  data.time_range.end = new Date(data.time_range.end);
+  data.data = data.data.map((item: any) => aggregatedMetricSchemaResponseTransformer(item));
+  return data;
 };
 
 export const getResultReportResponseTransformer = async (data: any): Promise<GetResultReportResponse> => {
-    data = resultReportSchemaResponseTransformer(data);
-    return data;
+  data = resultReportSchemaResponseTransformer(data);
+  return data;
 };
 
 const metricsResponseSchemaResponseTransformer = (data: any) => {
-    data.metrics = data.metrics.map((item: any) => {
-        item.timestamp = new Date(item.timestamp);
-        return item;
-    });
-    return data;
+  data.metrics = data.metrics.map((item: any) => {
+    item.timestamp = new Date(item.timestamp);
+    return item;
+  });
+  return data;
 };
 
 export const getMetricsResponseTransformer = async (data: any): Promise<GetMetricsResponse> => {
-    data = metricsResponseSchemaResponseTransformer(data);
-    return data;
+  data = metricsResponseSchemaResponseTransformer(data);
+  return data;
 };
 
 const alertSchemaResponseTransformer = (data: any) => {
-    data.created_at = new Date(data.created_at);
-    if (data.acknowledged_at) {
-        data.acknowledged_at = new Date(data.acknowledged_at);
-    }
-    if (data.resolved_at) {
-        data.resolved_at = new Date(data.resolved_at);
-    }
-    return data;
+  data.created_at = new Date(data.created_at);
+  if (data.acknowledged_at) {
+    data.acknowledged_at = new Date(data.acknowledged_at);
+  }
+  if (data.resolved_at) {
+    data.resolved_at = new Date(data.resolved_at);
+  }
+  return data;
 };
 
 export const listAlertsResponseTransformer = async (data: any): Promise<ListAlertsResponse> => {
-    if (data.alerts) {
-        data.alerts = data.alerts.map((item: any) => alertSchemaResponseTransformer(item));
-    }
-    return data;
+  if (data.alerts) {
+    data.alerts = data.alerts.map((item: any) => alertSchemaResponseTransformer(item));
+  }
+  return data;
 };
 
 export const getAlertResponseTransformer = async (data: any): Promise<GetAlertResponse> => {
-    data = alertSchemaResponseTransformer(data);
-    return data;
+  data = alertSchemaResponseTransformer(data);
+  return data;
 };
 
 export const acknowledgeAlertResponseTransformer = async (data: any): Promise<AcknowledgeAlertResponse> => {
-    data = alertSchemaResponseTransformer(data);
-    return data;
+  data = alertSchemaResponseTransformer(data);
+  return data;
 };
 
 const tokenResponseSchemaResponseTransformer = (data: any) => {
-    data.expires_at = new Date(data.expires_at);
-    return data;
+  data.expires_at = new Date(data.expires_at);
+  return data;
 };
 
 export const oauth2TokenResponseTransformer = async (data: any): Promise<Oauth2TokenResponse> => {
-    data = tokenResponseSchemaResponseTransformer(data);
-    return data;
+  data = tokenResponseSchemaResponseTransformer(data);
+  return data;
 };
 
 export const authRefreshResponseTransformer = async (data: any): Promise<AuthRefreshResponse> => {
-    data = tokenResponseSchemaResponseTransformer(data);
-    return data;
+  data = tokenResponseSchemaResponseTransformer(data);
+  return data;
 };
 
 const userSchemaResponseTransformer = (data: any) => {
-    data.created_at = new Date(data.created_at);
-    if (data.updated_at) {
-        data.updated_at = new Date(data.updated_at);
-    }
-    if (data.last_login_at) {
-        data.last_login_at = new Date(data.last_login_at);
-    }
-    return data;
+  data.created_at = new Date(data.created_at);
+  if (data.updated_at) {
+    data.updated_at = new Date(data.updated_at);
+  }
+  if (data.last_login_at) {
+    data.last_login_at = new Date(data.last_login_at);
+  }
+  return data;
 };
 
 export const listUsersResponseTransformer = async (data: any): Promise<ListUsersResponse> => {
-    if (data.users) {
-        data.users = data.users.map((item: any) => userSchemaResponseTransformer(item));
-    }
-    return data;
+  if (data.users) {
+    data.users = data.users.map((item: any) => userSchemaResponseTransformer(item));
+  }
+  return data;
 };
 
 export const postCreateUserResponseTransformer = async (data: any): Promise<PostCreateUserResponse> => {
-    data = userSchemaResponseTransformer(data);
-    return data;
+  data = userSchemaResponseTransformer(data);
+  return data;
 };
 
 export const getUserResponseTransformer = async (data: any): Promise<GetUserResponse> => {
-    data = userSchemaResponseTransformer(data);
-    return data;
+  data = userSchemaResponseTransformer(data);
+  return data;
 };
 
 export const patchUserResponseTransformer = async (data: any): Promise<PatchUserResponse> => {
-    data = userSchemaResponseTransformer(data);
-    return data;
+  data = userSchemaResponseTransformer(data);
+  return data;
 };
 
 export const updateUserRolesResponseTransformer = async (data: any): Promise<UpdateUserRolesResponse> => {
-    data = userSchemaResponseTransformer(data);
-    return data;
+  data = userSchemaResponseTransformer(data);
+  return data;
 };
 
 const organizationSchemaResponseTransformer = (data: any) => {
-    data.created_at = new Date(data.created_at);
-    if (data.updated_at) {
-        data.updated_at = new Date(data.updated_at);
-    }
-    return data;
+  data.created_at = new Date(data.created_at);
+  if (data.updated_at) {
+    data.updated_at = new Date(data.updated_at);
+  }
+  return data;
 };
 
 export const listOrganizationsResponseTransformer = async (data: any): Promise<ListOrganizationsResponse> => {
-    if (data.organizations) {
-        data.organizations = data.organizations.map((item: any) => organizationSchemaResponseTransformer(item));
-    }
-    return data;
+  if (data.organizations) {
+    data.organizations = data.organizations.map((item: any) => organizationSchemaResponseTransformer(item));
+  }
+  return data;
 };
 
 export const postCreateOrganizationResponseTransformer = async (data: any): Promise<PostCreateOrganizationResponse> => {
-    data = organizationSchemaResponseTransformer(data);
-    return data;
+  data = organizationSchemaResponseTransformer(data);
+  return data;
 };
 
 export const getOrganizationResponseTransformer = async (data: any): Promise<GetOrganizationResponse> => {
-    data = organizationSchemaResponseTransformer(data);
-    return data;
+  data = organizationSchemaResponseTransformer(data);
+  return data;
 };
 
 export const getWebSocketTokenResponseTransformer = async (data: any): Promise<GetWebSocketTokenResponse> => {
-    data.expires_at = new Date(data.expires_at);
-    return data;
+  data.expires_at = new Date(data.expires_at);
+  return data;
 };
 
 const systemStatusSchemaResponseTransformer = (data: any) => {
-    data.timestamp = new Date(data.timestamp);
-    return data;
+  data.timestamp = new Date(data.timestamp);
+  return data;
 };
 
 export const healthCheckResponseTransformer = async (data: any): Promise<HealthCheckResponse> => {
-    data = systemStatusSchemaResponseTransformer(data);
-    return data;
+  data = systemStatusSchemaResponseTransformer(data);
+  return data;
 };
