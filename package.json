@@ -46,7 +46,7 @@
     "test:integration": "vitest run tests/integration"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0",
+    "@hey-api/openapi-ts": "next",
     "@types/node": "^26",
     "@vitest/coverage-v8": "^5",
     "browser-sync": "^3",
