@@ -7,11 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-<<<<<<< HEAD
 - **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
-=======
 - **Agent detail expansion**: Clicking anywhere on an agent's summary row now expands or collapses its details; previously the click handler was attached only to the chevron button. Chevron icons and ARIA state stay synchronized, and keyboard button activation still toggles exactly once.
->>>>>>> 6864ae91f25e11e2cbb1f2c96ea798e4003c70a3
 
 ### Changed
 - **Agent loading**: `loadAgents()` now fetches agents from the API server (`GET /agents`) with the session bearer token and all result pages, replacing the built-in fake agent data
