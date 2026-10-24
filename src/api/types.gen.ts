@@ -779,6 +779,43 @@ export type TokenResponse = {
   expires_at: Date;
 };
 
+export type Session = {
+  id: UuiDv7;
+  created_at: Date;
+  last_used_at: Date;
+  /**
+   * Hard expiry of the session
+   */
+  expires_at: Date;
+  /**
+   * Client IP recorded when the session was created
+   */
+  ip_address?: string;
+  /**
+   * Client User-Agent recorded when the session was created
+   */
+  user_agent?: string;
+  /**
+   * Identity provider used to sign in
+   */
+  provider: string;
+  /**
+   * True for the session that made this request
+   */
+  is_current: boolean;
+};
+
+export type SessionListResponse = {
+  sessions: Array<Session>;
+};
+
+export type PurgeSessionsResponse = {
+  /**
+   * Number of sessions revoked
+   */
+  revoked_count: number;
+};
+
 export type UserInfo = {
   /**
    * Subject identifier (user ID)
@@ -1892,6 +1929,110 @@ export type LogoutResponses = {
 };
 
 export type LogoutResponse = LogoutResponses[keyof LogoutResponses];
+
+export type PurgeSessionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/sessions';
+};
+
+export type PurgeSessionsErrors = {
+  /**
+   * Unauthorized - Invalid or missing authentication
+   */
+  401: Error;
+  /**
+   * Internal server error
+   */
+  500: Error;
+};
+
+export type PurgeSessionsError = PurgeSessionsErrors[keyof PurgeSessionsErrors];
+
+export type PurgeSessionsResponses = {
+  /**
+   * Sessions purged
+   */
+  200: PurgeSessionsResponse;
+};
+
+export type PurgeSessionsResponse2 = PurgeSessionsResponses[keyof PurgeSessionsResponses];
+
+export type ListSessionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/sessions';
+};
+
+export type ListSessionsErrors = {
+  /**
+   * Unauthorized - Invalid or missing authentication
+   */
+  401: Error;
+  /**
+   * Internal server error
+   */
+  500: Error;
+};
+
+export type ListSessionsError = ListSessionsErrors[keyof ListSessionsErrors];
+
+export type ListSessionsResponses = {
+  /**
+   * Active sessions retrieved
+   */
+  200: SessionListResponse;
+};
+
+export type ListSessionsResponse = ListSessionsResponses[keyof ListSessionsResponses];
+
+export type PurgeSessionData = {
+  body?: never;
+  path: {
+    /**
+     * Session identifier (UUIDv7)
+     */
+    session_id: UuiDv7;
+  };
+  query?: never;
+  url: '/sessions/{session_id}';
+};
+
+export type PurgeSessionErrors = {
+  /**
+   * Bad request - Invalid parameters
+   */
+  400: Error;
+  /**
+   * Unauthorized - Invalid or missing authentication
+   */
+  401: Error;
+  /**
+   * Forbidden - Insufficient permissions
+   */
+  403: Error;
+  /**
+   * Resource not found
+   */
+  404: Error;
+  /**
+   * Internal server error
+   */
+  500: Error;
+};
+
+export type PurgeSessionError = PurgeSessionErrors[keyof PurgeSessionErrors];
+
+export type PurgeSessionResponses = {
+  /**
+   * Session purged
+   */
+  204: void;
+};
+
+export type PurgeSessionResponse = PurgeSessionResponses[keyof PurgeSessionResponses];
 
 export type ListUsersData = {
   body?: never;

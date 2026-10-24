@@ -1982,6 +1982,82 @@ export const TokenResponseSchema = {
   }
 } as const;
 
+export const SessionSchema = {
+  type: 'object',
+  required: [
+    'id',
+    'created_at',
+    'last_used_at',
+    'expires_at',
+    'provider',
+    'is_current'
+  ],
+  properties: {
+    id: {
+      $ref: '#/components/schemas/UUIDv7'
+    },
+    created_at: {
+      type: 'string',
+      format: 'date-time'
+    },
+    last_used_at: {
+      type: 'string',
+      format: 'date-time'
+    },
+    expires_at: {
+      type: 'string',
+      format: 'date-time',
+      description: 'Hard expiry of the session'
+    },
+    ip_address: {
+      type: 'string',
+      description: 'Client IP recorded when the session was created',
+      example: '203.0.113.7'
+    },
+    user_agent: {
+      type: 'string',
+      description: 'Client User-Agent recorded when the session was created'
+    },
+    provider: {
+      type: 'string',
+      description: 'Identity provider used to sign in',
+      example: 'github'
+    },
+    is_current: {
+      type: 'boolean',
+      description: 'True for the session that made this request'
+    }
+  }
+} as const;
+
+export const SessionListResponseSchema = {
+  type: 'object',
+  required: [
+    'sessions'
+  ],
+  properties: {
+    sessions: {
+      type: 'array',
+      items: {
+        $ref: '#/components/schemas/Session'
+      }
+    }
+  }
+} as const;
+
+export const PurgeSessionsResponseSchema = {
+  type: 'object',
+  required: [
+    'revoked_count'
+  ],
+  properties: {
+    revoked_count: {
+      type: 'integer',
+      description: 'Number of sessions revoked'
+    }
+  }
+} as const;
+
 export const UserInfoSchema = {
   type: 'object',
   required: [
