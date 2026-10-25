@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unit tests for `loadAgents()`; `/agent` integration test now mocks the API; see `docs/features/agents-page.md`
 
 ### Added
+- **Agent claim**: A **Claim** button on the Agents page opens a modal asking for `agent_id`, `claim_code` and an optional agent name, and claims the agent via `POST /agent/claim`
+  - `ClaimAgentModal` (`src/components/claim-agent-modal.ts`), validators in `src/utils/claim-validation.ts`, `.claim-modal__*` styles in `components.css`
+  - Inline validation, per-status error messages, clipboard paste buttons, focus trap, auto-close with success toast and automatic agent list reload
+  - Unit and integration tests; documentation in `docs/features/agent-claim.md`
 - **Agents Summary Widget**: The dashboard now shows a compact "online / total" agents tile instead of the full agent list; clicking it navigates to `/agent`
   - `AgentsSummaryWidget` (`src/widgets/agents-summary.ts`) hosted by `DashboardGrid`; grid columns narrowed to `minmax(220px, 1fr)` so several tiles fit per row
   - Unit and integration tests; documentation in `docs/features/agents-summary-widget.md`

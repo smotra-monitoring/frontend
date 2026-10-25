@@ -56,6 +56,11 @@ Located in the [`features/`](features/) directory:
   - Private (auth-guarded) route linked from the sidebar
   - Shares dashboard shell: refresh control, theme toggle, command palette
 
+- **[Agent Claim](features/agent-claim.md)** - Claim pending agents from the Agents page
+  - Modal form with agent ID, claim code and optional name
+  - Inline validation, server error mapping, clipboard paste buttons
+  - Auto-closes on success and refreshes the agent list
+
 - **[Refresh State](features/refresh-manager.md)** - Periodic data polling system
   - Centralized refresh control for dashboard widgets
   - User-configurable refresh frequencies (Off, 5s, 15s, 30s)
