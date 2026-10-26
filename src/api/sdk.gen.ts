@@ -2,8 +2,8 @@
 
 import { client } from './client.gen.js';
 import { type Client, type ClientMeta, type Options as Options2, type RequestResult, type TDataShape, urlSearchParamsBodySerializer } from './client/index.js';
-import { acknowledgeAlertResponseTransformer, authRefreshResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAgentsResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listUsersResponseTransformer, oauth2TokenResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentResultsResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
-import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutErrors, LogoutResponses, Oauth2AuthorizeData, Oauth2AuthorizeErrors, Oauth2CallbackData, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentResultsData, SubmitAgentResultsErrors, SubmitAgentResultsResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
+import { acknowledgeAlertResponseTransformer, authRefreshResponseTransformer, getAgentConfigurationResponseTransformer, getAlertResponseTransformer, getMetricsResponseTransformer, getOrganizationResponseTransformer, getResultReportResponseTransformer, getUserResponseTransformer, getWebSocketTokenResponseTransformer, healthCheckResponseTransformer, listAgentsResponseTransformer, listAlertsResponseTransformer, listOrganizationsResponseTransformer, listSessionsResponseTransformer, listUsersResponseTransformer, oauth2TokenResponseTransformer, patchUserResponseTransformer, postCreateOrganizationResponseTransformer, postCreateUserResponseTransformer, registerAgentSelfResponseTransformer, submitAgentResultsResponseTransformer, updateUserRolesResponseTransformer } from './transformers.gen.js';
+import type { AcknowledgeAlertData, AcknowledgeAlertErrors, AcknowledgeAlertResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, CreateAlertData, CreateAlertErrors, CreateAlertResponses, DeleteAlertData, DeleteAlertErrors, DeleteAlertResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, GetAgentClaimStatusData, GetAgentClaimStatusErrors, GetAgentClaimStatusResponses, GetAgentConfigurationData, GetAgentConfigurationErrors, GetAgentConfigurationResponses, GetAlertData, GetAlertErrors, GetAlertResponses, GetMetricsData, GetMetricsResponses, GetOrganizationData, GetOrganizationResponses, GetResultReportData, GetResultReportErrors, GetResultReportResponses, GetSummaryData, GetSummaryResponses, GetUserData, GetUserErrors, GetUserInfoData, GetUserInfoErrors, GetUserInfoResponses, GetUserResponses, GetWebSocketTokenData, GetWebSocketTokenErrors, GetWebSocketTokenResponses, HealthCheckData, HealthCheckErrors, HealthCheckResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListAlertsData, ListAlertsResponses, ListOrganizationsData, ListOrganizationsResponses, ListSessionsData, ListSessionsErrors, ListSessionsResponses, ListUsersData, ListUsersResponses, LivenessCheckData, LivenessCheckResponses, LogoutData, LogoutErrors, LogoutResponses, Oauth2AuthorizeData, Oauth2AuthorizeErrors, Oauth2CallbackData, Oauth2RevokeData, Oauth2RevokeErrors, Oauth2RevokeResponses, Oauth2TokenData, Oauth2TokenErrors, Oauth2TokenResponses, PatchUserData, PatchUserErrors, PatchUserResponses, PostClaimAgentData, PostClaimAgentErrors, PostClaimAgentResponses, PostCreateOrganizationData, PostCreateOrganizationResponses, PostCreateUserData, PostCreateUserErrors, PostCreateUserResponses, PrometheusMetricsData, PrometheusMetricsResponses, PurgeSessionData, PurgeSessionErrors, PurgeSessionResponses, PurgeSessionsData, PurgeSessionsErrors, PurgeSessionsResponses, ReadinessCheckData, ReadinessCheckErrors, ReadinessCheckResponses, RegisterAgentSelfData, RegisterAgentSelfErrors, RegisterAgentSelfResponses, SendAgentHeartbeatData, SendAgentHeartbeatErrors, SendAgentHeartbeatResponses, SubmitAgentResultsData, SubmitAgentResultsErrors, SubmitAgentResultsResponses, UpdateUserRolesData, UpdateUserRolesResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
   /**
@@ -83,7 +83,7 @@ export const getAgentClaimStatus = <ThrowOnError extends boolean = false>(option
  * 1. Validates the claim token
  * 2. Creates the agent in the production agents table
  * 3. Generates an API key for the agent
- * 4. Associates agent with user's tenant and chosen section
+ * 4. Associates agent with the claiming user's workspace (sets Agent.workspaceId)
  * 5. Marks claim as satisfied
  *
  * The agent will receive the API key on its next poll to /agent/{agentId}/claim-status.
@@ -471,6 +471,60 @@ export const logout = <ThrowOnError extends boolean = false>(options?: Options<L
     'Content-Type': 'application/json',
     ...options?.headers
   }
+});
+
+/**
+ * Purge all other sessions
+ *
+ * Revokes every active session of the authenticated user except the session
+ * making the request. Use `/auth/logout` to end the current session.
+ *
+ */
+export const purgeSessions = <ThrowOnError extends boolean = false>(options?: Options<PurgeSessionsData, ThrowOnError>): RequestResult<PurgeSessionsResponses, PurgeSessionsErrors, ThrowOnError> => (options?.client ?? client).delete<PurgeSessionsResponses, PurgeSessionsErrors, ThrowOnError>({
+  security: [{
+      key: 'OAuth2AuthorizationCode',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sessions',
+  ...options
+});
+
+/**
+ * List active sessions
+ *
+ * Returns all active (not revoked, not expired) sessions of the authenticated user,
+ * most recently used first. The session making the request is flagged with `is_current`.
+ *
+ * **Permissions:** Requires a valid OAuth2 session. Agent API keys are not accepted.
+ *
+ */
+export const listSessions = <ThrowOnError extends boolean = false>(options?: Options<ListSessionsData, ThrowOnError>): RequestResult<ListSessionsResponses, ListSessionsErrors, ThrowOnError> => (options?.client ?? client).get<ListSessionsResponses, ListSessionsErrors, ThrowOnError>({
+  responseTransformer: listSessionsResponseTransformer,
+  security: [{
+      key: 'OAuth2AuthorizationCode',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sessions',
+  ...options
+});
+
+/**
+ * Purge a specific session
+ *
+ * Revokes a single session. The session must belong to the authenticated user;
+ * the current session may be purged, which logs the caller out.
+ *
+ */
+export const purgeSession = <ThrowOnError extends boolean = false>(options: Options<PurgeSessionData, ThrowOnError>): RequestResult<PurgeSessionResponses, PurgeSessionErrors, ThrowOnError> => (options.client ?? client).delete<PurgeSessionResponses, PurgeSessionErrors, ThrowOnError>({
+  security: [{
+      key: 'OAuth2AuthorizationCode',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sessions/{session_id}',
+  ...options
 });
 
 /**

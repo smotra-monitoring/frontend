@@ -61,6 +61,29 @@ describe('AgentsPage', () => {
     expect(container.innerHTML).toBe('');
     expect(page.isDestroyed()).toBe(true);
   });
+
+  it('renders an accessible Claim button in the toolbar', () => {
+    page = new AgentsPage(container);
+    page.mount();
+
+    const button = container.querySelector<HTMLButtonElement>('.dashboard__toolbar-actions #claim-agent-button');
+    expect(button).toBeTruthy();
+    expect(button!.getAttribute('aria-label')).toBe('Claim an agent');
+    expect(container.querySelector('#claim-modal-container')).toBeTruthy();
+  });
+
+  it('opens the claim modal when the Claim button is clicked', () => {
+    page = new AgentsPage(container);
+    page.mount();
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+
+    container.querySelector<HTMLButtonElement>('#claim-agent-button')!.click();
+
+    expect(container.querySelector('#claim-modal-container [role="dialog"]')).toBeTruthy();
+    expect(container.querySelector('#claim-agent-id')).toBeTruthy();
+    expect(container.querySelector('#claim-agent-code')).toBeTruthy();
+    expect(container.querySelector('#claim-agent-name')).toBeTruthy();
+  });
 });
 
 describe('Router: /agent route', () => {

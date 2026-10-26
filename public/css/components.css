@@ -1842,6 +1842,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .agents-summary,
   .agents-summary__pulse {
     animation: none;
@@ -1850,5 +1851,219 @@
 
   .agents-summary:hover {
     transform: none;
+  }
+}
+
+/* ============================================
+   Claim agent modal
+   Reuses .command-palette__overlay / __modal / __close
+   ============================================ */
+
+.claim-button {
+  min-height: var(--touch-target-min);
+  border-radius: var(--radius-sm);
+}
+
+.claim-modal {
+  overflow-y: auto;
+}
+
+.claim-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.claim-modal__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.claim-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+  padding: var(--spacing-lg);
+}
+
+.claim-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.claim-modal__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.claim-modal__optional {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.claim-modal__input-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-sm);
+}
+
+.claim-modal__input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.claim-modal__input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.claim-modal__input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.claim-modal__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.claim-modal__input--invalid {
+  border-color: var(--color-error);
+}
+
+/* Secondary icon button beside an input; visible border so it is not hover-dependent */
+.claim-modal__paste {
+  flex-shrink: 0;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.claim-modal__paste:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background-color: var(--color-border);
+}
+
+.claim-modal__paste:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.claim-modal__paste:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.claim-modal__error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.claim-modal__hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.claim-modal__status {
+  min-height: 1.5em;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  outline: none;
+}
+
+.claim-modal__status--error {
+  color: var(--color-error);
+}
+
+.claim-modal__status--success {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.claim-modal__spinner {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: var(--spacing-sm);
+  vertical-align: -0.1em;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-info);
+  border-radius: var(--radius-full);
+  animation: claim-modal-spin 0.8s linear infinite;
+}
+
+@keyframes claim-modal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.claim-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.claim-modal__actions .button {
+  min-height: var(--touch-target-min);
+  border-radius: var(--radius-sm);
+}
+
+.theme-dark .claim-modal__input {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 767px) {
+
+  /* Thumb zone: primary actions stay at the bottom of the full-screen modal */
+  .claim-modal.command-palette__modal--mobile {
+    height: 100dvh;
+  }
+
+  .claim-modal__form {
+    flex: 1;
+  }
+
+  .claim-modal__actions {
+    margin-top: auto;
+  }
+
+  .claim-modal__actions .button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claim-modal__spinner {
+    animation: none;
+  }
+
+  .claim-modal__input,
+  .claim-modal__paste {
+    transition: none;
   }
 }

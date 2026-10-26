@@ -10,6 +10,7 @@ import { ThemeToggle } from '../components/theme-toggle.js';
 import { CommandPalette } from '../components/command-palette.js';
 import { ToastNotification } from '../components/toast-notification.js';
 import { RefreshControl } from '../components/refresh-control.js';
+import { ClaimAgentModal } from '../components/claim-agent-modal.js';
 import { AgentStatesWidget } from '../widgets/agent-states.js';
 import { getAgents, loadAgents } from '../state/agent-state.js';
 
@@ -26,6 +27,7 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
   private commandPalette: CommandPalette | null = null;
   private toastNotification: ToastNotification | null = null;
   private refreshControl: RefreshControl | null = null;
+  private claimModal: ClaimAgentModal | null = null;
 
   constructor(root: HTMLElement) {
     super(root, {});
@@ -41,6 +43,16 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
             <h2 class="dashboard__title">Agents</h2>
 
             <div class="dashboard__toolbar-actions">
+              <button
+                type="button"
+                id="claim-agent-button"
+                class="button is-info claim-button"
+                aria-label="Claim an agent"
+                aria-haspopup="dialog"
+              >
+                <span class="icon"><i class="fas fa-plus" aria-hidden="true"></i></span>
+                <span>Claim</span>
+              </button>
               <div id="refresh-control-container"></div>
               <div id="theme-toggle-container"></div>
             </div>
@@ -52,6 +64,7 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
         </main>
 
         <div id="command-palette-container"></div>
+        <div id="claim-modal-container"></div>
         <div id="toast-notification-container"></div>
       </div>
     `;
@@ -95,6 +108,21 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
       this.toastNotification = new ToastNotification(toastContainer);
       this.toastNotification.mount();
     }
+
+    const claimModalContainer = this.query('#claim-modal-container');
+    if (claimModalContainer) {
+      this.claimModal = new ClaimAgentModal(claimModalContainer, {
+        onClaimed: (message) => this.toastNotification?.success(message),
+        onFailed: (message) =>
+          this.toastNotification?.show({ message, type: 'error', duration: 5000, dismissible: true }),
+      });
+      this.claimModal.mount();
+    }
+
+    const claimButton = this.query('#claim-agent-button');
+    if (claimButton) {
+      this.addEventListener(claimButton, 'click', () => this.claimModal?.show());
+    }
   }
 
   async onMount(): Promise<void> {
@@ -113,5 +141,6 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
     this.commandPalette?.destroy();
     this.toastNotification?.destroy();
     this.refreshControl?.destroy();
+    this.claimModal?.destroy();
   }
 }
