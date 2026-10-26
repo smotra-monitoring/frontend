@@ -17,6 +17,7 @@ import type { ComponentState } from '../types/component-types.js';
 import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
 import { subscribeToAgents, sortAgents, loadAgents } from '../state/agent-state.js';
 import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
+import { escapeHtml } from '../utils/html.js';
 import { subscribeToRefresh } from '../state/refresh-state.js';
 
 interface AgentStatesWidgetState extends ComponentState {
@@ -156,11 +157,13 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     const status = deriveAgentStatus(agent.lastSeenAt);
     const rowId = `agent-row-${agent.id}`;
     const detailsId = `agent-details-${agent.id}`;
+    const escapedAgentId = escapeHtml(agent.id);
+    const escapedDetailsId = escapeHtml(detailsId);
 
     return `
-      <tr class="agent-states-row" data-agent-id="${agent.id}">
+      <tr class="agent-states-row" data-agent-id="${escapedAgentId}">
         <td class="agent-states-row__name">
-          ${this.escapeHtml(agent.name)}
+          ${escapeHtml(agent.name)}
         </td>
         <td class="agent-states-row__status">
           ${this.renderStatusBadge(status)}
@@ -172,10 +175,10 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
           <button 
             class="button is-small is-ghost chevron-btn" 
             data-action="toggle-details"
-            data-agent-id="${agent.id}"
+            data-agent-id="${escapedAgentId}"
             aria-expanded="false"
-            aria-controls="${detailsId}"
-            aria-label="Toggle details for ${this.escapeHtml(agent.name)}"
+            aria-controls="${escapedDetailsId}"
+            aria-label="Toggle details for ${escapeHtml(agent.name)}"
           >
             <span class="icon">
               <i class="fas fa-chevron-down"></i>
@@ -185,9 +188,9 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       </tr>
       <tr 
         class="agent-states-row__details" 
-        id="${detailsId}"
+        id="${escapedDetailsId}"
         aria-hidden="true"
-        data-agent-id="${agent.id}"
+        data-agent-id="${escapedAgentId}"
       >
         <td colspan="4">
           <div class="agent-states-row__details-inner">
@@ -219,20 +222,20 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         <dl class="agent-details__grid">
           <div class="agent-details__item">
             <dt>Agent ID</dt>
-            <dd><code>${this.escapeHtml(agent.id)}</code></dd>
+            <dd><code>${escapeHtml(agent.id)}</code></dd>
           </div>
 
           ${agent.workspaceId ? `
             <div class="agent-details__item">
               <dt>Workspace ID</dt>
-              <dd><code>${this.escapeHtml(agent.workspaceId)}</code></dd>
+              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
             </div>
           ` : ''}
 
           ${agent.agentVersion ? `
             <div class="agent-details__item">
               <dt>Agent Version</dt>
-              <dd>${this.escapeHtml(agent.agentVersion)}</dd>
+              <dd>${escapeHtml(agent.agentVersion)}</dd>
             </div>
           ` : ''}
 
@@ -250,8 +253,8 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 <ul class="agent-details__ip-list">
                   ${allIPs.map(ip => `
                     <li>
-                      <code>${this.escapeHtml(ip.ip)}</code>
-                      <span class="has-text-grey"> (${this.escapeHtml(ip.iface || 'unknown')}${ip.recommended ? ', recommended' : ''})</span>
+                      <code>${escapeHtml(ip.ip)}</code>
+                      <span class="has-text-grey"> (${escapeHtml(ip.iface || 'unknown')}${ip.recommended ? ', recommended' : ''})</span>
                     </li>
                   `).join('')}
                 </ul>
@@ -360,9 +363,9 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
    * This uses direct DOM manipulation to preserve the element and enable smooth CSS transitions
    */
   private toggleAgentDetails(agentId: string, button: HTMLButtonElement): void {
-    const detailsRow = this.root.querySelector<HTMLTableRowElement>(
-      `.agent-states-row__details[data-agent-id="${agentId}"]`
-    );
+    const detailsRow = Array.from(
+      this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row__details')
+    ).find(row => row.dataset.agentId === agentId);
 
     if (!detailsRow) return;
 
@@ -440,12 +443,4 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     this.setState({ loading });
   }
 
-  /**
-   * Escape HTML to prevent XSS attacks
-   */
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 }

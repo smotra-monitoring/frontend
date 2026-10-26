@@ -8,6 +8,7 @@ import type { ComponentState } from '../types/component-types.js';
 import type { Agent } from '../types/agent-types.js';
 import { getAgents } from '../state/agent-state.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
+import { escapeHtml } from '../utils/html.js';
 
 interface CommandPaletteState extends ComponentState {
   visible: boolean;
@@ -61,7 +62,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
                 type="text"
                 class="command-palette__input"
                 placeholder="Search agents or actions..."
-                value="${this.escapeHtml(query)}"
+                value="${escapeHtml(query)}"
                 aria-label="Search"
                 autocomplete="off"
               />
@@ -114,7 +115,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
             <div class="command-palette__item-content">
               <div class="command-palette__item-label">${this.highlightQuery(result.label, this.state.query)}</div>
               ${result.description ? `
-                <div class="command-palette__item-description">${this.escapeHtml(result.description)}</div>
+                <div class="command-palette__item-description">${escapeHtml(result.description)}</div>
               ` : ''}
             </div>
           </li>
@@ -134,7 +135,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
     return `
       <div class="command-palette__empty">
-        <p>No results found for "${this.escapeHtml(query)}"</p>
+        <p>No results found for "${escapeHtml(query)}"</p>
       </div>
     `;
   }
@@ -283,7 +284,9 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
   private navigateToAgent(agent: Agent): void {
     // Scroll to agent card
-    const agentCard = document.querySelector(`[data-agent-id="${agent.id}"]`);
+    const agentCard = Array.from(
+      document.querySelectorAll<HTMLElement>('.agent-states-row[data-agent-id]')
+    ).find(element => element.dataset.agentId === agent.id);
 
     if (agentCard) {
       smoothScrollTo(agentCard as HTMLElement);
@@ -292,21 +295,19 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
   private highlightQuery(text: string, query: string): string {
     if (!query) {
-      return this.escapeHtml(text);
+      return escapeHtml(text);
     }
 
     const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
-    return this.escapeHtml(text).replace(regex, '<mark>$1</mark>');
+    return text.split(regex)
+      .map((part, index) => index % 2 === 0
+        ? escapeHtml(part)
+        : `<mark>${escapeHtml(part)}</mark>`)
+      .join('');
   }
 
   private escapeRegex(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   /**

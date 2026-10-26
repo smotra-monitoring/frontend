@@ -418,5 +418,47 @@ describe('AgentStatesWidget', () => {
             expect(nameCell?.innerHTML).not.toContain('<script>');
             expect(nameCell?.textContent).toContain('\<script\>'); // Should render as text, not HTML
         });
+
+        it('keeps quotes in agent names inside the details button label', () => {
+            const name = '" autofocus onfocus="alert(1)';
+            const maliciousAgent = { ...mockAgents[0], name };
+
+            widget = new AgentStatesWidget(container, [maliciousAgent]);
+            widget.mount();
+
+            const button = container.querySelector<HTMLButtonElement>(
+                '[data-action="toggle-details"]'
+            )!;
+            expect(button.getAttribute('aria-label')).toBe(`Toggle details for ${name}`);
+            expect(button.hasAttribute('autofocus')).toBe(false);
+            expect(button.hasAttribute('onfocus')).toBe(false);
+        });
+
+        it('keeps agent IDs inside their rendered attributes', () => {
+            const id = 'agent" data-injected="yes';
+            const maliciousAgent = { ...mockAgents[0], id };
+
+            widget = new AgentStatesWidget(container, [maliciousAgent]);
+            widget.mount();
+
+            const summaryRow = container.querySelector<HTMLTableRowElement>(
+                '.agent-states-row'
+            )!;
+            const button = summaryRow.querySelector<HTMLButtonElement>(
+                '[data-action="toggle-details"]'
+            )!;
+            const detailsRow = container.querySelector<HTMLTableRowElement>(
+                '.agent-states-row__details'
+            )!;
+
+            expect(summaryRow.dataset.agentId).toBe(id);
+            expect(button.dataset.agentId).toBe(id);
+            expect(button.hasAttribute('data-injected')).toBe(false);
+            expect(button.getAttribute('aria-controls')).toBe(detailsRow.id);
+            expect(detailsRow.dataset.agentId).toBe(id);
+
+            button.click();
+            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
+        });
     });
 });
