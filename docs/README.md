@@ -56,6 +56,10 @@ Located in the [`features/`](features/) directory:
   - Private (auth-guarded) route linked from the sidebar
   - Shares dashboard shell: refresh control, theme toggle, command palette
 
+- **[Settings Page](features/settings-page.md)** - `/settings` route with collapsible sections
+  - Active sessions section: all session fields, per-session terminate, Terminate All
+  - CSS-only (native `<details>`) folding, two-step terminate confirmation
+
 - **[Agent Claim](features/agent-claim.md)** - Claim pending agents from the Agents page
   - Modal form with agent ID, claim code and optional name
   - Inline validation, server error mapping, clipboard paste buttons
