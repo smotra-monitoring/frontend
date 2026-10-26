@@ -361,12 +361,12 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
         try {
             text = (await navigator.clipboard.readText()).trim();
         } catch {
-            if (!this.isActive(requestId)) return;
+            if (!this.isSameModalSession(requestId)) return;
             this.focusTarget = field;
             this.setState({ pasteHints: { ...this.state.pasteHints, [field]: PASTE_DENIED_HINT } });
             return;
         }
-        if (!this.isActive(requestId)) return;
+        if (!this.isSameModalSession(requestId)) return;
 
         const validator = field === 'agentId' ? validateAgentId : validateClaimCode;
         const error = validator(text);
@@ -411,7 +411,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
                 auth: async () => (await getValidAccessToken()) ?? undefined,
             });
 
-            if (!this.isActive(requestId)) return;
+            if (!this.isSameModalSession(requestId)) return;
 
             if (result.error || !result.data) {
                 const { message, field } = ClaimAgentModal.describeError(result.response?.status, result.error?.message);
@@ -421,7 +421,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
 
             this.succeed(result.data.message || DEFAULT_SUCCESS_MESSAGE);
         } catch {
-            if (!this.isActive(requestId)) return;
+            if (!this.isSameModalSession(requestId)) return;
             this.fail(ERROR_MESSAGES.network, null);
         }
     }
@@ -472,7 +472,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
     }
 
     /** False once the modal was closed, destroyed or reopened since the async work started. */
-    private isActive(requestId: number): boolean {
+    private isSameModalSession(requestId: number): boolean {
         return !this.isDestroyed() && this.state.visible && requestId === this.requestId;
     }
 
