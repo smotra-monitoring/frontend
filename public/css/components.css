@@ -2270,32 +2270,45 @@
   font-weight: 500;
 }
 
-.session-action--danger {
+/* Bulma's .button:hover/:focus/:active/[disabled] set a dark text colour, a white
+   background and a blue ring; every state is restated here so it stays readable in both themes. */
+.button.session-action--danger,
+.button.session-action--danger:focus,
+.button.session-action--danger:active {
   background-color: transparent;
-  border: 1px solid var(--color-error);
-  color: var(--color-error);
-}
-
-.session-action--danger:hover:not(:disabled) {
-  background-color: rgba(241, 70, 104, 0.1);
-  color: var(--color-error);
   border-color: var(--color-error);
+  color: var(--color-error);
+  box-shadow: none;
+  transform: none;
 }
 
-.session-action--danger[data-confirming='true'] {
+.button.session-action--danger:hover:not(:disabled),
+.button.session-action--danger:focus-visible {
+  background-color: rgba(241, 70, 104, 0.12);
+}
+
+.button.session-action--danger:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Armed (awaiting confirmation): solid red in every interaction state */
+.button.session-action--danger[data-confirming='true'],
+.button.session-action--danger[data-confirming='true']:hover,
+.button.session-action--danger[data-confirming='true']:focus,
+.button.session-action--danger[data-confirming='true']:active {
   background-color: var(--color-error);
   border-color: var(--color-error);
   color: #ffffff;
 }
 
-.session-action:disabled {
+.button.session-action--danger:disabled {
+  background-color: transparent;
+  border-color: var(--color-error);
+  color: var(--color-error);
+  box-shadow: none;
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.session-action:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
 }
 
 /* Tablet and up: fields in columns, action pinned to the end of the line */
