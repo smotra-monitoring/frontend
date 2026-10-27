@@ -59,7 +59,7 @@ export async function protectRoute(currentPath: string = window.location.pathnam
 /**
  * Check if user can access public route (logged out only)
  */
-export function canAccessPublicRoute(): AuthGuardResult {
+export function canAccessPublicOnlyRoute(): AuthGuardResult {
   // If already authenticated, redirect to dashboard
   if (isAuthenticated()) {
     return {
