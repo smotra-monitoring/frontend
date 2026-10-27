@@ -20,10 +20,11 @@ vi.mock('../../../src/pages/login.js', () => ({ LoginPage: makePage('login') }))
 vi.mock('../../../src/pages/oauth-callback.js', () => ({ OAuthCallbackPage: makePage('callback') }));
 vi.mock('../../../src/pages/dashboard.js', () => ({ DashboardPage: makePage('dashboard') }));
 vi.mock('../../../src/pages/agents.js', () => ({ AgentsPage: makePage('agents') }));
+vi.mock('../../../src/pages/settings.js', () => ({ SettingsPage: makePage('settings') }));
 
 vi.mock('../../../src/auth/auth-guard.js', () => ({
     protectRoute: vi.fn(),
-    canAccessPublicRoute: vi.fn(),
+    canAccessPublicOnlyRoute: vi.fn(),
 }));
 vi.mock('../../../src/state/auth-state.js', () => ({ isAuthenticated: vi.fn() }));
 vi.mock('../../../src/utils/dom-helpers.js', () => ({ smoothScrollTo: vi.fn() }));
@@ -35,7 +36,7 @@ describe('router', () => {
     let router: RouterModule;
     let appRoot: HTMLElement;
     let protectRoute: Mock;
-    let canAccessPublicRoute: Mock;
+    let canAccessPublicOnlyRoute: Mock;
     let isAuthenticated: Mock;
     let registerNavigate: Mock;
 
@@ -43,7 +44,7 @@ describe('router', () => {
         // The router keeps a module-level singleton, so load a fresh copy per test
         vi.resetModules();
         router = await import('../../../src/pages/router.js');
-        ({ protectRoute, canAccessPublicRoute } = (await import('../../../src/auth/auth-guard.js')) as any);
+        ({ protectRoute, canAccessPublicOnlyRoute } = (await import('../../../src/auth/auth-guard.js')) as any);
         ({ isAuthenticated } = (await import('../../../src/state/auth-state.js')) as any);
         ({ registerNavigate } = (await import('../../../src/utils/navigation.js')) as any);
 
@@ -53,7 +54,7 @@ describe('router', () => {
         window.history.replaceState({}, '', '/dashboard');
 
         (protectRoute as Mock).mockResolvedValue(true);
-        (canAccessPublicRoute as Mock).mockReturnValue({ allowed: true });
+        (canAccessPublicOnlyRoute as Mock).mockReturnValue({ allowed: true });
         (isAuthenticated as Mock).mockReturnValue(false);
         vi.spyOn(console, 'warn').mockImplementation(() => { });
         vi.spyOn(console, 'error').mockImplementation(() => { });
@@ -108,7 +109,7 @@ describe('router', () => {
 
     it('redirects authenticated users away from guest-only routes', async () => {
         window.history.replaceState({}, '', '/login');
-        (canAccessPublicRoute as Mock).mockReturnValue({ allowed: false, redirectTo: '/dashboard' });
+        (canAccessPublicOnlyRoute as Mock).mockReturnValue({ allowed: false, redirectTo: '/dashboard' });
 
         await router.initializeRouter(appRoot);
 
@@ -142,6 +143,7 @@ describe('router', () => {
             '/': 'private',
             '/dashboard': 'private',
             '/agent': 'private',
+            '/settings': 'private',
             '/login': 'guest-only',
             '/auth/callback': 'guest-only',
         });

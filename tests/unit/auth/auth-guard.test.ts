@@ -15,7 +15,7 @@ import { authRefresh } from '../../../src/api/index.js';
 import {
     canAccessRoute_ForTest,
     protectRoute,
-    canAccessPublicRoute,
+    canAccessPublicOnlyRoute,
     getRedirectAfterLogin,
     withAuthGuard,
 } from '../../../src/auth/auth-guard.js';
@@ -125,13 +125,13 @@ describe('auth-guard', () => {
 
     describe('canAccessPublicRoute', () => {
         it('allows unauthenticated users', () => {
-            expect(canAccessPublicRoute()).toEqual({ allowed: true });
+            expect(canAccessPublicOnlyRoute()).toEqual({ allowed: true });
         });
 
         it('redirects authenticated users to the dashboard', () => {
             saveAuthState(mockUserInfo, mockToken);
 
-            expect(canAccessPublicRoute()).toEqual({ allowed: false, redirectTo: '/dashboard' });
+            expect(canAccessPublicOnlyRoute()).toEqual({ allowed: false, redirectTo: '/dashboard' });
         });
     });
 
