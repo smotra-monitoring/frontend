@@ -8,6 +8,7 @@ import type { ComponentState } from '../types/component-types.js';
 import { isAuthenticated, getUserInfo } from '../state/auth-state.js';
 import { logout } from '../services/auth-service.js';
 import { navigateTo } from '../utils/navigation.js';
+import { escapeHtml } from '../utils/html.js';
 
 interface SidebarState extends ComponentState {
   expanded: boolean;
@@ -153,8 +154,8 @@ export class Sidebar extends BaseComponent<SidebarState> {
           </div>
         `}
         <div class="sidebar__user-info">
-          <div class="sidebar__user-name">${this.escapeHtml(userInfo.name ?? '')}</div>
-          <div class="sidebar__user-email">${this.escapeHtml(userInfo.email ?? '')}</div>
+          <div class="sidebar__user-name">${escapeHtml(userInfo.name ?? '')}</div>
+          <div class="sidebar__user-email">${escapeHtml(userInfo.email ?? '')}</div>
         </div>
       </div>
     `;
@@ -266,9 +267,4 @@ export class Sidebar extends BaseComponent<SidebarState> {
     }
   }
 
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 }
