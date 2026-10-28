@@ -52,7 +52,7 @@ function escapeHtml(text: string): string {
 export class SettingsSessions extends BaseComponent<SettingsSessionsState> {
     private readonly options: SettingsSessionsOptions;
     private confirmTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
-    private loadId = 0;
+    private operationId = 0;
 
     constructor(root: HTMLElement, options: SettingsSessionsOptions = {}) {
         super(root, { sessions: [], loading: true, busy: false, error: null });
@@ -80,18 +80,27 @@ export class SettingsSessions extends BaseComponent<SettingsSessionsState> {
 
     /** Fetch sessions and update the list; also used to refresh after an action. */
     async load(): Promise<void> {
-        const id = ++this.loadId;
+        const isStale = this.beginOperation();
 
         try {
             const sessions = await fetchSessions();
-            if (this.isDestroyed() || id !== this.loadId) return;
+            if (isStale()) return;
             this.setState({ sessions, loading: false, busy: false, error: null });
         } catch (error) {
-            if (this.isDestroyed() || id !== this.loadId) return;
+            if (isStale()) return;
             const message = this.messageOf(error, 'Failed to load sessions');
             this.setState({ loading: false, busy: false, error: message });
             this.options.onError?.(message);
         }
+    }
+
+    /**
+     * Start an async operation. The returned guard reports true once the component is destroyed
+     * or a newer operation has started, so late results must be dropped.
+     */
+    private beginOperation(): () => boolean {
+        const id = ++this.operationId;
+        return () => this.isDestroyed() || id !== this.operationId;
     }
 
     // ---- Rendering ----
@@ -315,37 +324,41 @@ export class SettingsSessions extends BaseComponent<SettingsSessionsState> {
 
     // ---- Actions ----
 
-    private async terminate(sessionId: string): Promise<void> {
-        this.setState({ busy: true });
-
-        try {
-            await terminateSession(sessionId);
-            if (this.isDestroyed()) return;
-            this.options.onSuccess?.('Session terminated.');
-        } catch (error) {
-            if (this.isDestroyed()) return;
-            // Already gone (404): the reload below shows the current truth
-            if (!(error instanceof SessionServiceError && error.status === 404)) {
-                this.options.onError?.(this.messageOf(error, 'Failed to terminate session'));
-            }
-        }
-
-        await this.load();
-        this.restoreFocus();
+    private terminate(sessionId: string): Promise<void> {
+        return this.runTerminationRequests(
+            async () => {
+                await terminateSession(sessionId);
+                return 'Session terminated.';
+            },
+            'Failed to terminate session'
+        );
     }
 
-    private async terminateAll(): Promise<void> {
+    private terminateAll(): Promise<void> {
+        return this.runTerminationRequests(
+            async () => {
+                const count = await terminateOtherSessions();
+                return count === 1 ? 'Terminated 1 other session.' : `Terminated ${count} other sessions.`;
+            },
+            'Failed to terminate sessions'
+        );
+    }
+
+    /** Run a terminate request, report the outcome, then reload the list. */
+    private async runTerminationRequests(action: () => Promise<string>, failureMessage: string): Promise<void> {
         this.setState({ busy: true });
+        const isStale = this.beginOperation();
 
         try {
-            const count = await terminateOtherSessions();
-            if (this.isDestroyed()) return;
-            this.options.onSuccess?.(
-                count === 1 ? 'Terminated 1 other session.' : `Terminated ${count} other sessions.`
-            );
+            const message = await action();
+            if (isStale()) return;
+            this.options.onSuccess?.(message);
         } catch (error) {
-            if (this.isDestroyed()) return;
-            this.options.onError?.(this.messageOf(error, 'Failed to terminate sessions'));
+            if (isStale()) return;
+            // Already gone (404): the reload below shows the current truth
+            if (!(error instanceof SessionServiceError && error.status === 404)) {
+                this.options.onError?.(this.messageOf(error, failureMessage));
+            }
         }
 
         await this.load();
