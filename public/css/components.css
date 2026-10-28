@@ -2067,6 +2067,7 @@
     transition: none;
   }
 }
+
 /* ===================================================================
    Settings page: collapsible sections + active sessions list
    =================================================================== */
@@ -2079,7 +2080,7 @@
   contain: layout style;
 }
 
-.settings-section + .settings-section {
+.settings-section+.settings-section {
   margin-top: var(--spacing-base);
 }
 
@@ -2131,7 +2132,7 @@
   transition: transform var(--transition-base);
 }
 
-.settings-section[open] > .settings-section__summary .settings-section__chevron {
+.settings-section[open]>.settings-section__summary .settings-section__chevron {
   transform: rotate(180deg);
 }
 
