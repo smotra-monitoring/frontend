@@ -7,7 +7,8 @@ import { LoginPage } from './login.js';
 import { OAuthCallbackPage } from './oauth-callback.js';
 import { DashboardPage } from './dashboard.js';
 import { AgentsPage } from './agents.js';
-import { protectRoute, canAccessPublicRoute } from '../auth/auth-guard.js';
+import { SettingsPage } from './settings.js';
+import { protectRoute, canAccessPublicOnlyRoute } from '../auth/auth-guard.js';
 import { smoothScrollTo } from '../utils/dom-helpers.js';
 import { isAuthenticated } from '../state/auth-state.js';
 import { registerNavigate } from '../utils/navigation.js';
@@ -28,6 +29,7 @@ const ROUTES: readonly Route[] = [
   { path: '/', component: DashboardPage, strategy: 'private' },
   { path: '/dashboard', component: DashboardPage, strategy: 'private' },
   { path: '/agent', component: AgentsPage, strategy: 'private' },
+  { path: '/settings', component: SettingsPage, strategy: 'private' },
   { path: '/login', component: LoginPage, strategy: 'guest-only' },
   { path: '/auth/callback', component: OAuthCallbackPage, strategy: 'guest-only' },
 ];
@@ -129,7 +131,7 @@ class Router {
 
     // Redirect authenticated users away from guest-only pages (login/callback)
     if (route.strategy === 'guest-only') {
-      const result = canAccessPublicRoute();
+      const result = canAccessPublicOnlyRoute();
       if (!result.allowed && result.redirectTo) {
         // Use 'replace' so the user cannot Back-button back to the protected route
         await this.navigate(result.redirectTo, 'replace');

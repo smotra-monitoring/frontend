@@ -67,7 +67,7 @@
 - [ ] Expandable table rows for agent details
 - [ ] Agent filtering and sorting
 - [ ] Mobile bottom navigation
-- [ ] Settings page
+- [x] Settings page (active sessions section)
 
 ## 📋 Planned Features (v0.2.0+)
 

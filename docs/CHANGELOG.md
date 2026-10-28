@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unit tests for `loadAgents()`; `/agent` integration test now mocks the API; see `docs/features/agents-page.md`
 
 ### Added
+- **Settings page (`/settings`)**: New private route with collapsible settings sections, starting with an **Active sessions** section
+  - `SettingsPage` (`src/pages/settings.ts`) and `SessionsSection` (`src/widgets/sessions-section.ts`); one line per session showing every `Session` field (device, user agent, IP address, provider, created / last used / expires, ID), a "This device" badge, and a per-session **Terminate** button at the end of the line
+  - **Terminate All** at the top of the section (`DELETE /sessions`, the current session is kept); both actions use an inline two-step confirmation
+  - Folding is native `<details open>` styled with CSS; sections are open by default and the fold state is not stored in component state
+  - `src/services/session-service.ts` (generated SDK wrapper) and `describeDevice()` in `src/utils/user-agent.ts`; `.settings-section` / `.session-row` styles in `components.css`
+  - Unit and integration tests; documentation in `docs/features/settings-page.md`
 - **Agent claim**: A **Claim** button on the Agents page opens a modal asking for `agent_id`, `claim_code` and an optional agent name, and claims the agent via `POST /agent/claim`
   - `ClaimAgentModal` (`src/components/claim-agent-modal.ts`), validators in `src/utils/claim-validation.ts`, `.claim-modal__*` styles in `components.css`
   - Inline validation, per-status error messages, clipboard paste buttons, focus trap, auto-close with success toast and automatic agent list reload
@@ -128,7 +134,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend API integration for token refresh, user info, agent data
 - Permission system and role-based access control
 - Command palette extended actions
-- Settings page
 - Agent details page (click agent name to view full details)
 - Filter controls (by status, section, version)
 - Search/filter bar above agent table
