@@ -20,6 +20,7 @@ import {
 } from '../services/session-service.js';
 import { describeDevice, isMobile } from '../utils/user-agent.js';
 import { formatAbsoluteDate, formatLastSeen } from '../utils/agent-utils.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface SettingsSessionsState extends ComponentState {
     sessions: Session[];
@@ -39,15 +40,6 @@ export interface SettingsSessionsOptions {
 const CONFIRM_TIMEOUT_MS = 4000;
 
 const EMPTY_VALUE = '—';
-
-function escapeHtml(text: string): string {
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
 
 export class SettingsSessions extends BaseComponent<SettingsSessionsState> {
     private readonly options: SettingsSessionsOptions;

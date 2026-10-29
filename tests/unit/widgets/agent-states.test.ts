@@ -404,7 +404,7 @@ describe('AgentStatesWidget', () => {
         });
     });
 
-    describe('XSS Protection', () => {
+    describe('XSS Protection (security check)', () => {
         it('escapes HTML in agent names', () => {
             const maliciousAgent = {
                 ...mockAgents[0],
@@ -417,6 +417,23 @@ describe('AgentStatesWidget', () => {
             const nameCell = container.querySelector('.agent-states-row__name');
             expect(nameCell?.innerHTML).not.toContain('<script>');
             expect(nameCell?.textContent).toContain('\<script\>'); // Should render as text, not HTML
+        });
+    });
+
+    describe('HTML Escaping (security check)', () => {
+        it('does not let an agent name break out of an attribute', () => {
+            const name = 'x" autofocus onfocus="alert(1)';
+            const maliciousAgent = { ...mockAgents[0], name };
+
+            widget = new AgentStatesWidget(container, [maliciousAgent]);
+            widget.mount();
+
+            expect(container.querySelector('[autofocus], [onfocus]')).toBeNull();
+            const toggle = container.querySelector('[aria-label^="Toggle details for"]');
+            expect(toggle?.getAttribute('aria-label')).toBe(`Toggle details for ${name}`);
+
+            const nameCell = container.querySelector('.agent-states-row__name');
+            expect(nameCell?.textContent).toContain(name);
         });
     });
 });

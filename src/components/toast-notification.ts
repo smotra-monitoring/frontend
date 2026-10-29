@@ -6,6 +6,7 @@
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { SystemNotificationMessage } from '../types/websocket-types.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface ToastState extends ComponentState {
   notifications: ToastNotificationData[];
@@ -67,7 +68,7 @@ export class ToastNotification extends BaseComponent<ToastState> {
           ${this.getIcon(notification.type)}
         </div>
         <div class="toast__content">
-          <p class="toast__message">${this.escapeHtml(notification.message)}</p>
+          <p class="toast__message">${escapeHtml(notification.message)}</p>
         </div>
         ${notification.dismissible ? `
           <button 
@@ -202,12 +203,6 @@ export class ToastNotification extends BaseComponent<ToastState> {
 
   private generateId(): string {
     return `toast-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   onDestroy(): void {

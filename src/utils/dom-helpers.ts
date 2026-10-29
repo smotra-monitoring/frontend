@@ -40,6 +40,19 @@ export function scrollToTop(smooth: boolean = true): void {
   });
 }
 
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+/** Escape text for safe use in HTML text nodes and quoted attribute values. */
+export function escapeHtml(text: string): string {
+  return String(text).replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
+}
+
 /**
  * Create DOM element from HTML string
  */

@@ -38,7 +38,7 @@ describe('ToastNotification', () => {
         expect(root.querySelector('.toast__message')!.textContent).toBe('Saved');
     });
 
-    it('escapes HTML in messages', () => {
+    it('escapes HTML in messages (security check)', () => {
         toast.info('<img src=x onerror=alert(1)>');
 
         expect(root.querySelector('img')).toBeNull();

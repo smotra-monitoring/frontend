@@ -7,7 +7,7 @@ import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { Agent } from '../types/agent-types.js';
 import { getAgents } from '../state/agent-state.js';
-import { smoothScrollTo } from '../utils/dom-helpers.js';
+import { smoothScrollTo, escapeHtml } from '../utils/dom-helpers.js';
 
 interface CommandPaletteState extends ComponentState {
   visible: boolean;
@@ -61,7 +61,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
                 type="text"
                 class="command-palette__input"
                 placeholder="Search agents or actions..."
-                value="${this.escapeHtml(query)}"
+                value="${escapeHtml(query)}"
                 aria-label="Search"
                 autocomplete="off"
               />
@@ -114,7 +114,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
             <div class="command-palette__item-content">
               <div class="command-palette__item-label">${this.highlightQuery(result.label, this.state.query)}</div>
               ${result.description ? `
-                <div class="command-palette__item-description">${this.escapeHtml(result.description)}</div>
+                <div class="command-palette__item-description">${escapeHtml(result.description)}</div>
               ` : ''}
             </div>
           </li>
@@ -134,7 +134,7 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
     return `
       <div class="command-palette__empty">
-        <p>No results found for "${this.escapeHtml(query)}"</p>
+        <p>No results found for "${escapeHtml(query)}"</p>
       </div>
     `;
   }
@@ -292,21 +292,23 @@ export class CommandPalette extends BaseComponent<CommandPaletteState> {
 
   private highlightQuery(text: string, query: string): string {
     if (!query) {
-      return this.escapeHtml(text);
+      return escapeHtml(text);
     }
 
-    const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
-    return this.escapeHtml(text).replace(regex, '<mark>$1</mark>');
+    // Match on raw text, then escape each piece, so queries cannot match inside entities
+    const regex = new RegExp(this.escapeRegex(query), 'gi');
+    let result = '';
+    let last = 0;
+    for (const match of text.matchAll(regex)) {
+      const start = match.index ?? 0;
+      result += `${escapeHtml(text.slice(last, start))}<mark>${escapeHtml(match[0])}</mark>`;
+      last = start + match[0].length;
+    }
+    return result + escapeHtml(text.slice(last));
   }
 
   private escapeRegex(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   /**
