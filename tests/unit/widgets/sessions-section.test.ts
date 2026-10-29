@@ -217,7 +217,7 @@ describe('SessionsSection', () => {
         await vi.waitFor(() => expect(container.textContent).toContain('No active sessions.'));
     });
 
-    it('escapes untrusted values', async () => {
+    it('escapes untrusted values (security check)', async () => {
         vi.mocked(fetchSessions).mockResolvedValue([
             { ...mockSessions[1]!, user_agent: '<img src=x onerror=alert(1)>', provider: '"><script>x</script>' },
         ]);
