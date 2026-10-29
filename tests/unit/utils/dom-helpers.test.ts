@@ -13,6 +13,7 @@ import {
     emptyElement,
     whenReady,
     debounce,
+    escapeHtml,
 } from '../../../src/utils/dom-helpers.js';
 
 function mockReducedMotion(matches: boolean) {
@@ -28,6 +29,30 @@ describe('dom-helpers', () => {
     beforeEach(() => {
         mockReducedMotion(false);
         window.scrollTo = vi.fn() as any;
+    });
+
+    describe('escapeHtml', () => {
+        it('escapes &, <, >, double and single quotes', () => {
+            expect(escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+        });
+
+        it('leaves plain text unchanged', () => {
+            expect(escapeHtml('my agent 1')).toBe('my agent 1');
+        });
+
+        it('does not double-decode existing entities', () => {
+            expect(escapeHtml('&amp;')).toBe('&amp;amp;');
+        });
+
+        it.each(['"', "'"])('keeps attribute-breakout payloads inside a %s-quoted attribute', (quote) => {
+            const payload = `x${quote} autofocus onfocus=${quote}alert(1)`;
+            const host = document.createElement('div');
+            host.innerHTML = `<button aria-label=${quote}${escapeHtml(payload)}${quote}>b</button>`;
+
+            const button = host.querySelector('button')!;
+            expect(button.getAttributeNames()).toEqual(['aria-label']);
+            expect(button.getAttribute('aria-label')).toBe(payload);
+        });
     });
 
     describe('smoothScrollTo', () => {
