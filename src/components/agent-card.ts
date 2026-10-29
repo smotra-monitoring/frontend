@@ -10,6 +10,7 @@ import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { Agent, AgentStatus } from '../types/agent-types.js';
 import { deriveAgentStatus } from '../utils/agent-utils.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 import { on as onWebSocket } from '../services/websocket-service.js';
 
 interface AgentCardState extends ComponentState {
@@ -49,7 +50,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
               class="status-pulse status-pulse--${status}" 
               aria-label="${this.getStatusLabel(status)}"
             ></span>
-            <h3 class="agent-card__name">${this.escapeHtml(agent.name)}</h3>
+            <h3 class="agent-card__name">${escapeHtml(agent.name)}</h3>
           </div>
           ${this.renderActions()}
         </div>
@@ -91,7 +92,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
         <div class="agent-card__metric">
           <span class="agent-card__metric-label">Agent Version</span>
           <span class="agent-card__metric-value">
-            ${this.escapeHtml(agent.agentVersion)}
+            ${escapeHtml(agent.agentVersion)}
           </span>
         </div>
       ` : ''}
@@ -124,21 +125,21 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       <div class="agent-card__details">
         <dl class="agent-card__details-list">
           <dt>ID</dt>
-          <dd><code>${this.escapeHtml(agent.id)}</code></dd>
+          <dd><code>${escapeHtml(agent.id)}</code></dd>
           
           ${agent.workspaceId ? `
             <dt>Workspace ID</dt>
-            <dd><code>${this.escapeHtml(agent.workspaceId)}</code></dd>
+            <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
           ` : ''}
           
           ${primaryIP ? `
             <dt>IP Address</dt>
-            <dd>${this.escapeHtml(primaryIP.ip)} (${this.escapeHtml(primaryIP.iface)})</dd>
+            <dd>${escapeHtml(primaryIP.ip)} (${escapeHtml(primaryIP.iface)})</dd>
           ` : ''}
           
           ${agent.agentVersion ? `
             <dt>Agent Version</dt>
-            <dd>${this.escapeHtml(agent.agentVersion)}</dd>
+            <dd>${escapeHtml(agent.agentVersion)}</dd>
           ` : ''}
         </dl>
       </div>
@@ -202,11 +203,5 @@ export class AgentCard extends BaseComponent<AgentCardState> {
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
     return `${Math.floor(seconds / 86400)}d ago`;
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }

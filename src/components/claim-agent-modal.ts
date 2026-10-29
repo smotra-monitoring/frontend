@@ -9,6 +9,7 @@ import { postClaimAgent } from '../api/index.js';
 import { getValidAccessToken } from '../auth/token-manager.js';
 import { loadAgents } from '../state/agent-state.js';
 import { navigateTo } from '../utils/navigation.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 import {
     CLAIM_CODE_MAX_LENGTH,
     normalizeAgentName,
@@ -152,7 +153,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
                 name="name"
                 autocomplete="off"
                 placeholder="Defaults to the agent's hostname"
-                value="${this.escapeHtml(name)}"
+                value="${escapeHtml(name)}"
                 ${busy ? 'disabled' : ''}
               />
             </div>
@@ -211,7 +212,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
             spellcheck="false"
             placeholder="${f.placeholder}"
             maxlength="${f.maxLength}"
-            value="${this.escapeHtml(f.value)}"
+            value="${escapeHtml(f.value)}"
             aria-required="true"
             aria-invalid="${invalid}"
             ${describedBy.length ? `aria-describedby="${describedBy.join(' ')}"` : ''}
@@ -230,8 +231,8 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
             </button>
           ` : ''}
         </div>
-        ${f.error ? `<p id="${id}-error" class="claim-modal__error" role="alert">${this.escapeHtml(f.error)}</p>` : ''}
-        ${f.hint ? `<p id="${id}-hint" class="claim-modal__hint">${this.escapeHtml(f.hint)}</p>` : ''}
+        ${f.error ? `<p id="${id}-error" class="claim-modal__error" role="alert">${escapeHtml(f.error)}</p>` : ''}
+        ${f.hint ? `<p id="${id}-hint" class="claim-modal__hint">${escapeHtml(f.hint)}</p>` : ''}
       </div>
     `;
     }
@@ -240,7 +241,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
         if (status === 'submitting') {
             return '<span class="claim-modal__spinner" aria-hidden="true"></span>Claiming…';
         }
-        return this.escapeHtml(message);
+        return escapeHtml(message);
     }
 
     private attachEventListeners(): void {
@@ -483,12 +484,6 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
 
         const selector = target === 'status' ? '#claim-modal-status' : `#${FIELD_IDS[target]}`;
         this.query(selector)?.focus();
-    }
-
-    private escapeHtml(text: string): string {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML.replace(/"/g, '&quot;');
     }
 
     show(): void {

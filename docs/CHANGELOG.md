@@ -12,8 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Test mocks, unit/integration tests and `docs/features/agent-states-widget.md` updated
 
 ### Fixed
-- **Stale session on 401**: When the server rejected the session token (e.g. all sessions purged server-side), API calls only logged errors and the user stayed on a broken page. Root cause: no global handling of `401 Unauthorized` responses. A response interceptor (`installUnauthorizedInterceptor()` in `src/services/auth-service.ts`) now clears the local session, stops token refresh and redirects to `/login`; login-flow endpoints (`/auth/oauth2/token`, `/auth/oauth2/revoke`, `/auth/logout`) are excluded
-- **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. Root cause: the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
+- **Attribute-injection XSS in HTML escaping**: An agent name such as `x" autofocus onfocus="alert('XSS')` executed script on `/agent` (it was rendered inside `aria-label="..."`); the same applied to the claim modal and command palette `value="..."` attributes. 
+**Root cause:** each component had its own `escapeHtml()` built on `div.textContent`/`innerHTML`, which does not escape `"` or `'`. All copies were replaced by a single `escapeHtml()` in `src/utils/dom-helpers.ts` that escapes `& < > " '`
+  - Command palette highlighting now matches on raw text and escapes each segment, so a query like `39` or `amp` can no longer match inside an escaped entity
+  - Unit tests for `escapeHtml()` and a regression test for the `aria-label` breakout in `AgentStatesWidget`
+- **Stale session on 401**: When the server rejected the session token (e.g. all sessions purged server-side), API calls only logged errors and the user stayed on a broken page. 
+**Root cause:** no global handling of `401 Unauthorized` responses. A response interceptor (`installUnauthorizedInterceptor()` in `src/services/auth-service.ts`) now clears the local session, stops token refresh and redirects to `/login`; login-flow endpoints (`/auth/oauth2/token`, `/auth/oauth2/revoke`, `/auth/logout`) are excluded
+- **WebSocket reconnect**: Reconnect attempts now reuse the active configuration. 
+**Root cause:** the reconnect timer called `connect()` with no arguments, which reset the custom `url`, `reconnectInterval` and `maxReconnectAttempts` to defaults
 - **Agent detail expansion**: Clicking anywhere on an agent's summary row now expands or collapses its details; previously the click handler was attached only to the chevron button. Chevron icons and ARIA state stay synchronized, and keyboard button activation still toggles exactly once.
 
 ### Changed

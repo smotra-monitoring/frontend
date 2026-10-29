@@ -7,6 +7,7 @@ import { BaseComponent } from '../components/base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import { handleLoginCallback } from '../services/auth-service.js';
 import { getRedirectAfterLogin } from '../auth/auth-guard.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface OAuthCallbackPageState extends ComponentState {
   status: 'processing' | 'success' | 'error';
@@ -36,7 +37,7 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
           
           <h1 class="oauth-callback__title">${this.getStatusTitle(status)}</h1>
           
-          <p class="oauth-callback__message">${this.escapeHtml(message)}</p>
+          <p class="oauth-callback__message">${escapeHtml(message)}</p>
           
           ${status === 'processing' ? `
             <div class="oauth-callback__spinner">
@@ -116,11 +117,5 @@ export class OAuthCallbackPage extends BaseComponent<OAuthCallbackPageState> {
         message: error instanceof Error ? error.message : 'An unexpected error occurred.',
       });
     }
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }

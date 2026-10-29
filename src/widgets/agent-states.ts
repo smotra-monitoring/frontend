@@ -18,6 +18,7 @@ import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-
 import { subscribeToAgents, sortAgents, loadAgents } from '../state/agent-state.js';
 import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
 import { subscribeToRefresh } from '../state/refresh-state.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface AgentStatesWidgetState extends ComponentState {
   agents: Agent[];
@@ -160,7 +161,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     return `
       <tr class="agent-states-row" data-agent-id="${agent.id}">
         <td class="agent-states-row__name">
-          ${this.escapeHtml(agent.name)}
+          ${escapeHtml(agent.name)}
         </td>
         <td class="agent-states-row__status">
           ${this.renderStatusBadge(status)}
@@ -175,7 +176,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             data-agent-id="${agent.id}"
             aria-expanded="false"
             aria-controls="${detailsId}"
-            aria-label="Toggle details for ${this.escapeHtml(agent.name)}"
+            aria-label="Toggle details for ${escapeHtml(agent.name)}"
           >
             <span class="icon">
               <i class="fas fa-chevron-down"></i>
@@ -219,20 +220,20 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         <dl class="agent-details__grid">
           <div class="agent-details__item">
             <dt>Agent ID</dt>
-            <dd><code>${this.escapeHtml(agent.id)}</code></dd>
+            <dd><code>${escapeHtml(agent.id)}</code></dd>
           </div>
 
           ${agent.workspaceId ? `
             <div class="agent-details__item">
               <dt>Workspace ID</dt>
-              <dd><code>${this.escapeHtml(agent.workspaceId)}</code></dd>
+              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
             </div>
           ` : ''}
 
           ${agent.agentVersion ? `
             <div class="agent-details__item">
               <dt>Agent Version</dt>
-              <dd>${this.escapeHtml(agent.agentVersion)}</dd>
+              <dd>${escapeHtml(agent.agentVersion)}</dd>
             </div>
           ` : ''}
 
@@ -250,8 +251,8 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 <ul class="agent-details__ip-list">
                   ${allIPs.map(ip => `
                     <li>
-                      <code>${this.escapeHtml(ip.ip)}</code>
-                      <span class="has-text-grey"> (${this.escapeHtml(ip.iface || 'unknown')}${ip.recommended ? ', recommended' : ''})</span>
+                      <code>${escapeHtml(ip.ip)}</code>
+                      <span class="has-text-grey"> (${escapeHtml(ip.iface || 'unknown')}${ip.recommended ? ', recommended' : ''})</span>
                     </li>
                   `).join('')}
                 </ul>
@@ -438,14 +439,5 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
    */
   public setLoading(loading: boolean): void {
     this.setState({ loading });
-  }
-
-  /**
-   * Escape HTML to prevent XSS attacks
-   */
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }

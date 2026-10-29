@@ -8,6 +8,7 @@ import type { ComponentState } from '../types/component-types.js';
 import type { OAuth2Provider } from '../types/auth-types.js';
 import { login } from '../services/auth-service.js';
 import { isAuthenticated } from '../state/auth-state.js';
+import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface LoginPageState extends ComponentState {
   loading: boolean;
@@ -60,7 +61,7 @@ export class LoginPage extends BaseComponent<LoginPageState> {
           ${error ? `
             <div class="notification is-danger is-light">
               <button class="delete" data-action="clear-error"></button>
-              ${this.escapeHtml(error)}
+              ${escapeHtml(error)}
             </div>
           ` : ''}
           
@@ -134,11 +135,5 @@ export class LoginPage extends BaseComponent<LoginPageState> {
         error: error instanceof Error ? error.message : 'Login failed. Please try again.',
       });
     }
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }
