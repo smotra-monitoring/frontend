@@ -5,6 +5,7 @@ Thank you for your interest in contributing to Smotra Frontend! This guide will 
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
+- [Contribution Policy](#contribution-policy)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
 - [Code Style](#code-style)
@@ -15,6 +16,42 @@ Thank you for your interest in contributing to Smotra Frontend! This guide will 
 ## Code of Conduct
 
 This project follows a code of conduct that promotes respect, collaboration, and inclusivity. By participating, you agree to uphold these values.
+
+## Contribution Policy
+
+To keep contributions genuine and reviewable, each type of change has a mandatory path. PRs that do not follow it are closed without review.
+
+### Feature PRs
+
+- Features are accepted **only via `skills.md`**.
+- Add a `skills.md` file describing the feature (purpose, behavior, inputs/outputs, acceptance criteria, affected files) and reference it in the PR description.
+- Features must also meet the [Test Requirements](#test-requirements) and [Documentation](#documentation) rules.
+
+### Bug Fixes
+
+- Every bug must first be reported as a **GitHub issue**.
+- A bug-fix PR is accepted only if it links the issue (`Fixes #123`) and the issue has been confirmed by a maintainer.
+- The PR must include a regression test that fails without the fix.
+- Do not open a PR for a bug that has no issue.
+
+### Security PRs
+
+Do not disclose vulnerabilities in public issues before a fix is released. A security PR must include all of the following:
+
+1. **Detailed explanation** of the vulnerability (affected component, impact, severity, attack scenario)
+2. **Steps to reproduce** it
+3. **A unit test** that reproduces the vulnerability (fails before the fix, passes after)
+4. **A proposed fix or mitigation**
+
+PRs missing any of these items are closed.
+
+### Genuine Contribution Requirements
+
+- You must understand and be able to explain every line you submit; maintainers may ask questions during review.
+- Disclose any AI/LLM assistance in the PR template. Unreviewed, bulk-generated PRs are not accepted.
+- Reproduce the problem locally before fixing it; PRs must include evidence (logs, screenshots, failing test output).
+- Claim an issue by commenting and wait for assignment before starting work.
+- Do not open PRs for trivial or cosmetic changes (typos, whitespace, renames) solely to gain contributor credit.
 
 ## Getting Started
 
@@ -155,7 +192,7 @@ Fixes #456
 > - `tsconfig.build.json` - Production builds
 > - `tsconfig.test.json` - Test environment
 >
-> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for complete details.
+> See [TypeScript Configuration](docs/TYPESCRIPT_CONFIGURATION.md) for complete details.
 
 ### Naming Conventions
 
@@ -375,47 +412,29 @@ npm run test:integration
    git push origin feature/your-feature-name
    ```
 
-2. **Create Pull Request** on GitHub
+2. **Create Pull Request** on GitHub using the matching template (see [PR Templates](#pr-templates))
    - Use clear, descriptive title
    - Reference related issues (`Closes #123`)
    - Describe changes and rationale
    - Include screenshots for UI changes
    - Mention breaking changes
 
-3. **PR Template**
-   ```markdown
-   ## Description
-   Brief description of changes
-   
-   ## Type of Change
-   - [ ] Bug fix
-   - [ ] New feature
-   - [ ] Breaking change
-   - [ ] Documentation update
-   
-   ## Testing
-   - [ ] All tests pass
-   - [ ] New tests added
-   - [ ] Tested in browser
-   - [ ] Responsive design verified
-   
-   ## Checklist
-   - [ ] Code follows style guidelines
-   - [ ] Self-review completed
-   - [ ] Documentation updated
-   - [ ] No new warnings
-   
-   ## Related Issues
-   Closes #123
-   
-   ## Screenshots (if applicable)
-   ```
-
-4. **Address review feedback**
+3. **Address review feedback**
    - Respond to comments
    - Make requested changes
    - Push updates to same branch
    - Re-request review
+
+### PR Templates
+
+Templates live in `.github/PULL_REQUEST_TEMPLATE/`. Select one by appending `?template=<file>` to the compare URL:
+
+| Change type | Template |
+|-------------|----------|
+| Feature | `feature.md` |
+| Bug fix | `bugfix.md` |
+| Security | `security.md` |
+| Docs, refactor, tests, chores | `other.md` |
 
 ## Documentation
 
