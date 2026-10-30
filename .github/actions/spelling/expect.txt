@@ -4,6 +4,7 @@ Cantarell
 Chronosphere
 clickable
 Cloudflare
+CWE
 dbdbdb
 divs
 dvh
