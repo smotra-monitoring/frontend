@@ -1,6 +1,6 @@
 ## Feature PR
 
-<!-- Features are accepted only via skills.md. See CONTRIBUTING.md#contribution-policy -->
+<!-- Features are accepted only via skills.md. See docs/CONTRIBUTING.md#contribution-policy -->
 
 ## Summary
 

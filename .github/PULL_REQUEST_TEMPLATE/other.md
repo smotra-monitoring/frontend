@@ -3,7 +3,7 @@
 <!--
 Features must use feature.md, bug fixes bugfix.md, security fixes security.md.
 Trivial or cosmetic-only PRs (typos, whitespace, renames) are not accepted.
-See CONTRIBUTING.md#contribution-policy
+See docs/CONTRIBUTING.md#contribution-policy
 -->
 
 ## Summary

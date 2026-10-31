@@ -1,6 +1,6 @@
 ## Bug fix PR
 
-<!-- Bugs must be reported as GitHub issues first. See CONTRIBUTING.md#contribution-policy -->
+<!-- Bugs must be reported as GitHub issues first. See docs/CONTRIBUTING.md#contribution-policy -->
 
 ## Linked issue (required)
 

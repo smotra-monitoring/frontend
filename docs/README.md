@@ -116,7 +116,7 @@ Located in the [`testing/`](testing/) directory:
 
 1. Start with [Quick Start Guide](GETTING_STARTED.md)
 2. Read [Architecture Overview](ARCHITECTURE.md)
-3. Review [Contributing Guidelines](../CONTRIBUTING.md)
+3. Review [Contributing Guidelines](CONTRIBUTING.md)
 4. Check [Roadmap](ROADMAP.md) for available tasks
 
 ### For Developers
@@ -125,7 +125,7 @@ Located in the [`testing/`](testing/) directory:
 - [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) - Build and type-checking setup
 - [OAuth Guide](features/oauth-authentication.md) - Authentication implementation
 - [Testing Summary](testing/TESTING_SUMMARY.md) - Testing approach
-- [Contributing](../CONTRIBUTING.md) - Code style and workflow
+- [Contributing](CONTRIBUTING.md) - Code style and workflow
 
 ### For Designers
 
@@ -172,7 +172,7 @@ Located in the [`testing/`](testing/) directory:
 
 ### Development
 - [Getting Started](GETTING_STARTED.md)
-- [Contributing](../CONTRIBUTING.md)
+- [Contributing](CONTRIBUTING.md)
 - [Architecture](ARCHITECTURE.md)
 
 ## 🎯 Common Tasks
@@ -181,7 +181,7 @@ Located in the [`testing/`](testing/) directory:
 
 #### ...get started developing?
 1. [Quick Start Guide](GETTING_STARTED.md)
-2. [Contributing Guidelines](../CONTRIBUTING.md)
+2. [Contributing Guidelines](CONTRIBUTING.md)
 
 #### ...understand the architecture?
 1. [Architecture Overview](ARCHITECTURE.md)
@@ -195,11 +195,11 @@ Located in the [`testing/`](testing/) directory:
 #### ...add a new feature?
 1. [Roadmap](ROADMAP.md) → Check if planned
 2. [Architecture](ARCHITECTURE.md) → Understand layers
-3. [Contributing](../CONTRIBUTING.md) → Follow workflow
+3. [Contributing](CONTRIBUTING.md) → Follow workflow
 
 #### ...run tests?
 1. [Testing Summary](testing/TESTING_SUMMARY.md) → Running Tests section
-2. [Contributing](../CONTRIBUTING.md) → Testing section
+2. [Contributing](CONTRIBUTING.md) → Testing section
 
 #### ...customize the theme?
 1. [Theme Management](features/theme-management.md)
@@ -275,7 +275,7 @@ Documentation should be updated when:
 - ✅ Test changes → Update TESTING_SUMMARY.md
 - ✅ Architecture changes → Update ARCHITECTURE.md
 
-See [Contributing Guidelines](../CONTRIBUTING.md) → Documentation section.
+See [Contributing Guidelines](CONTRIBUTING.md) → Documentation section.
 
 ## 🤝 Contributing to Documentation
 
@@ -288,7 +288,7 @@ Documentation contributions are welcome! To contribute:
 5. Add diagrams where helpful (use Mermaid for diagrams)
 6. Submit a pull request
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for full guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
 
 ## 📧 Questions?
 

@@ -188,7 +188,7 @@ node --version  # Should be v18.0.0 or higher
 - **Explore features**: See [docs/features/](./features/) for feature guides
 - **Customize theme**: Edit `public/css/variables.css` for colors and spacing
 - **Add agents**: Connect backend agents to see real-time monitoring
-- **Contribute**: See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines
+- **Contribute**: See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
 ## Development Workflow
 
