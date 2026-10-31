@@ -50,7 +50,7 @@ const HTML_ESCAPES: Record<string, string> = {
 
 /** Escape text for safe use in HTML text nodes and quoted attribute values. */
 export function escapeHtml(text: string): string {
-  return String(text).replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
+  return String(text).replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch] ?? ch);
 }
 
 /**
