@@ -192,7 +192,7 @@ Fixes #456
 > - `tsconfig.build.json` - Production builds
 > - `tsconfig.test.json` - Test environment
 >
-> See [TypeScript Configuration](docs/TYPESCRIPT_CONFIGURATION.md) for complete details.
+> See [TypeScript Configuration](TYPESCRIPT_CONFIGURATION.md) for complete details.
 
 ### Naming Conventions
 

@@ -44,7 +44,7 @@ For detailed setup instructions, see **[Getting Started Guide](docs/GETTING_STAR
 
 ### 👩‍💻 For Developers
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - How it all works
-- **[Contributing Guidelines](CONTRIBUTING.md)** - Join the project
+- **[Contributing Guidelines](docs/CONTRIBUTING.md)** - Join the project
 - **[Testing Guide](docs/testing/TESTING_SUMMARY.md)** - Testing strategy
 
 ### 🗺️ Planning & History
@@ -79,7 +79,7 @@ Current focus: Backend API integration and enhanced monitoring features. See [Ro
 
 We welcome contributions! Whether you're fixing bugs, adding features, or improving documentation:
 
-1. Read the **[Contributing Guide](CONTRIBUTING.md)**
+1. Read the **[Contributing Guide](docs/CONTRIBUTING.md)**
 2. Check the **[Roadmap](docs/ROADMAP.md)** for available tasks
 3. Follow our code style and testing requirements
 4. Submit a pull request

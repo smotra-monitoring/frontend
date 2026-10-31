@@ -3,7 +3,7 @@
 <!--
 Do not disclose unpatched vulnerabilities publicly beyond what is needed for this PR.
 All four sections below are required. PRs missing any of them are closed.
-See CONTRIBUTING.md#contribution-policy
+See docs/CONTRIBUTING.md#contribution-policy
 -->
 
 ## 1. Vulnerability explanation (required)

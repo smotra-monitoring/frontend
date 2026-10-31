@@ -1,5 +1,5 @@
 <!--
-Read CONTRIBUTING.md#contribution-policy before opening this PR.
+Read docs/CONTRIBUTING.md#contribution-policy before opening this PR.
 Use the template that matches your change by editing the URL, adding ?template=<file>:
   - feature.md   Feature (requires skills.md)
   - bugfix.md    Bug fix (requires a linked, maintainer-confirmed issue)

@@ -334,7 +334,7 @@ Possible improvements to consider:
 
 - [Getting Started](GETTING_STARTED.md) - Basic setup and build commands
 - [Architecture](ARCHITECTURE.md) - Overall project structure
-- [Contributing](../CONTRIBUTING.md) - Development workflow
+- [Contributing](CONTRIBUTING.md) - Development workflow
 - [Testing](testing/TESTING_SUMMARY.md) - Test configuration and strategy
 
 ## References
