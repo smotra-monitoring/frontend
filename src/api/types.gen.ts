@@ -472,10 +472,7 @@ export type AgentNetworkInterface = {
 
 export type Agent = {
   id: UuiDv7;
-  /**
-   * Workspace this agent belongs to
-   */
-  workspace_id: string;
+  workspace_id: UuiDv7;
   /**
    * Human-readable agent name
    */
