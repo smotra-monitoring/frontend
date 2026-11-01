@@ -71,7 +71,7 @@ describe('AgentStatesWidget', () => {
 
             // Check first agent has correct status badge
             const firstAgent = mockAgents[0];
-            const expectedStatus = deriveAgentStatus(firstAgent.lastSeenAt);
+            const expectedStatus = deriveAgentStatus(firstAgent.last_seen_at);
             const firstBadge = badges[0];
             expect(firstBadge.classList.contains(`agent-status-badge--${expectedStatus}`)).toBe(true);
         });
@@ -385,10 +385,10 @@ describe('AgentStatesWidget', () => {
             const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
 
             const agent = mockAgents.find(a => a.id === firstAgentId);
-            if (agent?.ipAddresses && agent.ipAddresses.length > 0) {
+            if (agent?.ip_addresses && agent.ip_addresses.length > 0) {
                 const ipList = detailsRow?.querySelector('.agent-details__ip-list');
                 expect(ipList).toBeTruthy();
-                expect(ipList?.children.length).toBe(agent.ipAddresses.length);
+                expect(ipList?.children.length).toBe(agent.ip_addresses.length);
             }
         });
     });

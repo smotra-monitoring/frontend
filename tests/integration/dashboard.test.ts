@@ -50,7 +50,7 @@ describe('Dashboard (Integration)', () => {
     it('filters agents by status and sorts by name', () => {
       // Filter online agents (derived from lastSeenAt)
       const online = filterAgents(mockAgents, { status: 'online' });
-      expect(online.every(a => deriveAgentStatus(a.lastSeenAt) === 'online')).toBe(true);
+      expect(online.every(a => deriveAgentStatus(a.last_seen_at) === 'online')).toBe(true);
 
       // Sort by name
       const sorted = sortAgents(online, { field: 'name', direction: 'asc' });
@@ -62,14 +62,14 @@ describe('Dashboard (Integration)', () => {
 
     it('filters by workspaceId and sorts by lastSeenAt', () => {
       const workspace1 = filterAgents(mockAgents, { workspaceId: '01930000-0000-7000-0000-000000000001' });
-      expect(workspace1.every(a => a.workspaceId === '01930000-0000-7000-0000-000000000001')).toBe(true);
+      expect(workspace1.every(a => a.workspace_id === '01930000-0000-7000-0000-000000000001')).toBe(true);
 
       const sorted = sortAgents(workspace1, { field: 'lastSeenAt', direction: 'desc' });
 
       // Verify descending order (most recent first)
       for (let i = 1; i < sorted.length; i++) {
-        const prevTime = sorted[i - 1].lastSeenAt?.getTime() ?? 0;
-        const currTime = sorted[i].lastSeenAt?.getTime() ?? 0;
+        const prevTime = sorted[i - 1].last_seen_at?.getTime() ?? 0;
+        const currTime = sorted[i].last_seen_at?.getTime() ?? 0;
         expect(prevTime).toBeGreaterThanOrEqual(currTime);
       }
     });
@@ -81,7 +81,7 @@ describe('Dashboard (Integration)', () => {
 
       const results2 = filterAgents(mockAgents, { search: '192.168.1.100' });
       expect(results2).toHaveLength(1);
-      expect(results2[0].ipAddresses?.[0].ip).toBe('192.168.1.100');
+      expect(results2[0].ip_addresses?.[0].ip).toBe('192.168.1.100');
     });
   });
 
@@ -96,7 +96,7 @@ describe('Dashboard (Integration)', () => {
     it('updates agent on WebSocket message', () => {
       const agentId = mockAgents[0].id;
       const initialAgent = getAgents().find(a => a.id === agentId);
-      const initialVersion = initialAgent!.agentVersion;
+      const initialVersion = initialAgent!.agent_version;
 
       // Simulate WebSocket update
       ws.simulateMessage(mockAgentUpdateMessage);
@@ -105,8 +105,8 @@ describe('Dashboard (Integration)', () => {
       updateAgent(mockAgentUpdateMessage.payload);
 
       const updatedAgent = getAgents().find(a => a.id === agentId);
-      expect(updatedAgent!.agentVersion).not.toBe(initialVersion);
-      expect(updatedAgent!.agentVersion).toBe(mockAgentUpdateMessage.payload.agentVersion);
+      expect(updatedAgent!.agent_version).not.toBe(initialVersion);
+      expect(updatedAgent!.agent_version).toBe(mockAgentUpdateMessage.payload.agent_version);
     });
 
     it('adds new agent via WebSocket', () => {
@@ -145,12 +145,12 @@ describe('Dashboard (Integration)', () => {
       // Add agent
       addAgent(mockAgent);
       expect(getAgents()).toHaveLength(1);
-      expect(getAgents()[0].agentVersion).toBe(mockAgent.agentVersion);
+      expect(getAgents()[0].agent_version).toBe(mockAgent.agent_version);
 
       // Update agent (use mockAgentUpdate which is a full Agent)
       updateAgent(mockAgentUpdate);
-      expect(getAgents()[0].agentVersion).toBe(mockAgentUpdate.agentVersion);
-      expect(getAgents()[0].configVersionDesired).toBe(mockAgentUpdate.configVersionDesired);
+      expect(getAgents()[0].agent_version).toBe(mockAgentUpdate.agent_version);
+      expect(getAgents()[0].config_version_desired).toBe(mockAgentUpdate.config_version_desired);
 
       // Remove agent
       removeAgent(mockAgent.id);
@@ -161,14 +161,14 @@ describe('Dashboard (Integration)', () => {
       setAgents(mockAgents);
 
       // Update multiple agents with full Agent objects
-      updateAgent({ ...mockAgents[0], agentVersion: '1.1.0' });
-      updateAgent({ ...mockAgents[1], agentVersion: '1.2.0' });
-      updateAgent({ ...mockAgents[2], agentVersion: '1.3.0' });
+      updateAgent({ ...mockAgents[0], agent_version: '1.1.0' });
+      updateAgent({ ...mockAgents[1], agent_version: '1.2.0' });
+      updateAgent({ ...mockAgents[2], agent_version: '1.3.0' });
 
       const agents = getAgents();
-      expect(agents.find(a => a.id === mockAgents[0].id)!.agentVersion).toBe('1.1.0');
-      expect(agents.find(a => a.id === mockAgents[1].id)!.agentVersion).toBe('1.2.0');
-      expect(agents.find(a => a.id === mockAgents[2].id)!.agentVersion).toBe('1.3.0');
+      expect(agents.find(a => a.id === mockAgents[0].id)!.agent_version).toBe('1.1.0');
+      expect(agents.find(a => a.id === mockAgents[1].id)!.agent_version).toBe('1.2.0');
+      expect(agents.find(a => a.id === mockAgents[2].id)!.agent_version).toBe('1.3.0');
     });
   });
 
@@ -180,10 +180,10 @@ describe('Dashboard (Integration)', () => {
       const initialOnline = initialCounts.online;
 
       // Find an offline agent (lastSeenAt beyond threshold)
-      const offlineAgent = mockAgents.find(a => deriveAgentStatus(a.lastSeenAt) === 'offline');
+      const offlineAgent = mockAgents.find(a => deriveAgentStatus(a.last_seen_at) === 'offline');
       if (offlineAgent) {
         // Update to make it online (recent lastSeenAt) - use full Agent object
-        updateAgent({ ...offlineAgent, lastSeenAt: new Date() });
+        updateAgent({ ...offlineAgent, last_seen_at: new Date() });
 
         const newCounts = getAgentCountByStatus();
         expect(newCounts.online).toBe(initialOnline + 1);
@@ -198,9 +198,9 @@ describe('Dashboard (Integration)', () => {
 
       // Create agents with all derived status types
       setAgents([
-        { ...mockAgent, id: '1', lastSeenAt: minutesAgo(1) }, // online
-        { ...mockAgent, id: '2', lastSeenAt: hoursAgo(1) }, // offline
-        { ...mockAgent, id: '3', lastSeenAt: null }, // unknown
+        { ...mockAgent, id: '1', last_seen_at: minutesAgo(1) }, // online
+        { ...mockAgent, id: '2', last_seen_at: hoursAgo(1) }, // offline
+        { ...mockAgent, id: '3', last_seen_at: null }, // unknown
       ]);
 
       const counts = getAgentCountByStatus();

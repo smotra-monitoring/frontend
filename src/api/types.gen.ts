@@ -475,7 +475,7 @@ export type Agent = {
   /**
    * Workspace this agent belongs to
    */
-  workspaceId: string;
+  workspace_id: string;
   /**
    * Human-readable agent name
    */
@@ -483,38 +483,38 @@ export type Agent = {
   /**
    * Configuration version the server wants the agent to run
    */
-  configVersionDesired: number;
+  config_version_desired: number;
   /**
    * Configuration version last reported by the agent in a heartbeat, null if the agent
-   * has not sent one yet. Lower than configVersionDesired means the agent has not
+   * has not sent one yet. Lower than config_version_desired means the agent has not
    * applied the latest configuration.
    *
    */
-  configVersionCurrent?: number | null;
+  config_version_current?: number | null;
   /**
    * Version of the agent software, null if not yet reported
    */
-  agentVersion?: string | null;
+  agent_version?: string | null;
   /**
    * Network interfaces reported by the agent
    */
-  ipAddresses?: Array<AgentNetworkInterface>;
+  ip_addresses?: Array<AgentNetworkInterface>;
   /**
    * Timestamp of the last heartbeat received from the agent
    */
-  lastSeenAt?: Date | null;
+  last_seen_at?: Date | null;
   /**
    * Timestamp of the last monitoring result submission
    */
-  lastResultSubmittedAt?: Date | null;
+  last_result_submitted_at?: Date | null;
   /**
    * Timestamp when the agent was registered
    */
-  createdAt: Date;
+  created_at: Date;
   /**
    * Timestamp when the agent record was last updated
    */
-  updatedAt: Date;
+  updated_at: Date;
 };
 
 export type AgentListResponse = {
@@ -523,11 +523,11 @@ export type AgentListResponse = {
 };
 
 export type AgentSelfRegistration = {
-  agentId: UuiDv7;
+  agent_id: UuiDv7;
   /**
    * SHA-256 hash of the claim token (plain token shown in agent logs for user)
    */
-  claimTokenHash: string;
+  claim_token_hash: string;
   /**
    * System hostname of the machine running the agent
    */
@@ -535,7 +535,7 @@ export type AgentSelfRegistration = {
   /**
    * Version of the agent software
    */
-  agentVersion: string;
+  agent_version: string;
   /**
    * List of all non-loopback, non-link-local network interfaces on the agent host.
    * Loopback (127.x.x.x / ::1) and link-local (169.254.x.x / fe80::/10) addresses
@@ -545,7 +545,7 @@ export type AgentSelfRegistration = {
    * the server (determined via routing table, no traffic sent).
    *
    */
-  ipAddresses: Array<AgentNetworkInterface>;
+  ip_addresses: Array<AgentNetworkInterface>;
 };
 
 export type AgentRegistrationResponse = {
@@ -553,15 +553,15 @@ export type AgentRegistrationResponse = {
   /**
    * URL for agent to poll for claim status
    */
-  pollUrl: string;
+  poll_url: string;
   /**
    * URL for user to claim the agent (web UI)
    */
-  claimUrl: string;
+  claim_url: string;
   /**
    * When the claim token expires (RFC3339)
    */
-  expiresAt: Date;
+  expires_at: Date;
 };
 
 export type ClaimStatusPending = {
@@ -569,11 +569,11 @@ export type ClaimStatusPending = {
   /**
    * When the claim token expires (RFC3339)
    */
-  expiresAt: Date;
+  expires_at: Date;
   /**
    * Seconds until next poll (server-controlled backoff)
    */
-  pollIn: number;
+  poll_in: number;
 };
 
 export type ClaimStatusClaimed = {
@@ -581,19 +581,19 @@ export type ClaimStatusClaimed = {
   /**
    * API key for authenticated requests (one-time delivery)
    */
-  apiKey: string;
+  api_key: string;
   /**
    * URL to fetch agent configuration
    */
-  configUrl: string;
+  config_url: string;
 };
 
 export type ClaimAgentRequest = {
-  agentId: UuiDv7;
+  agent_id: UuiDv7;
   /**
    * Claim token from agent logs
    */
-  claimToken: string;
+  claim_token: string;
   /**
    * Human-readable name for the agent (defaults to hostname if not provided)
    */
@@ -601,7 +601,7 @@ export type ClaimAgentRequest = {
 };
 
 export type ClaimAgentResponse = {
-  agentId: UuiDv7;
+  agent_id: UuiDv7;
   status: ClaimResponseStatus;
   /**
    * Human-readable message

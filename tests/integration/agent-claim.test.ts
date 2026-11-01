@@ -80,8 +80,8 @@ describe('Agent claim workflow (Integration)', () => {
 
     expect(postClaimAgent).toHaveBeenCalledTimes(1);
     expect(vi.mocked(postClaimAgent).mock.calls[0][0].body).toEqual({
-      agentId: AGENT_ID,
-      claimToken: 'ABC123XY',
+      agent_id: AGENT_ID,
+      claim_token: 'ABC123XY',
       name: 'Production Server 01',
     });
     expect(appRoot.querySelector('.toast--success')).toBeTruthy();

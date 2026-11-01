@@ -408,7 +408,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
 
         try {
             const result = await postClaimAgent({
-                body: { agentId, claimToken: claimCode, name: normalizeAgentName(this.state.name) },
+                body: { agent_id: agentId, claim_token: claimCode, name: normalizeAgentName(this.state.name) },
                 auth: async () => (await getValidAccessToken()) ?? undefined,
             });
 

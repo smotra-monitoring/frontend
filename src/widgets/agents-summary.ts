@@ -43,7 +43,7 @@ export class AgentsSummaryWidget extends BaseComponent<AgentsSummaryState> {
   render(): void {
     const { agents } = this.state;
     const total = agents.length;
-    const online = agents.filter(a => deriveAgentStatus(a.lastSeenAt) === 'online').length;
+    const online = agents.filter(a => deriveAgentStatus(a.last_seen_at) === 'online').length;
     const health = this.getHealth(online, total);
     const caption = this.getCaption(online, total);
 

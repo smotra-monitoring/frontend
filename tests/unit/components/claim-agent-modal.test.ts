@@ -131,7 +131,7 @@ describe('ClaimAgentModal', () => {
             await flush();
 
             expect(postMock).toHaveBeenCalledTimes(1);
-            expect(postMock.mock.calls[0][0].body).toEqual({ agentId: AGENT_ID, claimToken: CLAIM_CODE, name: 'Prod 01' });
+            expect(postMock.mock.calls[0][0].body).toEqual({ agent_id: AGENT_ID, claim_token: CLAIM_CODE, name: 'Prod 01' });
         });
 
         it('omits the name when left empty', async () => {

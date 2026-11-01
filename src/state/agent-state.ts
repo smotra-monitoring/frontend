@@ -62,7 +62,7 @@ export function updateAgent(update: AgentUpdateMessage): void {
       return {
         ...agent,
         ...update,
-        updatedAt: new Date(), // Update timestamp on any change
+        updated_at: new Date(), // Update timestamp on any change
       };
     }
     return agent;
@@ -131,19 +131,19 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
   if (filter.status) {
     const statusArray = Array.isArray(filter.status) ? filter.status : [filter.status];
     filtered = filtered.filter(agent => {
-      const derivedStatus = deriveAgentStatus(agent.lastSeenAt);
+      const derivedStatus = deriveAgentStatus(agent.last_seen_at);
       return statusArray.includes(derivedStatus);
     });
   }
 
   // Apply workspaceId filter
   if (filter.workspaceId) {
-    filtered = filtered.filter(agent => agent.workspaceId === filter.workspaceId);
+    filtered = filtered.filter(agent => agent.workspace_id === filter.workspaceId);
   }
 
   // Apply agentVersion filter
   if (filter.agentVersion) {
-    filtered = filtered.filter(agent => agent.agentVersion === filter.agentVersion);
+    filtered = filtered.filter(agent => agent.agent_version === filter.agentVersion);
   }
 
   // Apply search filter
@@ -154,13 +154,13 @@ export function filterAgents(agents: Agent[], filter: FilterOptions): Agent[] {
       if (agent.name.toLowerCase().includes(searchLower)) return true;
 
       // Search in workspaceId
-      if (agent.workspaceId.toLowerCase().includes(searchLower)) return true;
+      if (agent.workspace_id.toLowerCase().includes(searchLower)) return true;
 
       // Search in agentVersion
-      if (agent.agentVersion?.toLowerCase().includes(searchLower)) return true;
+      if (agent.agent_version?.toLowerCase().includes(searchLower)) return true;
 
       // Search in IP addresses
-      if (agent.ipAddresses?.some(ip => ip.ip.includes(searchLower))) return true;
+      if (agent.ip_addresses?.some(ip => ip.ip.includes(searchLower))) return true;
 
       return false;
     });
@@ -186,26 +186,26 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
         break;
       case 'status':
         // Sort by derived status
-        aValue = deriveAgentStatus(a.lastSeenAt);
-        bValue = deriveAgentStatus(b.lastSeenAt);
+        aValue = deriveAgentStatus(a.last_seen_at);
+        bValue = deriveAgentStatus(b.last_seen_at);
         break;
       case 'lastSeenAt':
         // Sort by timestamp (null values go to end)
-        aValue = a.lastSeenAt?.getTime() ?? 0;
-        bValue = b.lastSeenAt?.getTime() ?? 0;
+        aValue = a.last_seen_at?.getTime() ?? 0;
+        bValue = b.last_seen_at?.getTime() ?? 0;
         break;
       case 'agentVersion':
-        aValue = a.agentVersion ?? '';
-        bValue = b.agentVersion ?? '';
+        aValue = a.agent_version ?? '';
+        bValue = b.agent_version ?? '';
         break;
       case 'configVersionDesired':
-        aValue = a.configVersionDesired;
-        bValue = b.configVersionDesired;
+        aValue = a.config_version_desired;
+        bValue = b.config_version_desired;
         break;
       case 'configVersionCurrent':
         // Agents that have not reported a version sort first when ascending
-        aValue = a.configVersionCurrent ?? -1;
-        bValue = b.configVersionCurrent ?? -1;
+        aValue = a.config_version_current ?? -1;
+        bValue = b.config_version_current ?? -1;
         break;
       default:
         aValue = a.name;
@@ -278,7 +278,7 @@ export function getAgentCountByStatus(): Record<string, number> {
   };
 
   agents.forEach((agent: Agent) => {
-    const status = deriveAgentStatus(agent.lastSeenAt);
+    const status = deriveAgentStatus(agent.last_seen_at);
     counts[status] = (counts[status] || 0) + 1;
   });
 
