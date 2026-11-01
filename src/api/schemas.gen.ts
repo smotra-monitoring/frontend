@@ -1116,7 +1116,7 @@ export const AgentSchema = {
       description: 'Unique agent identifier'
     },
     workspace_id: {
-      type: 'string',
+      $ref: '#/components/schemas/UUIDv7',
       description: 'Workspace this agent belongs to',
       example: '01930000-0000-7000-0000-000000000001'
     },
