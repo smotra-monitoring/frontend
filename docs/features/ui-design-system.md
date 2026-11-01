@@ -192,7 +192,7 @@ const lowerQuery = query.toLowerCase();
 const results = agents.filter(agent =>
   agent.name.toLowerCase().includes(lowerQuery) ||
   agent.hostname?.toLowerCase().includes(lowerQuery) ||
-  agent.ipAddress?.toLowerCase().includes(lowerQuery)
+  agent.ip_addresses?.some(addr => addr.ip.includes(lowerQuery))
 );
 ```
 

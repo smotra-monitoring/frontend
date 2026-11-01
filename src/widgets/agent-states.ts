@@ -185,7 +185,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
   }
 
   private renderAgentRow(agent: Agent): string {
-    const status = deriveAgentStatus(agent.lastSeenAt);
+    const status = deriveAgentStatus(agent.last_seen_at);
     const rowId = `agent-row-${agent.id}`;
     const detailsId = `agent-details-${agent.id}`;
 
@@ -198,13 +198,13 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
           ${this.renderStatusBadge(status)}
         </td>
         <td class="agent-states-row__agent-version">
-          ${agent.agentVersion ? escapeHtml(agent.agentVersion) : 'Unknown'}
+          ${agent.agent_version ? escapeHtml(agent.agent_version) : 'Unknown'}
         </td>
         <td class="agent-states-row__config-version">
-          ${agent.configVersionCurrent ?? 'N/A'} / ${agent.configVersionDesired}
+          ${agent.config_version_current ?? 'N/A'} / ${agent.config_version_desired}
         </td>
         <td class="agent-states-row__last-seen">
-          ${agent.lastSeenAt ? formatLastSeen(agent.lastSeenAt) : 'Never'}
+          ${agent.last_seen_at ? formatLastSeen(agent.last_seen_at) : 'Never'}
         </td>
         <td class="agent-states-row__actions">
           <button 
@@ -249,16 +249,16 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
   }
 
   private renderAgentDetails(agent: Agent): string {
-    const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
-    const allIPs = agent.ipAddresses || [];
+    const primaryIP = agent.ip_addresses?.find(ip => ip.recommended) || agent.ip_addresses?.[0];
+    const allIPs = agent.ip_addresses || [];
 
     return `
       <div class="agent-details">
         <dl class="agent-details__grid">
-          ${agent.workspaceId ? `
+          ${agent.workspace_id ? `
             <div class="agent-details__item">
               <dt>Workspace ID</dt>
-              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
+              <dd><code>${escapeHtml(agent.workspace_id)}</code></dd>
             </div>
           ` : ''}
 
@@ -287,10 +287,10 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
           <div class="agent-details__item">
           </div>
 
-          ${agent.agentVersion ? `
+          ${agent.agent_version ? `
             <div class="agent-details__item">
               <dt>Agent Version</dt>
-              <dd>${escapeHtml(agent.agentVersion)}</dd>
+              <dd>${escapeHtml(agent.agent_version)}</dd>
             </div>
           ` : ''}
 
@@ -299,16 +299,16 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
 
           <div class="agent-details__item">
             <dt>Config Version (Current / Desired)</dt>
-            <dd>${agent.configVersionCurrent ?? 'Not reported'} / ${agent.configVersionDesired}</dd>
+            <dd>${agent.config_version_current ?? 'Not reported'} / ${agent.config_version_desired}</dd>
           </div>
 
           <div class="agent-details__item">
           </div>
 
-          ${agent.lastResultSubmittedAt ? `
+          ${agent.last_result_submitted_at ? `
             <div class="agent-details__item">
               <dt>Last Result Submitted</dt>
-              <dd>${formatAbsoluteDate(agent.lastResultSubmittedAt)}</dd>
+              <dd>${formatAbsoluteDate(agent.last_result_submitted_at)}</dd>
             </div>
           ` : `
             <div class="agent-details__item">
@@ -317,24 +317,24 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </div>
           `}
 
-          ${agent.createdAt ? `
+          ${agent.created_at ? `
             <div class="agent-details__item">
               <dt>Created</dt>
-              <dd>${formatAbsoluteDate(agent.createdAt)}</dd>
+              <dd>${formatAbsoluteDate(agent.created_at)}</dd>
             </div>
           ` : ''}
 
-          ${agent.lastSeenAt ? `
+          ${agent.last_seen_at ? `
             <div class="agent-details__item">
               <dt>Last Seen (Absolute)</dt>
-              <dd>${formatAbsoluteDate(agent.lastSeenAt)}</dd>
+              <dd>${formatAbsoluteDate(agent.last_seen_at)}</dd>
             </div>
           ` : ''}
 
-          ${agent.updatedAt ? `
+          ${agent.updated_at ? `
             <div class="agent-details__item">
               <dt>Updated</dt>
-              <dd>${formatAbsoluteDate(agent.updatedAt)}</dd>
+              <dd>${formatAbsoluteDate(agent.updated_at)}</dd>
             </div>
           ` : ''}
         </dl>

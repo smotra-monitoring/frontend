@@ -31,7 +31,7 @@ describe('AgentsSummaryWidget', () => {
   });
 
   it('shows online and total counts', () => {
-    const online = mockAgents.filter(a => deriveAgentStatus(a.lastSeenAt) === 'online').length;
+    const online = mockAgents.filter(a => deriveAgentStatus(a.last_seen_at) === 'online').length;
     widget = new AgentsSummaryWidget(container, mockAgents);
     widget.mount();
 
@@ -42,7 +42,7 @@ describe('AgentsSummaryWidget', () => {
   });
 
   it('reports "All online" when every agent is online', () => {
-    const online = mockAgents.filter(a => deriveAgentStatus(a.lastSeenAt) === 'online');
+    const online = mockAgents.filter(a => deriveAgentStatus(a.last_seen_at) === 'online');
     widget = new AgentsSummaryWidget(container, online);
     widget.mount();
 
@@ -54,7 +54,7 @@ describe('AgentsSummaryWidget', () => {
     widget = new AgentsSummaryWidget(container, mockAgents);
     widget.mount();
 
-    const offline = mockAgents.filter(a => deriveAgentStatus(a.lastSeenAt) !== 'online').length;
+    const offline = mockAgents.filter(a => deriveAgentStatus(a.last_seen_at) !== 'online').length;
     expect(container.querySelector('.agents-summary--degraded')).toBeTruthy();
     expect(container.querySelector('.agents-summary__caption')?.textContent).toBe(`${offline} offline`);
   });

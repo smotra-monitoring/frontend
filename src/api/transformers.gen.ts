@@ -3,7 +3,7 @@
 import type { AcknowledgeAlertResponse, AuthRefreshResponse, GetAgentConfigurationResponse, GetAlertResponse, GetMetricsResponse, GetOrganizationResponse, GetResultReportResponse, GetUserResponse, GetWebSocketTokenResponse, HealthCheckResponse, ListAgentsResponse, ListAlertsResponse, ListOrganizationsResponse, ListSessionsResponse, ListUsersResponse, Oauth2TokenResponse, PatchUserResponse, PostCreateOrganizationResponse, PostCreateUserResponse, RegisterAgentSelfResponse, SubmitAgentResultsResponse, UpdateUserRolesResponse } from './types.gen.js';
 
 const agentRegistrationResponseSchemaResponseTransformer = (data: any) => {
-  data.expiresAt = new Date(data.expiresAt);
+  data.expires_at = new Date(data.expires_at);
   return data;
 };
 
@@ -66,14 +66,14 @@ export const submitAgentResultsResponseTransformer = async (data: any): Promise<
 };
 
 const agentSchemaResponseTransformer = (data: any) => {
-  if (data.lastSeenAt) {
-    data.lastSeenAt = new Date(data.lastSeenAt);
+  if (data.last_seen_at) {
+    data.last_seen_at = new Date(data.last_seen_at);
   }
-  if (data.lastResultSubmittedAt) {
-    data.lastResultSubmittedAt = new Date(data.lastResultSubmittedAt);
+  if (data.last_result_submitted_at) {
+    data.last_result_submitted_at = new Date(data.last_result_submitted_at);
   }
-  data.createdAt = new Date(data.createdAt);
-  data.updatedAt = new Date(data.updatedAt);
+  data.created_at = new Date(data.created_at);
+  data.updated_at = new Date(data.updated_at);
   return data;
 };
 

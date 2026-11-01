@@ -20,7 +20,7 @@ const AGENT_ID = '0197f96c-b278-7f64-a32f-dae3cabe1ff0';
 const CLAIM_CODE = 'ABC123XY';
 const postMock = vi.mocked(postClaimAgent);
 
-const ok = (message = 'Agent claimed') => ({ data: { agentId: AGENT_ID, status: 'claimed', message }, response: { status: 200 } });
+const ok = (message = 'Agent claimed') => ({ data: { agent_id: AGENT_ID, status: 'claimed', message }, response: { status: 200 } });
 const fail = (status: number, message = 'server said no') => ({ error: { error: 'X', message }, response: { status } });
 
 describe('ClaimAgentModal', () => {
@@ -131,7 +131,7 @@ describe('ClaimAgentModal', () => {
             await flush();
 
             expect(postMock).toHaveBeenCalledTimes(1);
-            expect(postMock.mock.calls[0][0].body).toEqual({ agentId: AGENT_ID, claimToken: CLAIM_CODE, name: 'Prod 01' });
+            expect(postMock.mock.calls[0][0].body).toEqual({ agent_id: AGENT_ID, claim_token: CLAIM_CODE, name: 'Prod 01' });
         });
 
         it('omits the name when left empty', async () => {

@@ -1104,18 +1104,18 @@ export const AgentSchema = {
   type: 'object',
   required: [
     'id',
-    'workspaceId',
+    'workspace_id',
     'name',
-    'configVersionDesired',
-    'createdAt',
-    'updatedAt'
+    'config_version_desired',
+    'created_at',
+    'updated_at'
   ],
   properties: {
     id: {
       $ref: '#/components/schemas/UUIDv7',
       description: 'Unique agent identifier'
     },
-    workspaceId: {
+    workspace_id: {
       type: 'string',
       description: 'Workspace this agent belongs to',
       example: '01930000-0000-7000-0000-000000000001'
@@ -1125,51 +1125,51 @@ export const AgentSchema = {
       description: 'Human-readable agent name',
       example: 'prod-server-01'
     },
-    configVersionDesired: {
+    config_version_desired: {
       type: 'integer',
       description: 'Configuration version the server wants the agent to run',
       example: 3
     },
-    configVersionCurrent: {
+    config_version_current: {
       type: 'integer',
       nullable: true,
-      description: 'Configuration version last reported by the agent in a heartbeat, null if the agent\nhas not sent one yet. Lower than configVersionDesired means the agent has not\napplied the latest configuration.\n',
+      description: 'Configuration version last reported by the agent in a heartbeat, null if the agent\nhas not sent one yet. Lower than config_version_desired means the agent has not\napplied the latest configuration.\n',
       example: 2
     },
-    agentVersion: {
+    agent_version: {
       type: 'string',
       nullable: true,
       description: 'Version of the agent software, null if not yet reported',
       example: '1.2.0'
     },
-    ipAddresses: {
+    ip_addresses: {
       type: 'array',
       description: 'Network interfaces reported by the agent',
       items: {
         $ref: '#/components/schemas/AgentNetworkInterface'
       }
     },
-    lastSeenAt: {
+    last_seen_at: {
       type: 'string',
       format: 'date-time',
       nullable: true,
       description: 'Timestamp of the last heartbeat received from the agent',
       example: '2026-05-30T10:00:00Z'
     },
-    lastResultSubmittedAt: {
+    last_result_submitted_at: {
       type: 'string',
       format: 'date-time',
       nullable: true,
       description: 'Timestamp of the last monitoring result submission',
       example: '2026-05-30T09:55:00Z'
     },
-    createdAt: {
+    created_at: {
       type: 'string',
       format: 'date-time',
       description: 'Timestamp when the agent was registered',
       example: '2026-01-01T00:00:00Z'
     },
-    updatedAt: {
+    updated_at: {
       type: 'string',
       format: 'date-time',
       description: 'Timestamp when the agent record was last updated',
@@ -1200,19 +1200,19 @@ export const AgentListResponseSchema = {
 export const AgentSelfRegistrationSchema = {
   type: 'object',
   required: [
-    'agentId',
-    'claimTokenHash',
+    'agent_id',
+    'claim_token_hash',
     'hostname',
-    'agentVersion',
-    'ipAddresses'
+    'agent_version',
+    'ip_addresses'
   ],
   properties: {
-    agentId: {
+    agent_id: {
       $ref: '#/components/schemas/UUIDv7',
       description: 'Self-generated UUIDv7 identifier for this agent',
       example: '0197f96c-b278-7f64-a32f-dae3cabe1ff0'
     },
-    claimTokenHash: {
+    claim_token_hash: {
       type: 'string',
       minLength: 64,
       maxLength: 64,
@@ -1225,12 +1225,12 @@ export const AgentSelfRegistrationSchema = {
       description: 'System hostname of the machine running the agent',
       example: 'prod-server-01'
     },
-    agentVersion: {
+    agent_version: {
       type: 'string',
       description: 'Version of the agent software',
       example: '1.0.0'
     },
-    ipAddresses: {
+    ip_addresses: {
       type: 'array',
       description: 'List of all non-loopback, non-link-local network interfaces on the agent host.\nLoopback (127.x.x.x / ::1) and link-local (169.254.x.x / fe80::/10) addresses\nare excluded. The server should store all addresses and allow the operator to\nselect the preferred one during the claim process. The entry with\nrecommended=true reflects the OS-selected source IP for connections toward\nthe server (determined via routing table, no traffic sent).\n',
       minItems: 1,
@@ -1265,9 +1265,9 @@ export const AgentRegistrationResponseSchema = {
   type: 'object',
   required: [
     'status',
-    'pollUrl',
-    'claimUrl',
-    'expiresAt'
+    'poll_url',
+    'claim_url',
+    'expires_at'
   ],
   properties: {
     status: {
@@ -1275,19 +1275,19 @@ export const AgentRegistrationResponseSchema = {
       $ref: '#/components/schemas/RegistrationStatus',
       description: 'Current status of the registration'
     },
-    pollUrl: {
+    poll_url: {
       type: 'string',
       format: 'uri-reference',
       description: 'URL for agent to poll for claim status',
       example: '/agent/0197f96c-b278-7f64-a32f-dae3cabe1ff0/claim-status'
     },
-    claimUrl: {
+    claim_url: {
       type: 'string',
       format: 'uri',
       description: 'URL for user to claim the agent (web UI)',
       example: 'https://yoursite.com/claim'
     },
-    expiresAt: {
+    expires_at: {
       type: 'string',
       format: 'date-time',
       description: 'When the claim token expires (RFC3339)',
@@ -1300,8 +1300,8 @@ export const ClaimStatusPendingSchema = {
   type: 'object',
   required: [
     'status',
-    'expiresAt',
-    'pollIn'
+    'expires_at',
+    'poll_in'
   ],
   properties: {
     status: {
@@ -1309,13 +1309,13 @@ export const ClaimStatusPendingSchema = {
       $ref: '#/components/schemas/ClaimStatusPendingEnum',
       description: 'Agent is waiting to be claimed'
     },
-    expiresAt: {
+    expires_at: {
       type: 'string',
       format: 'date-time',
       description: 'When the claim token expires (RFC3339)',
       example: '2026-02-01T12:00:00Z'
     },
-    pollIn: {
+    poll_in: {
       type: 'integer',
       format: 'int32',
       description: 'Seconds until next poll (server-controlled backoff)',
@@ -1329,19 +1329,19 @@ export const ClaimStatusClaimedSchema = {
   type: 'object',
   required: [
     'status',
-    'apiKey',
-    'configUrl'
+    'api_key',
+    'config_url'
   ],
   properties: {
     status: {
       $ref: '#/components/schemas/ClaimStatusClaimedEnum',
       description: 'Agent has been claimed and API key is ready'
     },
-    apiKey: {
+    api_key: {
       type: 'string',
       description: 'API key for authenticated requests (one-time delivery)'
     },
-    configUrl: {
+    config_url: {
       type: 'string',
       format: 'uri-reference',
       description: 'URL to fetch agent configuration',
@@ -1353,16 +1353,16 @@ export const ClaimStatusClaimedSchema = {
 export const ClaimAgentRequestSchema = {
   type: 'object',
   required: [
-    'agentId',
-    'claimToken'
+    'agent_id',
+    'claim_token'
   ],
   properties: {
-    agentId: {
+    agent_id: {
       $ref: '#/components/schemas/UUIDv7',
       description: 'Agent ID from agent logs',
       example: '0197f96c-b278-7f64-a32f-dae3cabe1ff0'
     },
-    claimToken: {
+    claim_token: {
       type: 'string',
       description: 'Claim token from agent logs',
       example: 'ABC123XY'
@@ -1378,12 +1378,12 @@ export const ClaimAgentRequestSchema = {
 export const ClaimAgentResponseSchema = {
   type: 'object',
   required: [
-    'agentId',
+    'agent_id',
     'status',
     'message'
   ],
   properties: {
-    agentId: {
+    agent_id: {
       $ref: '#/components/schemas/UUIDv7',
       description: 'The claimed agent\'s ID',
       example: '0197f96c-b278-7f64-a32f-dae3cabe1ff0'

@@ -40,7 +40,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   render(): void {
     const { agent, expanded } = this.getState();
-    const status = deriveAgentStatus(agent.lastSeenAt);
+    const status = deriveAgentStatus(agent.last_seen_at);
 
     this.root.innerHTML = `
       <article class="agent-card" data-status="${status}">
@@ -88,11 +88,11 @@ export class AgentCard extends BaseComponent<AgentCardState> {
     const { agent } = this.getState();
 
     return `
-      ${agent.agentVersion ? `
+      ${agent.agent_version ? `
         <div class="agent-card__metric">
           <span class="agent-card__metric-label">Agent Version</span>
           <span class="agent-card__metric-value">
-            ${escapeHtml(agent.agentVersion)}
+            ${escapeHtml(agent.agent_version)}
           </span>
         </div>
       ` : ''}
@@ -100,15 +100,15 @@ export class AgentCard extends BaseComponent<AgentCardState> {
       <div class="agent-card__metric">
         <span class="agent-card__metric-label">Config Version (Current / Desired)</span>
         <span class="agent-card__metric-value">
-          ${agent.configVersionCurrent ?? 'Not reported'} / ${agent.configVersionDesired}
+          ${agent.config_version_current ?? 'Not reported'} / ${agent.config_version_desired}
         </span>
       </div>
       
-      ${agent.lastSeenAt ? `
+      ${agent.last_seen_at ? `
         <div class="agent-card__metric">
           <span class="agent-card__metric-label">Last Seen</span>
           <span class="agent-card__metric-value">
-            ${this.formatRelativeTime(agent.lastSeenAt.getTime())}
+            ${this.formatRelativeTime(agent.last_seen_at.getTime())}
           </span>
         </div>
       ` : ''}
@@ -117,7 +117,7 @@ export class AgentCard extends BaseComponent<AgentCardState> {
 
   private renderDetails(): string {
     const { agent } = this.getState();
-    const primaryIP = agent.ipAddresses?.find(ip => ip.recommended) || agent.ipAddresses?.[0];
+    const primaryIP = agent.ip_addresses?.find(ip => ip.recommended) || agent.ip_addresses?.[0];
 
     return `
       <div class="agent-card__details">
@@ -125,9 +125,9 @@ export class AgentCard extends BaseComponent<AgentCardState> {
           <dt>ID</dt>
           <dd><code>${escapeHtml(agent.id)}</code></dd>
           
-          ${agent.workspaceId ? `
+          ${agent.workspace_id ? `
             <dt>Workspace ID</dt>
-            <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
+            <dd><code>${escapeHtml(agent.workspace_id)}</code></dd>
           ` : ''}
           
           ${primaryIP ? `
@@ -135,9 +135,9 @@ export class AgentCard extends BaseComponent<AgentCardState> {
             <dd>${escapeHtml(primaryIP.ip)} (${escapeHtml(primaryIP.iface)})</dd>
           ` : ''}
           
-          ${agent.agentVersion ? `
+          ${agent.agent_version ? `
             <dt>Agent Version</dt>
-            <dd>${escapeHtml(agent.agentVersion)}</dd>
+            <dd>${escapeHtml(agent.agent_version)}</dd>
           ` : ''}
         </dl>
       </div>

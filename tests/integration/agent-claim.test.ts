@@ -27,7 +27,7 @@ vi.mock('../../src/api/index.js', async (importOriginal) => {
       .mockResolvedValueOnce(page(mockAgents.slice(0, 1)))
       .mockResolvedValue(page(mockAgents)),
     postClaimAgent: vi.fn().mockResolvedValue({
-      data: { agentId: '0197f96c-b278-7f64-a32f-dae3cabe1ff0', status: 'claimed', message: 'Agent claimed' },
+      data: { agent_id: '0197f96c-b278-7f64-a32f-dae3cabe1ff0', status: 'claimed', message: 'Agent claimed' },
       response: { status: 200 },
     }),
   };
@@ -80,8 +80,8 @@ describe('Agent claim workflow (Integration)', () => {
 
     expect(postClaimAgent).toHaveBeenCalledTimes(1);
     expect(vi.mocked(postClaimAgent).mock.calls[0][0].body).toEqual({
-      agentId: AGENT_ID,
-      claimToken: 'ABC123XY',
+      agent_id: AGENT_ID,
+      claim_token: 'ABC123XY',
       name: 'Production Server 01',
     });
     expect(appRoot.querySelector('.toast--success')).toBeTruthy();

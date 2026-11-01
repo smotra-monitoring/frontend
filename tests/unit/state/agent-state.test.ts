@@ -73,8 +73,8 @@ describe('agent-state', () => {
       updateAgent(mockAgentUpdate);
 
       const updated = getAgentById(mockAgent.id);
-      expect(updated?.agentVersion).toBe(mockAgentUpdate.agentVersion);
-      expect(updated?.configVersionDesired).toBe(mockAgentUpdate.configVersionDesired);
+      expect(updated?.agent_version).toBe(mockAgentUpdate.agent_version);
+      expect(updated?.config_version_desired).toBe(mockAgentUpdate.config_version_desired);
     });
 
     it('does nothing for non-existent agent', () => {
@@ -130,13 +130,13 @@ describe('agent-state', () => {
   describe('filterAgents', () => {
     it('filters by status', () => {
       const online = filterAgents(mockAgents, { status: 'online' });
-      expect(online.every(a => deriveAgentStatus(a.lastSeenAt) === 'online')).toBe(true);
+      expect(online.every(a => deriveAgentStatus(a.last_seen_at) === 'online')).toBe(true);
     });
 
     it('filters by workspaceId', () => {
       const filtered = filterAgents(mockAgents, { workspaceId: '01930000-0000-7000-0000-000000000001' });
       expect(filtered.length).toBeGreaterThan(0);
-      expect(filtered.every(a => a.workspaceId === '01930000-0000-7000-0000-000000000001')).toBe(true);
+      expect(filtered.every(a => a.workspace_id === '01930000-0000-7000-0000-000000000001')).toBe(true);
     });
 
     it('excludes agents from other workspaces', () => {
@@ -151,7 +151,7 @@ describe('agent-state', () => {
 
     it('filters by agentVersion', () => {
       const filtered = filterAgents(mockAgents, { agentVersion: '1.0.0' });
-      expect(filtered.every(a => a.agentVersion === '1.0.0')).toBe(true);
+      expect(filtered.every(a => a.agent_version === '1.0.0')).toBe(true);
     });
 
     it('filters by search term', () => {
@@ -179,27 +179,27 @@ describe('agent-state', () => {
 
     it('sorts by agentVersion', () => {
       const sorted = sortAgents(mockAgents, { field: 'agentVersion', direction: 'asc' });
-      const version0 = sorted[0].agentVersion || '';
-      const version1 = sorted[1].agentVersion || '';
+      const version0 = sorted[0].agent_version || '';
+      const version1 = sorted[1].agent_version || '';
       expect(version0.localeCompare(version1)).toBeLessThanOrEqual(0);
     });
 
     it('sorts by lastSeenAt', () => {
       const sorted = sortAgents(mockAgents, { field: 'lastSeenAt', direction: 'desc' });
-      const time0 = sorted[0].lastSeenAt?.getTime() ?? 0;
-      const time1 = sorted[1].lastSeenAt?.getTime() ?? 0;
+      const time0 = sorted[0].last_seen_at?.getTime() ?? 0;
+      const time1 = sorted[1].last_seen_at?.getTime() ?? 0;
       expect(time0).toBeGreaterThanOrEqual(time1);
     });
 
     it('sorts by configVersionDesired', () => {
       const sorted = sortAgents(mockAgents, { field: 'configVersionDesired', direction: 'asc' });
-      expect(sorted.map(a => a.configVersionDesired)).toEqual([1, 2, 3, 4]);
+      expect(sorted.map(a => a.config_version_desired)).toEqual([1, 2, 3, 4]);
     });
 
     it('sorts by configVersionCurrent with unreported (null) first when ascending', () => {
       const sorted = sortAgents(mockAgents, { field: 'configVersionCurrent', direction: 'asc' });
-      expect(sorted[0].configVersionCurrent).toBeNull();
-      expect(sorted.slice(1).map(a => a.configVersionCurrent)).toEqual([1, 1, 3]);
+      expect(sorted[0].config_version_current).toBeNull();
+      expect(sorted.slice(1).map(a => a.config_version_current)).toEqual([1, 1, 3]);
     });
   });
 

@@ -27,20 +27,20 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * before the agent can become operational.
  *
  * **Workflow:**
- * 1. Agent generates its own UUIDv7 as agentId
+ * 1. Agent generates its own UUIDv7 as agent_id
  * 2. Agent generates a random claim token (e.g., "ABC123XY")
  * 3. Agent hashes token with SHA-256 and sends hash to server
  * 4. Agent shows plain token in logs for user to copy
  * 5. Server creates record in agent_claims table
  * 6. Agent starts polling /agent/{agentId}/claim-status
- * 7. User claims agent via web UI using agentId + plain claimToken
+ * 7. User claims agent via web UI using agent_id + plain claim_token
  * 8. Server hashes user's input and validates against stored hash
  * 9. Agent receives API key on next poll
  *
  * **Security:** Sending the hash instead of plain token provides defense in depth,
  * ensuring the claim token never travels over the network in plain text.
  *
- * This endpoint is idempotent - multiple calls from the same agentId
+ * This endpoint is idempotent - multiple calls from the same agent_id
  * will update the last_seen_at timestamp.
  *
  */
@@ -77,13 +77,13 @@ export const getAgentClaimStatus = <ThrowOnError extends boolean = false>(option
 /**
  * Claim an agent (Web UI)
  *
- * User claims an agent by providing the agentId and claimToken found in
+ * User claims an agent by providing the agent_id and claim_token found in
  * the agent's startup logs. This endpoint:
  *
  * 1. Validates the claim token
  * 2. Creates the agent in the production agents table
  * 3. Generates an API key for the agent
- * 4. Associates agent with the claiming user's workspace (sets Agent.workspaceId)
+ * 4. Associates agent with the claiming user's workspace (sets Agent.workspace_id)
  * 5. Marks claim as satisfied
  *
  * The agent will receive the API key on its next poll to /agent/{agentId}/claim-status.
