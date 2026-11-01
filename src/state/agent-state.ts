@@ -198,9 +198,14 @@ export function sortAgents(agents: Agent[], sort: SortOptions): Agent[] {
         aValue = a.agentVersion ?? '';
         bValue = b.agentVersion ?? '';
         break;
-      case 'configVersion':
-        aValue = a.configVersion;
-        bValue = b.configVersion;
+      case 'configVersionDesired':
+        aValue = a.configVersionDesired;
+        bValue = b.configVersionDesired;
+        break;
+      case 'configVersionCurrent':
+        // Agents that have not reported a version sort first when ascending
+        aValue = a.configVersionCurrent ?? -1;
+        bValue = b.configVersionCurrent ?? -1;
         break;
       default:
         aValue = a.name;

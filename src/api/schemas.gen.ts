@@ -1106,7 +1106,7 @@ export const AgentSchema = {
     'id',
     'workspaceId',
     'name',
-    'configVersion',
+    'configVersionDesired',
     'createdAt',
     'updatedAt'
   ],
@@ -1125,10 +1125,16 @@ export const AgentSchema = {
       description: 'Human-readable agent name',
       example: 'prod-server-01'
     },
-    configVersion: {
+    configVersionDesired: {
       type: 'integer',
-      description: 'Current configuration version',
+      description: 'Configuration version the server wants the agent to run',
       example: 3
+    },
+    configVersionCurrent: {
+      type: 'integer',
+      nullable: true,
+      description: 'Configuration version last reported by the agent in a heartbeat, null if the agent\nhas not sent one yet. Lower than configVersionDesired means the agent has not\napplied the latest configuration.\n',
+      example: 2
     },
     agentVersion: {
       type: 'string',

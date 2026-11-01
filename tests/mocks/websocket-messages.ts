@@ -14,7 +14,8 @@ export const mockAgentUpdateMessage: WebSocketMessage<Agent> = {
         id: '01930000-0000-7000-a001-000000000001', // Matches mockAgent.id
         workspaceId: '01930000-0000-7000-0000-000000000001',
         name: 'Test Agent 1',
-        configVersion: 4,
+        configVersionDesired: 4,
+        configVersionCurrent: 4,
         agentVersion: '1.0.1',
         ipAddresses: [
             { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -34,7 +35,8 @@ export const mockAgentAddedMessage: WebSocketMessage<any> = {
         workspaceId: '01930000-0000-7000-0000-000000000001',
         name: 'New Agent',
         agentVersion: '1.0.0',
-        configVersion: 2,
+        configVersionDesired: 2,
+        configVersionCurrent: null,
         lastSeenAt: new Date(),
         ipAddresses: [
             {

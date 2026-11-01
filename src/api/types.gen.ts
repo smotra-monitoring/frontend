@@ -481,9 +481,16 @@ export type Agent = {
    */
   name: string;
   /**
-   * Current configuration version
+   * Configuration version the server wants the agent to run
    */
-  configVersion: number;
+  configVersionDesired: number;
+  /**
+   * Configuration version last reported by the agent in a heartbeat, null if the agent
+   * has not sent one yet. Lower than configVersionDesired means the agent has not
+   * applied the latest configuration.
+   *
+   */
+  configVersionCurrent?: number | null;
   /**
    * Version of the agent software, null if not yet reported
    */

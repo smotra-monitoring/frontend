@@ -111,7 +111,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       <table class="agent-states-table">
         <thead>
           <tr>
-            <th style="width: 40%">
+            <th style="width: 25%">
               <button 
                 class="sort-btn" 
                 data-sort-field="name"
@@ -121,7 +121,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 ${this.renderSortIndicator('name')}
               </button>
             </th>
-            <th style="width: 20%">
+            <th style="width: 15%">
               <button 
                 class="sort-btn" 
                 data-sort-field="status"
@@ -131,7 +131,38 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 ${this.renderSortIndicator('status')}
               </button>
             </th>
-            <th style="width: 30%">
+            <th style="width: 15%">
+              <button 
+                class="sort-btn" 
+                data-sort-field="agentVersion"
+                aria-sort="${this.getSortAriaAttribute('agentVersion')}"
+              >
+                Agent Version
+                ${this.renderSortIndicator('agentVersion')}
+              </button>
+            </th>
+            <th style="width: 15%">
+              <div class="sort-btn-group">
+                <button 
+                  class="sort-btn" 
+                  data-sort-field="configVersionCurrent"
+                  aria-sort="${this.getSortAriaAttribute('configVersionCurrent')}"
+                >
+                  Config Current
+                  ${this.renderSortIndicator('configVersionCurrent')}
+                </button>
+                <span aria-hidden="true">/</span>
+                <button 
+                  class="sort-btn" 
+                  data-sort-field="configVersionDesired"
+                  aria-sort="${this.getSortAriaAttribute('configVersionDesired')}"
+                >
+                  Desired
+                  ${this.renderSortIndicator('configVersionDesired')}
+                </button>
+              </div>
+            </th>
+            <th style="width: 20%">
               <button 
                 class="sort-btn" 
                 data-sort-field="lastSeenAt"
@@ -166,6 +197,12 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         <td class="agent-states-row__status">
           ${this.renderStatusBadge(status)}
         </td>
+        <td class="agent-states-row__agent-version">
+          ${agent.agentVersion ? escapeHtml(agent.agentVersion) : 'Unknown'}
+        </td>
+        <td class="agent-states-row__config-version">
+          ${agent.configVersionCurrent ?? 'N/A'} / ${agent.configVersionDesired}
+        </td>
         <td class="agent-states-row__last-seen">
           ${agent.lastSeenAt ? formatLastSeen(agent.lastSeenAt) : 'Never'}
         </td>
@@ -190,7 +227,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         aria-hidden="true"
         data-agent-id="${agent.id}"
       >
-        <td colspan="4">
+        <td colspan="6">
           <div class="agent-states-row__details-inner">
             ${this.renderAgentDetails(agent)}
           </div>
@@ -218,11 +255,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     return `
       <div class="agent-details">
         <dl class="agent-details__grid">
-          <div class="agent-details__item">
-            <dt>Agent ID</dt>
-            <dd><code>${escapeHtml(agent.id)}</code></dd>
-          </div>
-
           ${agent.workspaceId ? `
             <div class="agent-details__item">
               <dt>Workspace ID</dt>
@@ -230,22 +262,9 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </div>
           ` : ''}
 
-          ${agent.agentVersion ? `
-            <div class="agent-details__item">
-              <dt>Agent Version</dt>
-              <dd>${escapeHtml(agent.agentVersion)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.configVersion !== undefined && agent.configVersion !== null ? `
-            <div class="agent-details__item">
-              <dt>Config Version</dt>
-              <dd>${agent.configVersion}</dd>
-            </div>
-          ` : ''}
 
           ${allIPs.length > 0 ? `
-            <div class="agent-details__item agent-details__item--full">
+            <div class="agent-details__item">
               <dt>IP Addresses</dt>
               <dd>
                 <ul class="agent-details__ip-list">
@@ -260,10 +279,48 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </div>
           ` : ''}
 
+          <div class="agent-details__item">
+            <dt>Agent ID</dt>
+            <dd><code>${escapeHtml(agent.id)}</code></dd>
+          </div>
+
+          <div class="agent-details__item">
+          </div>
+
+          ${agent.agentVersion ? `
+            <div class="agent-details__item">
+              <dt>Agent Version</dt>
+              <dd>${escapeHtml(agent.agentVersion)}</dd>
+            </div>
+          ` : ''}
+
+          <div class="agent-details__item">
+          </div>
+
+          <div class="agent-details__item">
+            <dt>Config Version (Current / Desired)</dt>
+            <dd>${agent.configVersionCurrent ?? 'Not reported'} / ${agent.configVersionDesired}</dd>
+          </div>
+
+          <div class="agent-details__item">
+          </div>
+
           ${agent.lastResultSubmittedAt ? `
             <div class="agent-details__item">
               <dt>Last Result Submitted</dt>
               <dd>${formatAbsoluteDate(agent.lastResultSubmittedAt)}</dd>
+            </div>
+          ` : `
+            <div class="agent-details__item">
+              <dt>Last Result Submitted</dt>
+              <dd>Not reported</dd>
+            </div>
+          `}
+
+          ${agent.createdAt ? `
+            <div class="agent-details__item">
+              <dt>Created</dt>
+              <dd>${formatAbsoluteDate(agent.createdAt)}</dd>
             </div>
           ` : ''}
 
@@ -271,13 +328,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             <div class="agent-details__item">
               <dt>Last Seen (Absolute)</dt>
               <dd>${formatAbsoluteDate(agent.lastSeenAt)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.createdAt ? `
-            <div class="agent-details__item">
-              <dt>Created</dt>
-              <dd>${formatAbsoluteDate(agent.createdAt)}</dd>
             </div>
           ` : ''}
 

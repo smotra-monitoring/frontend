@@ -97,14 +97,12 @@ export class AgentCard extends BaseComponent<AgentCardState> {
         </div>
       ` : ''}
       
-      ${agent.configVersion !== undefined && agent.configVersion !== null ? `
-        <div class="agent-card__metric">
-          <span class="agent-card__metric-label">Config Version</span>
-          <span class="agent-card__metric-value">
-            ${agent.configVersion}
-          </span>
-        </div>
-      ` : ''}
+      <div class="agent-card__metric">
+        <span class="agent-card__metric-label">Config Version (Current / Desired)</span>
+        <span class="agent-card__metric-value">
+          ${agent.configVersionCurrent ?? 'Not reported'} / ${agent.configVersionDesired}
+        </span>
+      </div>
       
       ${agent.lastSeenAt ? `
         <div class="agent-card__metric">

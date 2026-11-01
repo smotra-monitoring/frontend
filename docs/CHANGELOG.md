@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Build failure after OpenAPI `Agent.configVersion` split**: `npm run build` failed because the server-facing `Agent` schema now has `configVersionDesired` (required) and `configVersionCurrent` (nullable) instead of `configVersion`. 
+**Root cause:** the regenerated client no longer exposes `configVersion`, which `AgentCard`, `AgentStatesWidget` and `sortAgents()` still read
+  - Both versions are shown ("Desired Config Version" / "Current Config Version", "Not reported" when null); `SortField` `configVersion` replaced by `configVersionDesired` and `configVersionCurrent`
+  - The agent-facing `AgentStatus.config_version` and `AgentConfig` schemas are unchanged, so the agent is not affected
+  - Mocks, tests and `docs/features/agent-states-widget.md` updated
+
 ### Changed
 - **Section replaced by Workspace**: Following the OpenAPI spec update, `sectionId` is now `workspaceId`; agents and users are children of a workspace, so the workspace is derived from them (the claim request no longer carries a section)
   - `Agent.workspaceId` (generated client), `FilterOptions.workspaceId`, `filterAgents()` filter and search, command palette search, and the "Workspace ID" field in agent details (`AgentCard`, `AgentStatesWidget`)

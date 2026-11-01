@@ -150,7 +150,7 @@ describe('Dashboard (Integration)', () => {
       // Update agent (use mockAgentUpdate which is a full Agent)
       updateAgent(mockAgentUpdate);
       expect(getAgents()[0].agentVersion).toBe(mockAgentUpdate.agentVersion);
-      expect(getAgents()[0].configVersion).toBe(mockAgentUpdate.configVersion);
+      expect(getAgents()[0].configVersionDesired).toBe(mockAgentUpdate.configVersionDesired);
 
       // Remove agent
       removeAgent(mockAgent.id);
