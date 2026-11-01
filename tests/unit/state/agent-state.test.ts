@@ -74,7 +74,7 @@ describe('agent-state', () => {
 
       const updated = getAgentById(mockAgent.id);
       expect(updated?.agentVersion).toBe(mockAgentUpdate.agentVersion);
-      expect(updated?.configVersion).toBe(mockAgentUpdate.configVersion);
+      expect(updated?.configVersionDesired).toBe(mockAgentUpdate.configVersionDesired);
     });
 
     it('does nothing for non-existent agent', () => {
@@ -189,6 +189,17 @@ describe('agent-state', () => {
       const time0 = sorted[0].lastSeenAt?.getTime() ?? 0;
       const time1 = sorted[1].lastSeenAt?.getTime() ?? 0;
       expect(time0).toBeGreaterThanOrEqual(time1);
+    });
+
+    it('sorts by configVersionDesired', () => {
+      const sorted = sortAgents(mockAgents, { field: 'configVersionDesired', direction: 'asc' });
+      expect(sorted.map(a => a.configVersionDesired)).toEqual([1, 2, 3, 4]);
+    });
+
+    it('sorts by configVersionCurrent with unreported (null) first when ascending', () => {
+      const sorted = sortAgents(mockAgents, { field: 'configVersionCurrent', direction: 'asc' });
+      expect(sorted[0].configVersionCurrent).toBeNull();
+      expect(sorted.slice(1).map(a => a.configVersionCurrent)).toEqual([1, 1, 3]);
     });
   });
 

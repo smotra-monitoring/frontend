@@ -188,7 +188,8 @@ interface Agent {
   workspaceId: string;                  // Workspace (parent of agents and users) this agent belongs to
   name: string;                         // Display name
   agentVersion: string | null;          // e.g., "1.0.0"
-  configVersion: number;                // Config version number
+  configVersionDesired: number;         // Config version the server wants the agent to run
+  configVersionCurrent?: number | null; // Config version last reported by the agent (null = not yet reported)
   ipAddresses?: AgentNetworkInterface[]; // Array of IP addresses
   lastSeenAt: Date | null;              // Last heartbeat timestamp
   lastResultSubmittedAt: Date | null;   // Last result submission
@@ -209,8 +210,8 @@ interface Agent {
 - Agent ID (UUID)
 - Workspace ID
 - Agent Version
-- Config Version
-- IP Addresses (all interfaces, with iface name and recommended flag)
+- Desired Config Version
+- Current Config Version ("Not reported" when null)- IP Addresses (all interfaces, with iface name and recommended flag)
 - Last Result Submitted (absolute timestamp)
 - Last Seen (absolute timestamp)
 - Created At

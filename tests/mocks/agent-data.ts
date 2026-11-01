@@ -14,7 +14,8 @@ export const mockAgent: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
   workspaceId: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
-  configVersion: 3,
+  configVersionDesired: 3,
+  configVersionCurrent: 3,
   agentVersion: '1.0.0',
   ipAddresses: [
     { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -31,7 +32,8 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a002-000000000002',
     workspaceId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 2',
-    configVersion: 2,
+    configVersionDesired: 2,
+    configVersionCurrent: 1, // behind desired: config not yet applied
     agentVersion: '1.0.0',
     ipAddresses: [
       { ip: '192.168.1.101', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -45,7 +47,8 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a003-000000000003',
     workspaceId: '01930000-0000-7000-0000-000000000002',
     name: 'Test Agent 3',
-    configVersion: 1,
+    configVersionDesired: 1,
+    configVersionCurrent: 1,
     agentVersion: '1.0.1',
     ipAddresses: [
       { ip: '192.168.1.102', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -59,7 +62,8 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a004-000000000004',
     workspaceId: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 4',
-    configVersion: 4,
+    configVersionDesired: 4,
+    configVersionCurrent: null, // never reported
     agentVersion: '1.0.0',
     ipAddresses: [
       { ip: '192.168.1.103', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -75,7 +79,8 @@ export const mockAgentUpdate: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
   workspaceId: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
-  configVersion: 4,
+  configVersionDesired: 4,
+  configVersionCurrent: 4,
   agentVersion: '1.0.1',
   ipAddresses: [
     { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },

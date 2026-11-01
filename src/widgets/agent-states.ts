@@ -223,29 +223,8 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             <dd><code>${escapeHtml(agent.id)}</code></dd>
           </div>
 
-          ${agent.workspaceId ? `
-            <div class="agent-details__item">
-              <dt>Workspace ID</dt>
-              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
-            </div>
-          ` : ''}
-
-          ${agent.agentVersion ? `
-            <div class="agent-details__item">
-              <dt>Agent Version</dt>
-              <dd>${escapeHtml(agent.agentVersion)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.configVersion !== undefined && agent.configVersion !== null ? `
-            <div class="agent-details__item">
-              <dt>Config Version</dt>
-              <dd>${agent.configVersion}</dd>
-            </div>
-          ` : ''}
-
           ${allIPs.length > 0 ? `
-            <div class="agent-details__item agent-details__item--full">
+            <div class="agent-details__item">
               <dt>IP Addresses</dt>
               <dd>
                 <ul class="agent-details__ip-list">
@@ -260,10 +239,50 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </div>
           ` : ''}
 
+          ${agent.workspaceId ? `
+            <div class="agent-details__item">
+              <dt>Workspace ID</dt>
+              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
+            </div>
+          ` : ''}
+
+          <div class="agent-details__item">
+          </div>
+
+          ${agent.agentVersion ? `
+            <div class="agent-details__item">
+              <dt>Agent Version</dt>
+              <dd>${escapeHtml(agent.agentVersion)}</dd>
+            </div>
+          ` : ''}
+
+          <div class="agent-details__item">
+          </div>
+
+          <div class="agent-details__item">
+            <dt>Config Version (Current / Desired)</dt>
+            <dd>${agent.configVersionCurrent ?? 'Not reported'} / ${agent.configVersionDesired}</dd>
+          </div>
+
+          <div class="agent-details__item">
+          </div>
+
           ${agent.lastResultSubmittedAt ? `
             <div class="agent-details__item">
               <dt>Last Result Submitted</dt>
               <dd>${formatAbsoluteDate(agent.lastResultSubmittedAt)}</dd>
+            </div>
+          ` : `
+            <div class="agent-details__item">
+              <dt>Last Result Submitted</dt>
+              <dd>Not reported</dd>
+            </div>
+          `}
+
+          ${agent.createdAt ? `
+            <div class="agent-details__item">
+              <dt>Created</dt>
+              <dd>${formatAbsoluteDate(agent.createdAt)}</dd>
             </div>
           ` : ''}
 
@@ -271,13 +290,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             <div class="agent-details__item">
               <dt>Last Seen (Absolute)</dt>
               <dd>${formatAbsoluteDate(agent.lastSeenAt)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.createdAt ? `
-            <div class="agent-details__item">
-              <dt>Created</dt>
-              <dd>${formatAbsoluteDate(agent.createdAt)}</dd>
             </div>
           ` : ''}
 

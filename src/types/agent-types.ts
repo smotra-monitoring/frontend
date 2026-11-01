@@ -32,6 +32,6 @@ export interface SortOptions {
   direction: 'asc' | 'desc';
 }
 
-export type SortField = 'name' | 'status' | 'lastSeenAt' | 'agentVersion' | 'configVersion';
+export type SortField = 'name' | 'status' | 'lastSeenAt' | 'agentVersion' | 'configVersionDesired' | 'configVersionCurrent';
 
 export type ViewMode = 'grid' | 'list' | 'table';
