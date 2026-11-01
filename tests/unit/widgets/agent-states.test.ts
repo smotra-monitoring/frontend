@@ -135,6 +135,36 @@ describe('AgentStatesWidget', () => {
             const statusIndicator = statusSortButton?.querySelector('.sort-indicator--inactive');
             expect(statusIndicator).toBeTruthy();
         });
+
+        it.each([
+            'agentVersion',
+            'configVersionCurrent',
+            'configVersionDesired',
+        ])('sorts by %s on header click and toggles direction', (field) => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            const button = () => container.querySelector(`[data-sort-field="${field}"]`) as HTMLButtonElement;
+            expect(button().getAttribute('aria-sort')).toBe('none');
+
+            button().click();
+            expect(button().getAttribute('aria-sort')).toBe('ascending');
+            expect(button().querySelector('.sort-indicator--active')).toBeTruthy();
+
+            button().click();
+            expect(button().getAttribute('aria-sort')).toBe('descending');
+        });
+
+        it('orders rows by agent version', () => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            (container.querySelector('[data-sort-field="agentVersion"]') as HTMLButtonElement).click();
+
+            const versions = Array.from(container.querySelectorAll('.agent-states-row__agent-version'))
+                .map(cell => cell.textContent?.trim() ?? '');
+            expect(versions).toEqual([...versions].sort());
+        });
     });
 
     describe('Expand/Collapse (CSS-only)', () => {

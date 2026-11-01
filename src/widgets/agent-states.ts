@@ -111,7 +111,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       <table class="agent-states-table">
         <thead>
           <tr>
-            <th style="width: 40%">
+            <th style="width: 25%">
               <button 
                 class="sort-btn" 
                 data-sort-field="name"
@@ -121,7 +121,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 ${this.renderSortIndicator('name')}
               </button>
             </th>
-            <th style="width: 20%">
+            <th style="width: 15%">
               <button 
                 class="sort-btn" 
                 data-sort-field="status"
@@ -131,7 +131,38 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
                 ${this.renderSortIndicator('status')}
               </button>
             </th>
-            <th style="width: 30%">
+            <th style="width: 15%">
+              <button 
+                class="sort-btn" 
+                data-sort-field="agentVersion"
+                aria-sort="${this.getSortAriaAttribute('agentVersion')}"
+              >
+                Agent Version
+                ${this.renderSortIndicator('agentVersion')}
+              </button>
+            </th>
+            <th style="width: 15%">
+              <div class="sort-btn-group">
+                <button 
+                  class="sort-btn" 
+                  data-sort-field="configVersionCurrent"
+                  aria-sort="${this.getSortAriaAttribute('configVersionCurrent')}"
+                >
+                  Config Current
+                  ${this.renderSortIndicator('configVersionCurrent')}
+                </button>
+                <span aria-hidden="true">/</span>
+                <button 
+                  class="sort-btn" 
+                  data-sort-field="configVersionDesired"
+                  aria-sort="${this.getSortAriaAttribute('configVersionDesired')}"
+                >
+                  Desired
+                  ${this.renderSortIndicator('configVersionDesired')}
+                </button>
+              </div>
+            </th>
+            <th style="width: 20%">
               <button 
                 class="sort-btn" 
                 data-sort-field="lastSeenAt"
@@ -166,6 +197,12 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         <td class="agent-states-row__status">
           ${this.renderStatusBadge(status)}
         </td>
+        <td class="agent-states-row__agent-version">
+          ${agent.agentVersion ? escapeHtml(agent.agentVersion) : 'Unknown'}
+        </td>
+        <td class="agent-states-row__config-version">
+          ${agent.configVersionCurrent ?? 'N/A'} / ${agent.configVersionDesired}
+        </td>
         <td class="agent-states-row__last-seen">
           ${agent.lastSeenAt ? formatLastSeen(agent.lastSeenAt) : 'Never'}
         </td>
@@ -190,7 +227,7 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         aria-hidden="true"
         data-agent-id="${agent.id}"
       >
-        <td colspan="4">
+        <td colspan="6">
           <div class="agent-states-row__details-inner">
             ${this.renderAgentDetails(agent)}
           </div>

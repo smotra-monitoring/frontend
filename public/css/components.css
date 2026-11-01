@@ -1518,6 +1518,17 @@
   color: var(--color-primary);
 }
 
+.agent-states-table th .sort-btn-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.agent-states-table th .sort-btn-group .sort-btn {
+  width: auto;
+}
+
 .agent-states-table th .sort-btn:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -1563,7 +1574,9 @@
   white-space: nowrap;
 }
 
-.agent-states-row__last-seen {
+.agent-states-row__last-seen,
+.agent-states-row__agent-version,
+.agent-states-row__config-version {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
