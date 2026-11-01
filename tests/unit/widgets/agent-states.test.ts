@@ -341,8 +341,8 @@ describe('AgentStatesWidget', () => {
             expect(detailsContent).toContain('Workspace ID');
             expect(detailsContent).not.toContain('Section ID');
             expect(detailsContent).toContain('Agent Version');
-            expect(detailsContent).toContain('Desired Config Version');
-            expect(detailsContent).toContain('Current Config Version');
+            expect(detailsContent).toContain('Config Version');
+            expect(detailsContent).toContain('Current / Desired');
         });
 
         it('IP addresses in agent details', () => {
