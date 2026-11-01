@@ -218,10 +218,13 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     return `
       <div class="agent-details">
         <dl class="agent-details__grid">
-          <div class="agent-details__item">
-            <dt>Agent ID</dt>
-            <dd><code>${escapeHtml(agent.id)}</code></dd>
-          </div>
+          ${agent.workspaceId ? `
+            <div class="agent-details__item">
+              <dt>Workspace ID</dt>
+              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
+            </div>
+          ` : ''}
+
 
           ${allIPs.length > 0 ? `
             <div class="agent-details__item">
@@ -239,12 +242,10 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
             </div>
           ` : ''}
 
-          ${agent.workspaceId ? `
-            <div class="agent-details__item">
-              <dt>Workspace ID</dt>
-              <dd><code>${escapeHtml(agent.workspaceId)}</code></dd>
-            </div>
-          ` : ''}
+          <div class="agent-details__item">
+            <dt>Agent ID</dt>
+            <dd><code>${escapeHtml(agent.id)}</code></dd>
+          </div>
 
           <div class="agent-details__item">
           </div>
