@@ -32,20 +32,22 @@ export const mockAgentAddedMessage: WebSocketMessage<any> = {
     type: 'agent:added',
     payload: {
         id: 'agent-new',
-        workspaceId: '01930000-0000-7000-0000-000000000001',
+        workspace_id: '01930000-0000-7000-0000-000000000001',
         name: 'New Agent',
-        agentVersion: '1.0.0',
-        configVersionDesired: 2,
-        configVersionCurrent: null,
-        lastSeenAt: new Date(),
-        ipAddresses: [
+        agent_version: '1.0.0',
+        config_version_desired: 2,
+        config_version_current: null,
+        last_seen_at: new Date(),
+        ip_addresses: [
             {
                 ip: '192.168.1.200',
-                interface: 'eth0',
+                iface: 'eth0',
+                family: 'ipv4',
+                recommended: true,
             }
         ],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
     },
     timestamp: Date.now(),
 };

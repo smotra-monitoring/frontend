@@ -185,16 +185,16 @@ The widget uses the `Agent` type, which is a re-export of `AgentListItem` from t
 ```typescript
 interface Agent {
   id: string;                           // UUIDv7
-  workspaceId: string;                  // Workspace (parent of agents and users) this agent belongs to
-  name: string;                         // Display name
-  agentVersion: string | null;          // e.g., "1.0.0"
-  configVersionDesired: number;         // Config version the server wants the agent to run
-  configVersionCurrent?: number | null; // Config version last reported by the agent (null = not yet reported)
-  ipAddresses?: AgentNetworkInterface[]; // Array of IP addresses
-  lastSeenAt: Date | null;              // Last heartbeat timestamp
-  lastResultSubmittedAt: Date | null;   // Last result submission
-  createdAt: Date;                      // Agent creation timestamp
-  updatedAt: Date;                      // Last update timestamp
+  workspace_id: string;                  // Workspace (parent of agents and users) this agent belongs to
+  name: string;                          // Display name
+  agent_version: string | null;          // e.g., "1.0.0"
+  config_version_desired: number;        // Config version the server wants the agent to run
+  config_version_current?: number | null; // Config version last reported by the agent (null = not yet reported)
+  ip_addresses?: AgentNetworkInterface[]; // Array of IP addresses
+  last_seen_at: Date | null;             // Last heartbeat timestamp
+  last_result_submitted_at: Date | null; // Last result submission
+  created_at: Date;                      // Agent creation timestamp
+  updated_at: Date;                      // Last update timestamp
 }
 ```
 
