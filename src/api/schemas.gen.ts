@@ -13,6 +13,7 @@ export const AgentStatusSchema = {
     'checks_failed',
     'reported_at',
     'failed_report_count',
+    'dropped_result_count',
     'server_connected',
     'cache_stats'
   ],
@@ -69,6 +70,11 @@ export const AgentStatusSchema = {
     failed_report_count: {
       type: 'integer',
       description: 'Number of consecutive failed report attempts',
+      example: 0
+    },
+    dropped_result_count: {
+      type: 'integer',
+      description: 'Number of results discarded because the server permanently rejected them (HTTP 400/422)',
       example: 0
     },
     server_connected: {

@@ -46,6 +46,10 @@ export type AgentStatus = {
    */
   failed_report_count: number;
   /**
+   * Number of results discarded because the server permanently rejected them (HTTP 400/422)
+   */
+  dropped_result_count: number;
+  /**
    * Whether the agent is currently connected to the server
    */
   server_connected: boolean;

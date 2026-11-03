@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **OpenAPI `AgentStatus.dropped_result_count`**: Regenerated client (`src/api/types.gen.ts`, `schemas.gen.ts`) now includes the required `dropped_result_count` field (results discarded because the server permanently rejected them, HTTP 400/422)
+  - `AgentStatus` is only part of the agent-submitted `AgentHeartbeat`; the frontend does not read or render it, so no UI, state or mock changes were needed (build type-checks cleanly)
+
 ### Fixed
 - **Build failure after OpenAPI `Agent.configVersion` split**: `npm run build` failed because the server-facing `Agent` schema now has `configVersionDesired` (required) and `configVersionCurrent` (nullable) instead of `configVersion`. 
 **Root cause:** the regenerated client no longer exposes `configVersion`, which `AgentCard`, `AgentStatesWidget` and `sortAgents()` still read
