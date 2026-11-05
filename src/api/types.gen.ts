@@ -383,6 +383,15 @@ export type AgentHeartbeat = {
   agent_status: AgentStatus;
 };
 
+export type AgentHeartbeatResponse = {
+  /**
+   * Configuration version the server wants the agent to run. When higher than the
+   * agent's current version, the agent fetches GET /agent/{agentId}/configuration.
+   *
+   */
+  config_version_desired: number;
+};
+
 export type AgentMetrics = {
   /**
    * How long the agent process has been running in seconds; useful for detecting crashes and restarts
@@ -1346,6 +1355,10 @@ export type SendAgentHeartbeatError = SendAgentHeartbeatErrors[keyof SendAgentHe
 export type SendAgentHeartbeatResponses = {
   /**
    * Heartbeat received
+   */
+  200: AgentHeartbeatResponse;
+  /**
+   * Heartbeat received (legacy response without a body)
    */
   204: void;
 };
