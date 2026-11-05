@@ -279,7 +279,7 @@ export const ServerConfigSchema = {
       format: 'int64',
       description: 'Heartbeat interval in seconds',
       default: 300,
-      minimum: 1,
+      minimum: 60,
       example: 300
     },
     verify_tls: {
@@ -923,6 +923,21 @@ export const AgentHeartbeatSchema = {
     agent_status: {
       $ref: '#/components/schemas/AgentStatus',
       description: 'Current status of the agent'
+    }
+  }
+} as const;
+
+export const AgentHeartbeatResponseSchema = {
+  type: 'object',
+  required: [
+    'config_version_desired'
+  ],
+  properties: {
+    config_version_desired: {
+      type: 'integer',
+      format: 'int32',
+      description: 'Configuration version the server wants the agent to run. When higher than the\nagent\'s current version, the agent fetches GET /agent/{agentId}/configuration.\n',
+      example: 3
     }
   }
 } as const;
