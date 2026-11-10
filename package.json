@@ -50,7 +50,7 @@
     "@types/node": "^26",
     "@vitest/coverage-v8": "^5",
     "browser-sync": "^3",
-    "jsdom": "^30",
+    "jsdom": "^31",
     "prettier": "^3",
     "typescript": "^7",
     "vitest": "^5"
