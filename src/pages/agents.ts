@@ -79,9 +79,9 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
       this.sidebar.mount();
     }
 
-    const widgetContainer = this.query('#agent-states-container');
-    if (widgetContainer) {
-      this.agentStatesWidget = new AgentStatesWidget(widgetContainer, getAgents());
+    const agentStatesContainer = this.query('#agent-states-container');
+    if (agentStatesContainer) {
+      this.agentStatesWidget = new AgentStatesWidget(agentStatesContainer, getAgents());
       this.agentStatesWidget.mount();
     }
 
