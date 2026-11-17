@@ -3,6 +3,7 @@
  */
 
 import type { Agent } from '../../src/types/agent-types.js';
+import type { AgentConfigPatch } from '../../src/types/agent-config-types.js';
 import type { AgentUpdateMessage } from '../../src/types/websocket-types.js';
 
 const now = new Date();
@@ -74,6 +75,19 @@ export const mockAgents: Agent[] = [
     updated_at: daysAgo(1),
   },
 ];
+
+export const mockAgentConfigPatch: AgentConfigPatch = {
+  id: mockAgent.id,
+  workspace_id: mockAgent.workspace_id,
+  name: mockAgent.name,
+  config_version_desired: BigInt(3),
+  base_config: { monitoring: { interval_secs: 30 }, storage: { max_cached_results: null } },
+  tags: ['production', 'web-server'],
+  endpoints: [
+    { id: '01930000-0000-7000-e001-000000000001', address: '10.0.0.1', port: 443, enabled: true, tags: ['edge'] },
+    { id: '01930000-0000-7000-e002-000000000002', address: 'example.com', enabled: false, tags: [] },
+  ],
+};
 
 export const mockAgentUpdate: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
