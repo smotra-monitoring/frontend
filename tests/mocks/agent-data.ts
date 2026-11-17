@@ -14,8 +14,8 @@ export const mockAgent: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
   workspace_id: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
-  config_version_desired: 3,
-  config_version_current: 3,
+  config_version_desired: BigInt(3),
+  config_version_current: BigInt(3),
   agent_version: '1.0.0',
   ip_addresses: [
     { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -32,8 +32,8 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a002-000000000002',
     workspace_id: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 2',
-    config_version_desired: 2,
-    config_version_current: 1, // behind desired: config not yet applied
+    config_version_desired: BigInt(2),
+    config_version_current: BigInt(1), // behind desired: config not yet applied
     agent_version: '1.0.0',
     ip_addresses: [
       { ip: '192.168.1.101', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -47,8 +47,8 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a003-000000000003',
     workspace_id: '01930000-0000-7000-0000-000000000002',
     name: 'Test Agent 3',
-    config_version_desired: 1,
-    config_version_current: 1,
+    config_version_desired: BigInt(1),
+    config_version_current: BigInt(1),
     agent_version: '1.0.1',
     ip_addresses: [
       { ip: '192.168.1.102', iface: 'eth0', family: 'ipv4', recommended: true },
@@ -62,7 +62,7 @@ export const mockAgents: Agent[] = [
     id: '01930000-0000-7000-a004-000000000004',
     workspace_id: '01930000-0000-7000-0000-000000000001',
     name: 'Test Agent 4',
-    config_version_desired: 4,
+    config_version_desired: BigInt(4),
     config_version_current: null, // never reported
     agent_version: '1.0.0',
     ip_addresses: [
@@ -79,8 +79,8 @@ export const mockAgentUpdate: Agent = {
   id: '01930000-0000-7000-a001-000000000001',
   workspace_id: '01930000-0000-7000-0000-000000000001',
   name: 'Test Agent 1',
-  config_version_desired: 4,
-  config_version_current: 4,
+  config_version_desired: BigInt(4),
+  config_version_current: BigInt(4),
   agent_version: '1.0.1',
   ip_addresses: [
     { ip: '192.168.1.100', iface: 'eth0', family: 'ipv4', recommended: true },
