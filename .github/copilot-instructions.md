@@ -43,7 +43,6 @@ A bug fix is **not complete** until:
 - **No raw fetch**: All API calls via the generated OpenAPI client (`src/api/`). Never manually edit `*.gen.ts` files.
 - **TypeScript classes**: Components are classes extending `BaseComponent`, not functions.
 - **PKCE required**: All OAuth flows must use PKCE. No tokens in URL query parameters.
-- **Distinct error messages**: Every failure cause (401, 403, 404, 5xx, network, ...) gets its own user-facing message; no generic catch-all. See `error-handling.instructions.md`.
 
 ## Detailed Instructions Index
 
@@ -61,7 +60,6 @@ Detailed rules are in `.github/instructions/` with `applyTo` targeting:
 | `components.instructions.md` | `src/components/**, src/pages/**` |
 | `auth.instructions.md` | `src/auth/**, src/pages/login.ts, oauth-callback.ts` |
 | `api.instructions.md` | `src/api/**, api/**` |
-| `error-handling.instructions.md` | `src/**` |
 | `typescript.instructions.md` | `src/**/*.ts, tsconfig*.json` |
 | `testing.instructions.md` | `tests/**, vitest.config.js` |
 | `documentation.instructions.md` | `docs/**, CHANGELOG.md` |
