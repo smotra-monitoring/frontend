@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import type { AgentConfigState } from '../../../src/types/agent-config-types.js';
 import { renderAgentConfig } from '../../../src/utils/agent-config-render.js';
 import { isConfigStale } from '../../../src/utils/agent-config-utils.js';
-import { describeConfigError } from '../../../src/utils/agent-config-errors.js';
 import { mockAgent, mockAgentConfigPatch } from '../../mocks/agent-data.js';
 
 const loaded: AgentConfigState = {
@@ -83,12 +82,26 @@ describe('renderAgentConfig', () => {
         expect(html).toContain('data-action="reload-config"');
     });
 
-    it('shows a retry button only for retryable errors', () => {
-        const retryable = renderAgentConfig({ ...loaded, status: 'error', data: null, error: describeConfigError(503) });
-        const permanent = renderAgentConfig({ ...loaded, status: 'error', data: null, error: describeConfigError(404) });
-        expect(retryable).toContain('role="alert"');
-        expect(retryable).toContain('data-action="retry-config"');
-        expect(permanent).toContain('role="alert"');
-        expect(permanent).not.toContain('retry-config');
+    it('shows the server message in an alert with a retry button', () => {
+        const html = renderAgentConfig({
+            ...loaded,
+            status: 'error',
+            data: null,
+            error: { message: 'Agent 01930000 has no stored configuration', status: 404 },
+        });
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('Agent 01930000 has no stored configuration');
+        expect(html).toContain('data-action="retry-config"');
+    });
+
+    it('escapes the error message', () => {
+        const html = renderAgentConfig({
+            ...loaded,
+            status: 'error',
+            data: null,
+            error: { message: '<img src=x onerror=alert(1)>' },
+        });
+        expect(html).not.toContain('<img');
+        expect(html).toContain('&lt;img');
     });
 });

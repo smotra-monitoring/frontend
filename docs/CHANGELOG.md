@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Agent config preview (foundation)**: Data layer for showing an agent's stored configuration patch (`GET /agent/{agentId}/configuration`); the side panel and the "Desired" trigger are not built yet
-  - `src/state/agent-config-state.ts`: fetch-on-demand state for the selected agent, never refetched automatically; responses of superseded requests are discarded
-  - `src/utils/agent-config-errors.ts`: a distinct message per cause (401, 403, 404, 501, 503, network, other)
+  - `src/state/agent-config-state.ts`: fetch-on-demand state for the selected agent, never refetched automatically; responses of superseded requests are discarded; failures keep the server's own error message
   - `src/utils/agent-config-utils.ts`: `isConfigStale()` flags a mismatch between the list's desired version and the fetched one
   - `src/utils/agent-config-render.ts`: pure, escaped HTML renderer; see `docs/features/agent-config-preview.md`
 

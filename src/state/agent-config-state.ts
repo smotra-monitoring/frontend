@@ -7,7 +7,8 @@ import { createState, type Subscriber, type UnsubscribeFn } from './global-state
 import type { AgentConfigState } from '../types/agent-config-types.js';
 import { getAgentConfiguration } from '../api/index.js';
 import { getValidAccessToken } from '../auth/token-manager.js';
-import { describeConfigError } from '../utils/agent-config-errors.js';
+
+const FALLBACK_MESSAGE = 'Failed to load agent configuration';
 
 function initialState(): AgentConfigState {
     return { agentId: null, status: 'idle', data: null, error: null, fetchedForVersion: null };
@@ -32,7 +33,8 @@ export function resetAgentConfig(): void {
 }
 
 /**
- * Fetch the stored configuration patch of an agent. Never throws; failures are stored in `error`.
+ * Fetch the stored configuration patch of an agent. Never throws; failures are stored in `error`
+ * with the message returned by the server.
  * A response that arrives after a newer load (or a reset) is discarded.
  */
 export async function loadAgentConfig(agentId: string): Promise<void> {
@@ -48,8 +50,9 @@ export async function loadAgentConfig(agentId: string): Promise<void> {
         if (requestId !== latestRequestId) return;
 
         if (error || !data) {
-            console.error('Failed to load agent configuration (resolve branch)', agentId, describeConfigError(response?.status));
-            configState.setState({ status: 'error', error: describeConfigError(response?.status) });
+            const configError = { message: error?.message ?? FALLBACK_MESSAGE, status: response?.status };
+            console.error('Failed to load agent configuration (resolve branch)', agentId, configError);
+            configState.setState({ status: 'error', error: configError });
             return;
         }
 
@@ -59,9 +62,10 @@ export async function loadAgentConfig(agentId: string): Promise<void> {
             error: null,
             fetchedForVersion: data.config_version_desired,
         });
-    } catch {
+    } catch (thrown) {
         if (requestId !== latestRequestId) return;
-        console.error('Failed to load agent configuration (reject branch)', agentId, describeConfigError(undefined));
-        configState.setState({ status: 'error', error: describeConfigError(undefined) });
+        const configError = { message: thrown instanceof Error ? thrown.message : FALLBACK_MESSAGE };
+        console.error('Failed to load agent configuration (reject branch)', agentId, configError);
+        configState.setState({ status: 'error', error: configError });
     }
 }

@@ -15,8 +15,8 @@ vi.mock('../../../src/auth/token-manager.js', () => ({ getValidAccessToken: vi.f
 type ConfigResult = Awaited<ReturnType<typeof getAgentConfiguration>>;
 
 const ok = (data = mockAgentConfigPatch) => ({ data, response: { status: 200 } }) as unknown as ConfigResult;
-const failed = (status: number) =>
-    ({ error: { message: 'x' }, response: { status } }) as unknown as ConfigResult;
+const failed = (status: number, message: string) =>
+    ({ error: { error: 'x', message }, response: { status } }) as unknown as ConfigResult;
 
 describe('agent-config-state', () => {
     beforeEach(() => {
@@ -56,28 +56,30 @@ describe('agent-config-state', () => {
         await expect(auth()).resolves.toBe('st_live_token');
     });
 
-    it.each([
-        [401, 'unauthorized'],
-        [403, 'forbidden'],
-        [404, 'notFound'],
-        [501, 'notImplemented'],
-        [503, 'unavailable'],
-        [500, 'unknown'],
-    ])('stores a distinct error for HTTP %i', async (status, kind) => {
-        vi.mocked(getAgentConfiguration).mockResolvedValue(failed(status));
+    it.each([401, 403, 404, 501, 503])('stores the server message for HTTP %i', async (status) => {
+        vi.mocked(getAgentConfiguration).mockResolvedValue(failed(status, `server says ${status}`));
         await loadAgentConfig(mockAgent.id);
 
         const state = getAgentConfigState();
         expect(state.status).toBe('error');
         expect(state.data).toBeNull();
-        expect(state.error).toMatchObject({ kind, status });
+        expect(state.error).toEqual({ message: `server says ${status}`, status });
     });
 
-    it('maps a thrown request to a network error without rejecting', async () => {
+    it('falls back to a generic message when the server sent no error body', async () => {
+        vi.mocked(getAgentConfiguration).mockResolvedValue(
+            { error: undefined, data: undefined, response: { status: 502 } } as unknown as ConfigResult
+        );
+        await loadAgentConfig(mockAgent.id);
+
+        expect(getAgentConfigState().error).toEqual({ message: 'Failed to load agent configuration', status: 502 });
+    });
+
+    it('stores the thrown error message without rejecting', async () => {
         vi.mocked(getAgentConfiguration).mockRejectedValue(new TypeError('Failed to fetch'));
         await expect(loadAgentConfig(mockAgent.id)).resolves.toBeUndefined();
 
-        expect(getAgentConfigState().error).toMatchObject({ kind: 'network', retryable: true });
+        expect(getAgentConfigState().error).toEqual({ message: 'Failed to fetch' });
     });
 
     it('discards the response of a superseded request', async () => {

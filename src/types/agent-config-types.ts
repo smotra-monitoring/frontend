@@ -8,21 +8,11 @@ export type { AgentConfigPatch };
 
 export type AgentConfigStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
-export type AgentConfigErrorKind =
-  | 'unauthorized'
-  | 'forbidden'
-  | 'notFound'
-  | 'notImplemented'
-  | 'unavailable'
-  | 'network'
-  | 'unknown';
-
 export interface AgentConfigError {
-  kind: AgentConfigErrorKind;
+  /** Message returned by the server, or the thrown error's message when no response was received. */
   message: string;
   /** HTTP status; undefined when no response was received. */
   status?: number;
-  retryable: boolean;
 }
 
 /** Configuration of the one agent currently being inspected. */

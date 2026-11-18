@@ -10,7 +10,7 @@ Shows the stored configuration patch of an agent (`GET /agent/{agentId}/configur
 - **Single entry.** State holds the configuration of the one agent being inspected; every load replaces it.
 - **Stale indicator.** The agent list keeps refreshing. If its `config_version_desired` differs from the fetched version (in either direction), the preview shows a banner with a Reload button.
 - **Race-safe.** A response that arrives after a newer load or a reset is discarded.
-- **Distinct errors.** One message per cause, so the user is never left guessing.
+- **Server errors as-is.** The `message` returned by the server is shown unchanged (it carries more context than a local mapping could). If the server sent no error body, or the request threw, the thrown error's message or `Failed to load agent configuration` is used. The Retry button is always shown on error.
 
 ## API
 
@@ -25,18 +25,6 @@ const html = renderAgentConfig(getAgentConfigState(), getAgentById(agentId));
 
 `renderAgentConfig` is pure and attaches no listeners. The host wires `data-action="retry-config"` and `data-action="reload-config"` to `loadAgentConfig`.
 
-## Error messages
-
-| Cause | Message | Retry |
-|-------|---------|-------|
-| 401 | Your session has expired. Sign in again. | no |
-| 403 | You don't have permission to view this agent's configuration. | no |
-| 404 | No configuration found. The agent may have been deleted. | no |
-| 501 | This server version doesn't support configuration retrieval. | no |
-| 503 | The configuration service is temporarily unavailable. | yes |
-| network | Can't reach the server. Check your connection. | yes |
-| other | Unexpected error (HTTP n). | yes |
-
 ## Rendered content
 
 Desired version, tags, endpoints (address, port, enabled, tags) and `base_config` as pretty-printed JSON. All server-provided values are escaped.
@@ -44,7 +32,6 @@ Desired version, tags, endpoints (address, port, enabled, tags) and `base_config
 ## Tests
 
 - `tests/unit/state/agent-config-state.test.ts`
-- `tests/unit/utils/agent-config-errors.test.ts`
 - `tests/unit/utils/agent-config-render.test.ts`
 
 The integration test (click Desired, fetch, render in the panel) is added with the side panel.

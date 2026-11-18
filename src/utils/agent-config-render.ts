@@ -35,7 +35,7 @@ function renderError(state: AgentConfigState): string {
   return `
     <div class="agent-config agent-config--error" role="alert">
       <p class="agent-config__error">${escapeHtml(error.message)}</p>
-      ${error.retryable ? '<button type="button" class="button is-small" data-action="retry-config">Retry</button>' : ''}
+      <button type="button" class="button is-small" data-action="retry-config">Retry</button>
     </div>
   `;
 }
