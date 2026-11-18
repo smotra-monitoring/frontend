@@ -65,6 +65,10 @@ Located in the [`features/`](features/) directory:
   - Inline validation, server error mapping, clipboard paste buttons
   - Auto-closes on success and refreshes the agent list
 
+- **[Agent Config Preview](features/agent-config-preview.md)** - Stored configuration patch of an agent (foundation; UI pending)
+  - Fetch-on-demand state, per-cause error messages, stale-version detection
+  - Pure HTML renderer for the upcoming agent details side panel
+
 - **[Refresh State](features/refresh-manager.md)** - Periodic data polling system
   - Centralized refresh control for dashboard widgets
   - User-configurable refresh frequencies (Off, 5s, 15s, 30s)

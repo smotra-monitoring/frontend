@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Agent config preview (foundation)**: Data layer for showing an agent's stored configuration patch (`GET /agent/{agentId}/configuration`); the side panel and the "Desired" trigger are not built yet
+  - `src/state/agent-config-state.ts`: fetch-on-demand state for the selected agent, never refetched automatically; responses of superseded requests are discarded
+  - `src/utils/agent-config-errors.ts`: a distinct message per cause (401, 403, 404, 501, 503, network, other)
+  - `src/utils/agent-config-utils.ts`: `isConfigStale()` flags a mismatch between the list's desired version and the fetched one
+  - `src/utils/agent-config-render.ts`: pure, escaped HTML renderer; see `docs/features/agent-config-preview.md`
+
 ### Changed
 - **OpenAPI `AgentStatus.dropped_result_count`**: Regenerated client (`src/api/types.gen.ts`, `schemas.gen.ts`) now includes the required `dropped_result_count` field (results discarded because the server permanently rejected them, HTTP 400/422)
   - `AgentStatus` is only part of the agent-submitted `AgentHeartbeat`; the frontend does not read or render it, so no UI, state or mock changes were needed (build type-checks cleanly)
