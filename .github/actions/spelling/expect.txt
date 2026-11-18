@@ -30,6 +30,8 @@ OLED
 overlaymodal
 pkce
 qux
+refetched
+retryable
 roadmap
 Roboto
 Samsung
@@ -49,4 +51,5 @@ versioning
 viewports
 WCAG
 workflows
+XError
 yml
