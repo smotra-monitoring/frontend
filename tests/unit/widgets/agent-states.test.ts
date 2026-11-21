@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AgentStatesWidget } from '../../../src/widgets/agent-states.js';
 import { mockAgents } from '../../mocks/agent-data.js';
 import { deriveAgentStatus } from '../../../src/utils/agent-utils.js';
+import { closeAgentDetails, getAgentDetailsPanelState } from '../../../src/state/agent-details-panel-state.js';
 
 describe('AgentStatesWidget', () => {
     let container: HTMLElement;
@@ -20,6 +21,7 @@ describe('AgentStatesWidget', () => {
         if (widget) {
             widget.destroy();
         }
+        closeAgentDetails();
         document.body.removeChild(container);
     });
 
@@ -76,17 +78,31 @@ describe('AgentStatesWidget', () => {
             expect(firstBadge.classList.contains(`agent-status-badge--${expectedStatus}`)).toBe(true);
         });
 
-        it('renders agent details in collapsed state by default', () => {
+        it('renders no inline detail rows and no Toggle All button', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
-            const detailsRows = container.querySelectorAll('.agent-states-row__details');
-            expect(detailsRows).toHaveLength(mockAgents.length);
+            expect(container.querySelectorAll('tbody tr')).toHaveLength(mockAgents.length);
+            expect(container.querySelector('[data-action="toggle-all"]')).toBeNull();
+        });
 
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(false);
-                expect(row.getAttribute('aria-hidden')).toBe('true');
-            });
+        it('renders the Desired version as a labelled button', () => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            const row = container.querySelector<HTMLElement>('.agent-states-row')!;
+            const agent = mockAgents.find(a => a.id === row.dataset.agentId)!;
+            const button = row.querySelector<HTMLButtonElement>('[data-action="show-config"]')!;
+
+            expect(button.tagName).toBe('BUTTON');
+            expect(button.type).toBe('button');
+            expect(button.textContent?.trim()).toBe(String(agent.config_version_desired));
+            expect(button.getAttribute('aria-label')).toBe(
+                `Show desired configuration, version ${agent.config_version_desired}, for ${agent.name}`
+            );
+            expect(row.querySelector('.agent-states-row__config-version')?.textContent).toContain(
+                `${agent.config_version_current ?? 'N/A'} /`
+            );
         });
     });
 
@@ -167,7 +183,7 @@ describe('AgentStatesWidget', () => {
         });
     });
 
-    describe('Expand/Collapse (CSS-only)', () => {
+    describe('Opening the details side panel', () => {
         it.each([
             '.agent-states-row',
             '.agent-states-row__name',
@@ -178,248 +194,129 @@ describe('AgentStatesWidget', () => {
             '.chevron-btn',
             '.chevron-btn .icon',
             '.chevron-btn i',
-        ])('toggles details exactly once when clicking %s', (selector) => {
+        ])('opens the panel for the row exactly once when clicking %s', (selector) => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const row = container.querySelector<HTMLTableRowElement>('.agent-states-row')!;
-            const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
-            const icon = button.querySelector('i')!;
-            const detailsRow = document.getElementById(button.getAttribute('aria-controls')!)!;
-            const target = container.querySelector<HTMLElement>(selector)!;
+            const before = getAgentDetailsPanelState().configRequest;
 
-            target.click();
+            container.querySelector<HTMLElement>(selector)!.click();
 
-            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
-            expect(detailsRow.getAttribute('aria-hidden')).toBe('false');
-            expect(button.getAttribute('aria-expanded')).toBe('true');
-            expect(icon.classList.contains('fa-chevron-up')).toBe(true);
-            expect(icon.classList.contains('fa-chevron-down')).toBe(false);
-            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(1);
-            expect(container.querySelector('.agent-states-row')).toBe(row);
-
-            target.click();
-
-            expect(detailsRow.classList.contains('is-expanded')).toBe(false);
-            expect(detailsRow.getAttribute('aria-hidden')).toBe('true');
-            expect(button.getAttribute('aria-expanded')).toBe('false');
-            expect(icon.classList.contains('fa-chevron-down')).toBe(true);
-            expect(icon.classList.contains('fa-chevron-up')).toBe(false);
+            expect(getAgentDetailsPanelState()).toEqual({ agentId: row.dataset.agentId, configRequest: before });
         });
 
-        it('does not collapse when clicking expanded detail content', () => {
-            widget = new AgentStatesWidget(container, mockAgents);
-            widget.mount();
-
-            container.querySelector<HTMLElement>('.agent-states-row')!.click();
-            const detailsRow = container.querySelector<HTMLElement>('.agent-states-row__details')!;
-            detailsRow.querySelector<HTMLElement>('code')!.click();
-
-            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
-            expect(detailsRow.getAttribute('aria-hidden')).toBe('false');
-        });
-
-        it('keeps row clicks and chevrons in sync after toggling all details', () => {
+        it('opens the panel with the config section requested from the Desired button', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const row = container.querySelector<HTMLTableRowElement>('.agent-states-row')!;
-            const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
-            const detailsRow = document.getElementById(button.getAttribute('aria-controls')!)!;
-            const toggleAll = container.querySelector<HTMLButtonElement>('[data-action="toggle-all"]')!;
+            const before = getAgentDetailsPanelState().configRequest;
 
-            toggleAll.click();
-            row.click();
+            row.querySelector<HTMLButtonElement>('[data-action="show-config"]')!.click();
 
-            expect(detailsRow.classList.contains('is-expanded')).toBe(false);
-            expect(button.getAttribute('aria-expanded')).toBe('false');
-            expect(button.querySelector('.fa-chevron-down')).toBeTruthy();
-            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(mockAgents.length - 1);
-
-            toggleAll.click();
-
-            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
-            expect(button.getAttribute('aria-expanded')).toBe('true');
-            expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
-
-            toggleAll.click();
-            row.click();
-
-            expect(detailsRow.classList.contains('is-expanded')).toBe(true);
-            expect(button.getAttribute('aria-expanded')).toBe('true');
-            expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
-            expect(container.querySelectorAll('.agent-states-row__details.is-expanded')).toHaveLength(1);
+            expect(getAgentDetailsPanelState()).toEqual({ agentId: row.dataset.agentId, configRequest: before + 1 });
         });
 
-        it('expands single agent details on chevron click', () => {
+        it('swaps the panel to another row', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
-            const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
-            const firstAgentId = firstChevron.dataset.agentId;
-            const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
+            const rows = container.querySelectorAll<HTMLTableRowElement>('.agent-states-row');
+            rows[0]!.click();
+            rows[1]!.click();
 
-            expect(detailsRow?.classList.contains('is-expanded')).toBe(false);
-            expect(firstChevron.getAttribute('aria-expanded')).toBe('false');
-
-            // Click to expand
-            firstChevron.click();
-
-            expect(detailsRow?.classList.contains('is-expanded')).toBe(true);
-            expect(firstChevron.getAttribute('aria-expanded')).toBe('true');
-            expect(detailsRow?.getAttribute('aria-hidden')).toBe('false');
+            expect(getAgentDetailsPanelState().agentId).toBe(rows[1]!.dataset.agentId);
         });
 
-        it('collapses expanded row on second chevron click', () => {
+        it('does not open the panel from header sort buttons', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
-            const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
-            const firstAgentId = firstChevron.dataset.agentId;
-            const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
+            container.querySelector<HTMLButtonElement>('[data-sort-field="configVersionDesired"]')!.click();
 
-            // Expand
-            firstChevron.click();
-            expect(detailsRow?.classList.contains('is-expanded')).toBe(true);
-
-            // Collapse
-            firstChevron.click();
-            expect(detailsRow?.classList.contains('is-expanded')).toBe(false);
-            expect(firstChevron.getAttribute('aria-expanded')).toBe('false');
-        });
-
-        it('expands all rows when "Toggle All" is clicked and any row is collapsed', () => {
-            widget = new AgentStatesWidget(container, mockAgents);
-            widget.mount();
-
-            const toggleAllButton = container.querySelector('[data-action="toggle-all"]') as HTMLButtonElement;
-            const detailsRows = container.querySelectorAll('.agent-states-row__details');
-
-            // Initially all collapsed
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(false);
-            });
-
-            // Click "Toggle All"
-            toggleAllButton.click();
-
-            // All should now be expanded
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(true);
-                expect(row.getAttribute('aria-hidden')).toBe('false');
-            });
-        });
-
-        it('collapses all rows when "Toggle All" is clicked and all rows are expanded', () => {
-            widget = new AgentStatesWidget(container, mockAgents);
-            widget.mount();
-
-            const toggleAllButton = container.querySelector('[data-action="toggle-all"]') as HTMLButtonElement;
-            const detailsRows = container.querySelectorAll('.agent-states-row__details');
-
-            // Expand all first
-            toggleAllButton.click();
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(true);
-            });
-
-            // Click "Toggle All" again to collapse
-            toggleAllButton.click();
-
-            // All should now be collapsed
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(false);
-                expect(row.getAttribute('aria-hidden')).toBe('true');
-            });
-        });
-
-        it('expands all when some rows are expanded and some are collapsed', () => {
-            widget = new AgentStatesWidget(container, mockAgents);
-            widget.mount();
-
-            const toggleAllButton = container.querySelector('[data-action="toggle-all"]') as HTMLButtonElement;
-            const chevronButtons = container.querySelectorAll('[data-action="toggle-details"]');
-            const detailsRows = container.querySelectorAll('.agent-states-row__details');
-
-            // Expand first row only
-            (chevronButtons[0] as HTMLButtonElement).click();
-            expect(detailsRows[0].classList.contains('is-expanded')).toBe(true);
-            expect(detailsRows[1].classList.contains('is-expanded')).toBe(false);
-
-            // Click "Toggle All" - should expand all since not all are expanded
-            toggleAllButton.click();
-
-            detailsRows.forEach(row => {
-                expect(row.classList.contains('is-expanded')).toBe(true);
-            });
+            expect(getAgentDetailsPanelState().agentId).toBeNull();
         });
     });
 
-    describe('Agent details content', () => {
-        it('check agent details fields', () => {
+    describe('Selected row', () => {
+        it('marks only the open agent\'s row and its chevron, without re-rendering rows', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
-            const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
+            const rows = container.querySelectorAll<HTMLTableRowElement>('.agent-states-row');
+            const chevron = rows[1]!.querySelector<HTMLButtonElement>('.chevron-btn')!;
+            chevron.focus();
 
-            const firstAgentId = firstChevron.dataset.agentId;
-            const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
-            const detailsContent = detailsRow?.textContent || '';
+            chevron.click();
 
-            // Should contain key agent fields
-            expect(detailsContent).toContain('Agent ID');
-            expect(detailsContent).toContain('Workspace ID');
-            expect(detailsContent).not.toContain('Section ID');
-            expect(detailsContent).toContain('Agent Version');
-            expect(detailsContent).toContain('Config Version');
-            expect(detailsContent).toContain('Current / Desired');
+            expect(rows[1]!.classList.contains('agent-states-row--selected')).toBe(true);
+            expect(rows[1]!.getAttribute('aria-current')).toBe('true');
+            expect(chevron.getAttribute('aria-expanded')).toBe('true');
+            expect(rows[0]!.classList.contains('agent-states-row--selected')).toBe(false);
+            expect(rows[0]!.hasAttribute('aria-current')).toBe(false);
+            expect(container.querySelectorAll('.agent-states-row')[1]).toBe(rows[1]);
+            expect(document.activeElement).toBe(chevron);
         });
 
-        it('IP addresses in agent details', () => {
+        it('moves the highlight on a swap and clears it on close', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
-            const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
+            const rows = container.querySelectorAll<HTMLTableRowElement>('.agent-states-row');
+            rows[0]!.click();
+            rows[1]!.click();
 
-            const firstAgentId = firstChevron.dataset.agentId;
-            const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
+            expect(container.querySelectorAll('.agent-states-row--selected')).toHaveLength(1);
+            expect(rows[1]!.classList.contains('agent-states-row--selected')).toBe(true);
 
-            const agent = mockAgents.find(a => a.id === firstAgentId);
-            if (agent?.ip_addresses && agent.ip_addresses.length > 0) {
-                const ipList = detailsRow?.querySelector('.agent-details__ip-list');
-                expect(ipList).toBeTruthy();
-                expect(ipList?.children.length).toBe(agent.ip_addresses.length);
-            }
+            closeAgentDetails();
+
+            expect(container.querySelectorAll('.agent-states-row--selected')).toHaveLength(0);
+            expect(container.querySelectorAll('[aria-current]')).toHaveLength(0);
+            expect(rows[1]!.querySelector('.chevron-btn')!.getAttribute('aria-expanded')).toBe('false');
+        });
+
+        it('keeps the highlight when the table re-renders (sorting)', () => {
+            widget = new AgentStatesWidget(container, mockAgents);
+            widget.mount();
+
+            const agentId = container.querySelector<HTMLTableRowElement>('.agent-states-row')!.dataset.agentId!;
+            container.querySelector<HTMLTableRowElement>('.agent-states-row')!.click();
+            container.querySelector<HTMLButtonElement>('[data-sort-field="name"]')!.click();
+
+            const selected = container.querySelectorAll<HTMLTableRowElement>('.agent-states-row--selected');
+            expect(selected).toHaveLength(1);
+            expect(selected[0]!.dataset.agentId).toBe(agentId);
+            expect(selected[0]!.getAttribute('aria-current')).toBe('true');
         });
     });
 
     describe('Accessibility', () => {
-        it('sets correct ARIA attributes on expandable rows', () => {
+        it('sets correct ARIA attributes on the panel triggers', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const chevronButtons = container.querySelectorAll('[data-action="toggle-details"]');
-            const detailsRows = container.querySelectorAll('.agent-states-row__details');
+            expect(chevronButtons).toHaveLength(mockAgents.length);
 
-            chevronButtons.forEach((button, index) => {
+            chevronButtons.forEach(button => {
                 expect(button.getAttribute('aria-expanded')).toBe('false');
-                expect(button.getAttribute('aria-controls')).toBe(detailsRows[index].id);
-                expect(detailsRows[index].getAttribute('aria-hidden')).toBe('true');
+                expect(button.getAttribute('aria-controls')).toBe('side-panel');
+                expect(button.getAttribute('aria-label')).toMatch(/^Show details for /);
+                expect(button.querySelector('i')?.getAttribute('aria-hidden')).toBe('true');
             });
         });
 
-        it('updates ARIA attributes when expanding', () => {
+        it('updates aria-expanded when the panel opens', () => {
             widget = new AgentStatesWidget(container, mockAgents);
             widget.mount();
 
             const firstChevron = container.querySelector('[data-action="toggle-details"]') as HTMLButtonElement;
-            const firstAgentId = firstChevron.dataset.agentId;
-            const detailsRow = container.querySelector(`.agent-states-row__details[data-agent-id="${firstAgentId}"]`);
 
             firstChevron.click();
 
             expect(firstChevron.getAttribute('aria-expanded')).toBe('true');
-            expect(detailsRow?.getAttribute('aria-hidden')).toBe('false');
         });
 
         it('has aria-sort attributes on sortable headers', () => {
@@ -460,8 +357,10 @@ describe('AgentStatesWidget', () => {
             widget.mount();
 
             expect(container.querySelector('[autofocus], [onfocus]')).toBeNull();
-            const toggle = container.querySelector('[aria-label^="Toggle details for"]');
-            expect(toggle?.getAttribute('aria-label')).toBe(`Toggle details for ${name}`);
+            const toggle = container.querySelector('[data-action="toggle-details"]');
+            expect(toggle?.getAttribute('aria-label')).toBe(`Show details for ${name}`);
+            const desired = container.querySelector('[data-action="show-config"]');
+            expect(desired?.getAttribute('aria-label')).toContain(name);
 
             const nameCell = container.querySelector('.agent-states-row__name');
             expect(nameCell?.textContent).toContain(name);

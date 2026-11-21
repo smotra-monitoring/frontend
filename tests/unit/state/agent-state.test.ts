@@ -193,13 +193,13 @@ describe('agent-state', () => {
 
     it('sorts by configVersionDesired', () => {
       const sorted = sortAgents(mockAgents, { field: 'configVersionDesired', direction: 'asc' });
-      expect(sorted.map(a => a.config_version_desired)).toEqual([1, 2, 3, 4]);
+      expect(sorted.map(a => Number(a.config_version_desired))).toEqual([1, 2, 3, 4]);
     });
 
     it('sorts by configVersionCurrent with unreported (null) first when ascending', () => {
       const sorted = sortAgents(mockAgents, { field: 'configVersionCurrent', direction: 'asc' });
       expect(sorted[0].config_version_current).toBeNull();
-      expect(sorted.slice(1).map(a => a.config_version_current)).toEqual([1, 1, 3]);
+      expect(sorted.slice(1).map(a => Number(a.config_version_current))).toEqual([1, 1, 3]);
     });
   });
 

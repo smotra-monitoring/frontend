@@ -6,7 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Agent details side panel**: Clicking an agent row on `/agent` opens a non-modal overlay panel on the right with foldable **General**, **Network** and **Config patch preview** sections; see `docs/features/agent-details-panel.md`
+  - The Desired config version in each row is now a button that opens the panel with the stored configuration patch (`GET /agent/{agentId}/configuration`) fetched and shown
+  - The config is fetched on open and on swap only, never refetched automatically; a banner with a Reload button appears when the agent list reports a different desired version
+  - Closes with the close button, `Escape` or a click outside the panel; section state is in memory only (defaults on page load, kept across close/reopen); the selected row is highlighted (`aria-current`)
+  - New generic `SidePanel` component, `AgentDetailsPanel` widget, `agent-details-panel-state` and `agent-details-render` utilities
+- **Agent config preview**: Data layer behind the config patch preview (`GET /agent/{agentId}/configuration`)
+  - `src/state/agent-config-state.ts`: fetch-on-demand state for the selected agent, never refetched automatically; responses of superseded requests are discarded; failures keep the server's own error message
+  - `src/utils/agent-config-utils.ts`: `isConfigStale()` flags a mismatch between the list's desired version and the fetched one
+  - `src/utils/agent-config-render.ts`: pure, escaped HTML renderer; see `docs/features/agent-config-preview.md`
+
 ### Changed
+- **Agent details moved to the side panel**: The inline expandable detail row and the "Toggle All" button of the Agent States Widget are removed; all information from the row (general, IP addresses) is now in the side panel sections. The chevron button opens the panel instead of expanding the row (`aria-controls="side-panel"`, label "Show details for ...")
 - **OpenAPI `AgentStatus.dropped_result_count`**: Regenerated client (`src/api/types.gen.ts`, `schemas.gen.ts`) now includes the required `dropped_result_count` field (results discarded because the server permanently rejected them, HTTP 400/422)
   - `AgentStatus` is only part of the agent-submitted `AgentHeartbeat`; the frontend does not read or render it, so no UI, state or mock changes were needed (build type-checks cleanly)
 

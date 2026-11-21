@@ -2,22 +2,22 @@
 
 **Status**: ✅ Implemented  
 **Version**: 0.1.0  
-**Last Updated**: June 3, 2026
+**Last Updated**: November 18, 2026
 
 ## Overview
 
-The **Agent States Widget** is a self-contained table-based component that displays the list of monitoring agents with sortable columns and CSS-only expandable rows. It replaces the previous Bento-Box card layout as the primary dashboard view, providing a more information-dense and efficient interface for managing multiple agents.
+The **Agent States Widget** is a self-contained table-based component that displays the list of monitoring agents with sortable columns. Clicking a row opens the [Agent Details Panel](agent-details-panel.md), an overlay on the right with the agent's full information; the Desired config version in each row opens the panel with its config patch preview. It replaces the previous Bento-Box card layout as the primary dashboard view, providing a more information-dense and efficient interface for managing multiple agents.
 
 ## Key Features
 
 - **Table Layout**: Clean, responsive table showing agent name, status, and last seen timestamp
 - **Sortable Columns**: Click column headers to sort by Name, Status, or Last Seen (ascending/descending)
-- **Expandable Details**: Click anywhere on an agent's summary row to expand or collapse full agent information with smooth CSS transitions; the chevron always reflects the current state
+- **Details Side Panel**: Click anywhere on an agent's row (or its chevron button) to open the [Agent Details Panel](agent-details-panel.md); the selected row is highlighted
+- **Config Patch Preview**: The Desired config version is a button that opens the panel with the stored configuration patch fetched and shown
 - **Status Derivation**: Agent status (online/offline/unknown) is derived from `lastSeenAt` timestamp using a configurable threshold
 - **Real-Time Updates**: Subscribes to agent state changes for automatic updates
-- **Toggle All**: Single button to expand or collapse all agent details at once
 - **Accessibility**: Full WCAG 2.1 AA compliance with keyboard navigation and screen reader support
-- **Performance**: CSS-only expand/collapse means zero re-renders and smooth 60fps animations
+- **Performance**: Selection is updated by direct DOM changes, so opening and closing the panel never re-renders the table
 
 ## Design Decisions
 
@@ -30,19 +30,17 @@ The widget uses a table layout instead of the previous Bento-Box cards for sever
 3. **Sorting**: Column-based sorting is more intuitive in a table format
 4. **Scalability**: Tables handle 50+ agents better than card grids
 
-### CSS-Only Expand/Collapse
+### In-Place Selection Updates
 
-A critical design decision was to implement expand/collapse using **direct DOM manipulation** rather than React-style state updates:
+The panel state (`state/agent-details-panel-state.ts`) is the single source of truth for which row is selected. The widget reads it in `render()` so sorting and refreshes keep the highlight, and subscribes to it to update the rows **directly in the DOM** when the panel opens, swaps or closes:
 
 ```typescript
-// ✅ Correct: Direct DOM manipulation (no re-render)
-detailsRow.classList.toggle('is-expanded');
+// ✅ Direct DOM update: rows and focus survive
+row.classList.toggle('agent-states-row--selected', selected);
 
-// ❌ Avoided: State-driven re-render (breaks CSS transitions)
-this.setState({ expandedRows: [...expandedRows, agentId] });
+// ❌ Avoided: a re-render would drop the focus of the button that was just clicked
+this.setState({ selectedAgentId });
 ```
-
-**Why?** When you re-render the component, the DOM elements are destroyed and recreated. This breaks CSS transitions because the browser can't animate between destroyed and new elements. By toggling CSS classes directly, we preserve the DOM elements and allow smooth `max-height` and `opacity` transitions.
 
 ### Status Derivation
 
@@ -72,13 +70,14 @@ AgentStatesWidget (extends BaseComponent)
 ├── Methods
 │   ├── render()                 // Main render method
 │   ├── renderTable()            // Table structure
-│   ├── renderAgentRow()         // Individual agent row + detail row
+│   ├── renderAgentRow()         // Individual agent row
 │   ├── handleSort()             // Sort logic (updates state)
-│   ├── toggleAgentDetails()     // CSS-only expand/collapse (no state)
-│   └── toggleAllDetails()       // CSS-only expand-all/collapse-all (no state)
+│   ├── handleRowClick()         // Delegated click: opens the details panel
+│   └── updateSelection()        // Row highlight + aria-expanded (no state)
 │
 └── Subscription
-    └── subscribeToAgents()      // Real-time agent updates
+    ├── subscribeToAgents()            // Real-time agent updates
+    └── subscribeToAgentDetailsPanel() // Selected row highlight
 ```
 
 ### Data Flow
@@ -87,27 +86,16 @@ AgentStatesWidget (extends BaseComponent)
 2. **Subscription**: Widget subscribes to `subscribeToAgents()` for real-time updates
 3. **State Update**: When agents change, `setState({ agents })` triggers re-render
 4. **Sorting**: User clicks column header → `handleSort()` → `setState({ sort })` → re-render with new order
-5. **Expand/Collapse**: User clicks anywhere on the summary row (including the chevron) → `toggleAgentDetails()` → **direct DOM manipulation** (no state, no re-render). Clicking inside the expanded details does not collapse them.
+5. **Open details**: One delegated click listener on the widget root. A click on the Desired button calls `openAgentDetails(id, { expandConfig: true })`; any other click inside a `[data-agent-row]` calls `openAgentDetails(id)`. Keyboard activation of the chevron or Desired button bubbles as a click, so each action fires exactly once.
 
-### CSS Transitions
+### Row Highlight CSS
 
 ```css
-/* Collapsed state */
-.agent-states-row__details {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 300ms ease, opacity 200ms ease;
-}
-
-/* Expanded state */
-.agent-states-row__details.is-expanded {
-  max-height: 800px;
-  opacity: 1;
+.agent-states-table tbody tr.agent-states-row--selected {
+  background-color: var(--color-bg-secondary);
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }
 ```
-
-The `max-height` and `opacity` transitions create a smooth expand/collapse animation. Using `overflow: hidden` prevents content from showing before the transition completes.
 
 ## Integration with DashboardGrid
 
@@ -203,35 +191,31 @@ interface Agent {
 **Main Row**:
 - Name
 - Status badge (online/offline/unknown with pulse indicator)
+- Agent version
+- Config version: current / desired (the desired version is a button)
 - Last Seen (relative time: "Just now", "5 minutes ago", etc.)
-- Chevron button
+- Chevron button (opens the details panel)
 
-**Expanded Details**:
-- Agent ID (UUID)
-- Workspace ID
-- Agent Version
-- Desired Config Version
-- Current Config Version ("Not reported" when null)- IP Addresses (all interfaces, with iface name and recommended flag)
-- Last Result Submitted (absolute timestamp)
-- Last Seen (absolute timestamp)
-- Created At
-- Updated At
+**Details** (in the side panel, see [Agent Details Panel](agent-details-panel.md)):
+- General: status, agent ID, workspace ID, agent version, config versions, last seen, last result submitted, created, updated
+- Network: IP addresses with interface name and recommended flag
+- Config patch preview: fetched on demand
 
 ## Accessibility
 
 ### Keyboard Navigation
 
 - **Tab**: Navigate between sortable headers and chevron buttons
-- **Enter/Space**: Activate sort or toggle expand/collapse
-- The chevron remains a native, focusable button for keyboard and screen reader users; its activation bubbles to the same row click handler, toggling exactly once.
+- **Enter/Space**: Activate sort, open the details panel from the chevron, or open the config preview from the Desired button
+- The chevron and the Desired version are native, focusable buttons for keyboard and screen reader users; their activation bubbles to the same delegated click handler, opening the panel exactly once.
 - **Arrow Keys**: Navigate within table (browser default)
 
 ### ARIA Attributes
 
 - `aria-sort="ascending|descending|none"` on sortable column headers
-- `aria-expanded="true|false"` on chevron buttons
-- `aria-controls="details-row-id"` linking chevron to detail row
-- `aria-hidden="true|false"` on detail rows
+- `aria-expanded="true|false"` on chevron buttons (true while that agent is open in the panel)
+- `aria-controls="side-panel"` linking chevron to the panel
+- `aria-current="true"` on the selected row
 - `role="status"` on status badges
 
 ### Screen Readers
@@ -239,60 +223,50 @@ interface Agent {
 All status badges, timestamps, and interactive elements have descriptive labels:
 
 ```html
-<button aria-label="Toggle details for Agent 1">
-  <i class="fas fa-chevron-down"></i>
+<button aria-label="Show details for Agent 1">
+  <i class="fas fa-chevron-right" aria-hidden="true"></i>
 </button>
+<button aria-label="Show desired configuration, version 3, for Agent 1">3</button>
 ```
 
 ### Reduced Motion
 
-Respects `prefers-reduced-motion: reduce` media query:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  .agent-states-row__details {
-    transition: none;
-  }
-}
-```
+The panel's slide transition is disabled under `prefers-reduced-motion: reduce` (see `animations.css`).
 
 ## Performance
 
 ### Optimization Techniques
 
 1. **CSS Containment**: `contain: layout style` on widget container for faster rendering
-2. **No Re-renders on Expand**: Direct DOM manipulation avoids component re-renders
+2. **No Re-renders on Selection**: Direct DOM updates avoid re-rendering the table when the panel opens, swaps or closes
 3. **Efficient Sorting**: Uses native array sorting, only re-renders when sort changes
 4. **Lazy Rendering**: Could add virtual scrolling for 1000+ agents (not currently needed)
 
 ### Benchmarks
 
 - **Render Time**: < 50ms for 50 agents (tested on modern desktop)
-- **Expand/Collapse**: 60fps smooth animation on all tested devices
-- **Toggle All**: < 100ms to expand/collapse all rows
 - **Memory**: ~5KB per agent (JavaScript objects + DOM elements)
 
 ## Testing
 
-Comprehensive unit tests in `tests/unit/components/agent-states-widget.test.ts`:
+Unit tests in `tests/unit/widgets/agent-states.test.ts`:
 
-- **Rendering**: Widget structure, empty state, loading state
+- **Rendering**: Widget structure, empty state, loading state, Desired button, no inline detail rows
 - **Sorting**: Default sort, toggle direction, active indicator
-- **Expand/Collapse**: Single row, multiple rows, toggle all
+- **Opening the panel**: Row, chevron and Desired clicks, swap, sort buttons do not open it
+- **Selected row**: Highlight, `aria-current`, survives re-render, focus kept
 - **Accessibility**: ARIA attributes, keyboard navigation
 - **XSS Protection**: HTML escaping in agent names
 
-**Test Coverage**: 20 unit tests, all passing
+Integration: `tests/integration/agents-page.test.ts` and `tests/integration/agent-config-panel.test.ts`.
 
 ## Known Limitations
 
 1. **No Pagination**: Currently displays all agents in a single table. For 1000+ agents, consider implementing virtual scrolling or pagination.
 
-2. **Sort State Lost on Expand**: When user sorts the table, all expanded rows are collapsed (because sorting triggers a re-render). This is acceptable but could be improved by storing expanded state separately.
+2. **No Persisted Sort**: Sort preference is not saved to localStorage. User must re-sort on each page load.
 
-3. **No Persisted Sort**: Sort preference is not saved to localStorage. User must re-sort on each page load.
-
-4. **Fixed Column Widths**: Column widths are percentages (40%, 20%, 30%, 10%). Could make them resizable in the future.
+3. **Fixed Column Widths**: Column widths are percentages (40%, 20%, 30%, 10%). Could make them resizable in the future.
 
 ## Future Enhancements
 
@@ -309,7 +283,7 @@ Comprehensive unit tests in `tests/unit/components/agent-states-widget.test.ts`:
 - [ ] Drag-to-reorder columns
 - [ ] Resizable columns
 - [ ] Bulk actions (select multiple agents, apply action)
-- [ ] Agent health charts in expanded view
+- [ ] Agent health charts in the details panel
 - [ ] Link to agent detail page
 
 ## Related Documentation

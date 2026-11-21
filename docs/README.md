@@ -42,7 +42,8 @@ Located in the [`features/`](features/) directory:
 
 - **[Agent States Widget](features/agent-states-widget.md)** - Table-based agent list component
   - Table layout with sortable columns
-  - Whole-row click to expand/collapse agent details, with synchronized chevrons and keyboard-accessible buttons
+  - Whole-row click opens the agent details side panel; the selected row is highlighted
+  - Desired config version is a button that opens the config patch preview
   - Status derivation from lastSeenAt timestamp
   - Real-time updates and accessibility
   - Performance optimizations
@@ -64,6 +65,16 @@ Located in the [`features/`](features/) directory:
   - Modal form with agent ID, claim code and optional name
   - Inline validation, server error mapping, clipboard paste buttons
   - Auto-closes on success and refreshes the agent list
+
+- **[Agent Details Panel](features/agent-details-panel.md)** - Right-hand overlay with foldable agent sections
+  - General, Network and Config patch preview sections; section state is kept in memory only (not across page loads)
+  - Closes with Escape, the close button or an outside click
+  - Generic `SidePanel` shell reusable for other information
+
+- **[Agent Config Preview](features/agent-config-preview.md)** - Stored configuration patch of an agent
+  - Fetched on open/swap only, stale-version banner with Reload
+  - Server error messages shown as-is
+  - Pure HTML renderer used by the details panel
 
 - **[Refresh State](features/refresh-manager.md)** - Periodic data polling system
   - Centralized refresh control for dashboard widgets

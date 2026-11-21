@@ -12,7 +12,7 @@ export type AgentStatus = {
   /**
    * Version of the agent configuration
    */
-  config_version: number;
+  config_version: bigint;
   /**
    * Whether the agent is currently running
    */
@@ -67,11 +67,57 @@ export type AgentCacheStats = {
   capacity: number;
 };
 
+/**
+ * Agent record with its stored configuration patch, as returned by the server.
+ */
+export type AgentConfigPatch = {
+  id: UuiDv7;
+  workspace_id: UuiDv7;
+  /**
+   * Human-readable agent name; the agent maps it to `agent_name`
+   */
+  name: string;
+  /**
+   * Configuration version the agent must run after applying `base_config`
+   */
+  config_version_desired: bigint;
+  /**
+   * JSON Merge Patch (RFC 7396) over the `AgentConfig` structure, stored and returned
+   * unprocessed (a partial object, not a full `AgentConfig`).
+   * The agent builds its configuration as: built-in defaults, then local overrides,
+   * then this patch.
+   * - Objects merge key by key; scalars and arrays replace the whole value.
+   * - `null` removes the key from the local overrides, so the agent default applies again.
+   * - A key absent from the patch leaves the agent's current value unchanged.
+   * - Must not contain `agent_id`, `agent_name`, `version`, `server.api_key`, `storage.cache_dir`.
+   * - Must not contain `tags` or `endpoints`; the server resolves them and returns them
+   *   only as the top-level `tags` and `endpoints` fields.
+   * - Unknown keys or values of the wrong type make the agent reject the whole patch.
+   *
+   */
+  base_config: {
+    [key: string]: unknown;
+  };
+  /**
+   * Agent tags resolved by the server; they replace the agent's tags wholesale
+   */
+  tags: Array<string>;
+  /**
+   * Endpoints the agent must monitor, resolved by the server via topology membership
+   */
+  endpoints: Array<Endpoint>;
+};
+
+/**
+ * Effective agent configuration after merging defaults, local overrides and the server
+ * patch. Never sent by the server; the server returns `AgentConfigPatch`.
+ *
+ */
 export type AgentConfig = {
   /**
    * Configuration version (used for syncing with server)
    */
-  version: number;
+  version: bigint;
   agent_id: UuiDv7;
   /**
    * Human-readable agent name
@@ -389,7 +435,7 @@ export type AgentHeartbeatResponse = {
    * agent's current version, the agent fetches GET /agent/{agentId}/configuration.
    *
    */
-  config_version_desired: number;
+  config_version_desired: bigint;
 };
 
 export type AgentMetrics = {
@@ -493,14 +539,14 @@ export type Agent = {
   /**
    * Configuration version the server wants the agent to run
    */
-  config_version_desired: number;
+  config_version_desired: bigint;
   /**
    * Configuration version last reported by the agent in a heartbeat, null if the agent
    * has not sent one yet. Lower than config_version_desired means the agent has not
    * applied the latest configuration.
    *
    */
-  config_version_current?: number | null;
+  config_version_current?: bigint | null;
   /**
    * Version of the agent software, null if not yet reported
    */
@@ -1318,7 +1364,7 @@ export type GetAgentConfigurationResponses = {
   /**
    * Configuration retrieved successfully
    */
-  200: AgentConfig;
+  200: AgentConfigPatch;
 };
 
 export type GetAgentConfigurationResponse = GetAgentConfigurationResponses[keyof GetAgentConfigurationResponses];
