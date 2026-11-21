@@ -12,6 +12,7 @@ import { ToastNotification } from '../components/toast-notification.js';
 import { RefreshControl } from '../components/refresh-control.js';
 import { ClaimAgentModal } from '../components/claim-agent-modal.js';
 import { AgentStatesWidget } from '../widgets/agent-states.js';
+import { AgentDetailsPanel } from '../widgets/agent-details.js';
 import { getAgents, loadAgents } from '../state/agent-state.js';
 
 interface AgentsPageState extends ComponentState {
@@ -23,6 +24,7 @@ interface AgentsPageState extends ComponentState {
 export class AgentsPage extends BaseComponent<AgentsPageState> {
   private sidebar: Sidebar | null = null;
   private agentStatesWidget: AgentStatesWidget | null = null;
+  private agentDetailsPanel: AgentDetailsPanel | null = null;
   private themeToggle: ThemeToggle | null = null;
   private commandPalette: CommandPalette | null = null;
   private toastNotification: ToastNotification | null = null;
@@ -65,6 +67,7 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
 
         <div id="command-palette-container"></div>
         <div id="claim-modal-container"></div>
+        <div id="agent-details-container"></div>
         <div id="toast-notification-container"></div>
       </div>
     `;
@@ -83,6 +86,12 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
     if (agentStatesContainer) {
       this.agentStatesWidget = new AgentStatesWidget(agentStatesContainer, getAgents());
       this.agentStatesWidget.mount();
+    }
+
+    const agentDetailsContainer = this.query('#agent-details-container');
+    if (agentDetailsContainer) {
+      this.agentDetailsPanel = new AgentDetailsPanel(agentDetailsContainer);
+      this.agentDetailsPanel.mount();
     }
 
     const refreshControlContainer = this.query('#refresh-control-container');
@@ -137,6 +146,7 @@ export class AgentsPage extends BaseComponent<AgentsPageState> {
   onDestroy(): void {
     this.sidebar?.destroy();
     this.agentStatesWidget?.destroy();
+    this.agentDetailsPanel?.destroy();
     this.themeToggle?.destroy();
     this.commandPalette?.destroy();
     this.toastNotification?.destroy();

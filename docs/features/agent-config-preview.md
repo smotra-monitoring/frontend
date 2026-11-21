@@ -2,7 +2,7 @@
 
 Shows the stored configuration patch of an agent (`GET /agent/{agentId}/configuration`, operation `getAgentConfiguration`, response `AgentConfigPatch`).
 
-**Status:** foundation only. The right-hand side panel and the "Desired" trigger in the Agent States Widget are not built yet.
+**Status:** wired. It is shown in the "Config patch preview" section of the [Agent Details Panel](agent-details-panel.md), opened from the Desired config version button in the Agent States table.
 
 ## Design decisions
 
@@ -23,7 +23,7 @@ await loadAgentConfig(agentId);           // never throws; failures are stored i
 const html = renderAgentConfig(getAgentConfigState(), getAgentById(agentId));
 ```
 
-`renderAgentConfig` is pure and attaches no listeners. The host wires `data-action="retry-config"` and `data-action="reload-config"` to `loadAgentConfig`.
+`renderAgentConfig` is pure and attaches no listeners. `AgentDetailsPanel` wires `data-action="retry-config"` and `data-action="reload-config"` to `loadAgentConfig`.
 
 ## Rendered content
 
@@ -33,5 +33,5 @@ Desired version, tags, endpoints (address, port, enabled, tags) and `base_config
 
 - `tests/unit/state/agent-config-state.test.ts`
 - `tests/unit/utils/agent-config-render.test.ts`
-
-The integration test (click Desired, fetch, render in the panel) is added with the side panel.
+- `tests/unit/widgets/agent-details.test.ts` (panel wiring)
+- `tests/integration/agent-config-panel.test.ts` (click Desired, fetch, render)

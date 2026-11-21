@@ -54,35 +54,30 @@ describe('Agents page routing (Integration)', () => {
     expect(active?.getAttribute('data-route')).toBe('/agent');
   });
 
-  it('toggles agent details from the whole row and keeps the chevron in sync', async () => {
+  it('opens the details side panel from the whole row and closes it with Escape', async () => {
     await vi.waitFor(() => {
       expect(appRoot.querySelectorAll('.agent-states-row')).toHaveLength(mockAgents.length);
     });
 
     const row = appRoot.querySelector<HTMLTableRowElement>('.agent-states-row')!;
     const button = row.querySelector<HTMLButtonElement>('.chevron-btn')!;
-    const details = document.getElementById(button.getAttribute('aria-controls')!)!;
+    const panel = appRoot.querySelector<HTMLElement>('#side-panel')!;
+
+    expect(panel.classList.contains('side-panel--open')).toBe(false);
 
     row.querySelector<HTMLElement>('.agent-states-row__name')!.click();
 
-    expect(details.classList.contains('is-expanded')).toBe(true);
-    expect(details.getAttribute('aria-hidden')).toBe('false');
+    expect(panel.classList.contains('side-panel--open')).toBe(true);
+    expect(panel.querySelector('#side-panel-title')?.textContent).toBe(mockAgents[0]!.name);
+    expect(row.classList.contains('agent-states-row--selected')).toBe(true);
     expect(button.getAttribute('aria-expanded')).toBe('true');
-    expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
 
-    row.querySelector<HTMLElement>('.agent-states-row__last-seen')!.click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
-    expect(details.classList.contains('is-expanded')).toBe(false);
-    expect(details.getAttribute('aria-hidden')).toBe('true');
+    expect(panel.classList.contains('side-panel--open')).toBe(false);
+    expect(row.classList.contains('agent-states-row--selected')).toBe(false);
     expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(button.querySelector('.fa-chevron-down')).toBeTruthy();
-
-    button.click();
-
-    expect(details.classList.contains('is-expanded')).toBe(true);
-    expect(button.getAttribute('aria-expanded')).toBe('true');
-    expect(button.querySelector('.fa-chevron-up')).toBeTruthy();
-    button.click();
+    expect(document.activeElement).toBe(button);
   });
 
   it('navigates from /dashboard to /agent via the router', async () => {

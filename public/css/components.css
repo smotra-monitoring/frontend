@@ -1380,7 +1380,7 @@
 }
 
 /* ===================================================================
-   Agent States Widget - Table-based agent list with expandable rows
+   Agent States Widget - Table-based agent list that opens a details side panel
    =================================================================== */
 
 .agent-states-widget {
@@ -1397,50 +1397,6 @@
   justify-content: space-between;
   margin-bottom: var(--spacing-lg);
   gap: var(--spacing-md);
-}
-
-.agent-states-widget__toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  min-height: var(--touch-target-min);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.agent-states-widget__toggle-btn:hover {
-  background-color: var(--color-bg);
-  border-color: var(--color-info);
-  color: var(--color-text-primary);
-  transform: translateY(-1px);
-}
-
-.agent-states-widget__toggle-btn:active {
-  transform: translateY(0);
-}
-
-.agent-states-widget__toggle-btn:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-.agent-states-widget__toggle-btn .icon {
-  width: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .agent-states-widget__title {
@@ -1632,62 +1588,66 @@
   height: 6px;
 }
 
-/* Expandable detail row - overflow:hidden does not work on <tr>, so we
-   animate an inner <div> instead of the row itself */
-.agent-states-row__details {
-  border-bottom: none;
-}
-
-.agent-states-row__details.is-expanded {
-  border-bottom: 1px solid var(--color-border);
-}
-
-.agent-states-row__details td {
-  padding: 0;
+/* Row whose agent is shown in the details side panel */
+.agent-states-table tbody tr.agent-states-row--selected {
   background-color: var(--color-bg-secondary);
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
-/* Inner div: overflow:hidden works reliably here */
-.agent-states-row__details-inner {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 300ms ease, opacity 200ms ease;
+/* Desired config version: opens the config preview in the side panel.
+   Looks like inline text; the pseudo-element enlarges the touch target to 44px without affecting layout. */
+.config-version-btn {
+  position: relative;
+  display: inline;
+  margin: 0;
+  padding: 0 var(--spacing-xs);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-info);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
-.agent-states-row__details.is-expanded .agent-states-row__details-inner {
-  max-height: 800px;
-  opacity: 1;
+.config-version-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--touch-target-min));
+  height: var(--touch-target-min);
+  transform: translate(-50%, -50%);
 }
 
-/* Agent details content */
-.agent-details {
-  padding: var(--spacing-md);
+.config-version-btn:hover {
+  background-color: var(--color-bg);
 }
 
+.config-version-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+/* Agent details content (rendered inside the side panel) */
 .agent-details__grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing-md);
+  margin: 0;
 }
 
 .agent-details__item {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--spacing-sm);
-  align-items: baseline;
-}
-
-.agent-details__item--full {
-  grid-column: 1 / -1;
-  grid-template-columns: auto 1fr;
+  gap: var(--spacing-xs);
 }
 
 .agent-details__item dt {
   font-weight: 600;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  white-space: nowrap;
 }
 
 .agent-details__item dd {
@@ -1705,14 +1665,7 @@
   gap: var(--spacing-xs);
 }
 
-/* Tablet and desktop: 2-column detail grid */
-@media (min-width: 768px) {
-  .agent-details__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.agent-details code {
+.side-panel__section-body code {
   background-color: var(--color-bg-secondary, var(--color-bg));
   border: 1px solid var(--color-border);
   border-radius: 4px;
@@ -1720,6 +1673,233 @@
   font-size: 0.75rem;
   color: var(--color-text-secondary);
   font-family: monospace;
+}
+
+.side-panel__section-body .agent-config__patch code {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+/* ===================================================================
+   Side panel - non-modal overlay docked to the right edge
+   =================================================================== */
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-medium);
+  /* Above the mobile bottom nav, below toasts */
+  z-index: var(--z-index-modal-backdrop);
+  visibility: hidden;
+  transform: translateX(100%);
+  transition:
+    transform var(--transition-base),
+    visibility 0s linear var(--transition-base);
+}
+
+.side-panel:focus {
+  outline: none;
+}
+
+.side-panel--open {
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform var(--transition-base);
+}
+
+.side-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-base);
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.side-panel__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.side-panel__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.side-panel__close:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+}
+
+.side-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.side-panel__section {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.side-panel__section-heading {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.side-panel__section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--spacing-sm) var(--spacing-base);
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.side-panel__section-toggle:hover {
+  background-color: var(--color-bg);
+}
+
+.side-panel__section-toggle:focus-visible,
+.side-panel__close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.side-panel__section-toggle .icon {
+  transition: transform var(--transition-fast);
+}
+
+.side-panel__section-toggle[aria-expanded="true"] .icon {
+  transform: rotate(180deg);
+}
+
+.side-panel__section-body {
+  padding: 0 var(--spacing-base) var(--spacing-base);
+}
+
+.side-panel__section-body[hidden] {
+  display: none;
+}
+
+/* Config patch preview */
+.agent-config__grid {
+  display: grid;
+  gap: var(--spacing-md);
+  margin: 0;
+}
+
+.agent-config__item dt {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.agent-config__item dd {
+  margin: var(--spacing-xs) 0 0;
+  color: var(--color-text-primary);
+}
+
+.agent-config__tags,
+.agent-config__endpoints {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.agent-config__patch {
+  margin: 0;
+  padding: var(--spacing-sm);
+  max-height: 40vh;
+  overflow: auto;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.agent-config__error {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-error);
+  overflow-wrap: anywhere;
+}
+
+.agent-config__stale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+}
+
+.agent-config__stale p {
+  margin: 0;
+}
+
+/* Bulma's .button sets a white background and dark text on hover/focus/active; restate every state for both themes. */
+.button.agent-config__action,
+.button.agent-config__action:focus,
+.button.agent-config__action:active {
+  min-width: var(--touch-target-min);
+  padding: 0 var(--spacing-base);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  box-shadow: none;
+  transform: none;
+}
+
+.button.agent-config__action:hover,
+.button.agent-config__action:focus-visible {
+  background-color: var(--color-bg);
+  border-color: var(--color-focus);
+  color: var(--color-text-primary);
+}
+
+.button.agent-config__action:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Tablet and up: fixed-width panel */
+@media (min-width: 768px) {
+  .side-panel {
+    width: min(380px, 100vw);
+  }
 }
 
 /* Staggered entrance animation for cards */

@@ -35,7 +35,7 @@ function renderError(state: AgentConfigState): string {
   return `
     <div class="agent-config agent-config--error" role="alert">
       <p class="agent-config__error">${escapeHtml(error.message)}</p>
-      <button type="button" class="button is-small" data-action="retry-config">Retry</button>
+      <button type="button" class="button agent-config__action" data-action="retry-config">Retry</button>
     </div>
   `;
 }
@@ -48,7 +48,7 @@ function renderLoaded(state: AgentConfigState, agent: Agent | null): string {
     ? `
       <div class="agent-config__stale notification is-warning is-light" role="status">
         <p>Agent list shows version ${escapeHtml(String(agent.config_version_desired))}, this view shows ${escapeHtml(String(data.config_version_desired))}.</p>
-        <button type="button" class="button is-small" data-action="reload-config">Reload</button>
+        <button type="button" class="button agent-config__action" data-action="reload-config">Reload</button>
       </div>
     `
     : '';
