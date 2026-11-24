@@ -1491,6 +1491,48 @@ export type ListAgentsResponses = {
 
 export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
 
+export type GetAgentData = {
+  body?: never;
+  path: {
+    /**
+     * Unique identifier for the agent
+     */
+    agentId: UuiDv7;
+  };
+  query?: never;
+  url: '/agents/{agentId}';
+};
+
+export type GetAgentErrors = {
+  /**
+   * Bad request - Invalid parameters
+   */
+  400: Error;
+  /**
+   * Unauthorized - Invalid or missing authentication
+   */
+  401: Error;
+  /**
+   * Resource not found
+   */
+  404: Error;
+  /**
+   * Internal server error
+   */
+  500: Error;
+};
+
+export type GetAgentError = GetAgentErrors[keyof GetAgentErrors];
+
+export type GetAgentResponses = {
+  /**
+   * Agent retrieved successfully
+   */
+  200: Agent;
+};
+
+export type GetAgentResponse = GetAgentResponses[keyof GetAgentResponses];
+
 export type GetResultReportData = {
   body?: never;
   path?: never;
