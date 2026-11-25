@@ -8,7 +8,6 @@ Shows the stored configuration patch of an agent (`GET /agent/{agentId}/configur
 
 - **Fetch on open and on swap only.** There is no automatic refetch (not on the refresh tick either), so the view never changes while the user reads it.
 - **Single entry.** State holds the configuration of the one agent being inspected; every load replaces it.
-- **Stale indicator.** The agent list keeps refreshing. If its `config_version_desired` differs from the fetched version (in either direction), the preview shows a banner with a Reload button.
 - **Race-safe.** A response that arrives after a newer load or a reset is discarded.
 - **Server errors as-is.** The `message` returned by the server is shown unchanged (it carries more context than a local mapping could). If the server sent no error body, or the request threw, the thrown error's message or `Failed to load agent configuration` is used. The Retry button is always shown on error.
 
@@ -16,14 +15,13 @@ Shows the stored configuration patch of an agent (`GET /agent/{agentId}/configur
 
 ```ts
 import { loadAgentConfig, resetAgentConfig, getAgentConfigState, subscribeToAgentConfig } from '../state/agent-config-state.js';
-import { isConfigStale } from '../utils/agent-config-utils.js';
 import { renderAgentConfig } from '../utils/agent-config-render.js';
 
 await loadAgentConfig(agentId);           // never throws; failures are stored in `error`
-const html = renderAgentConfig(getAgentConfigState(), getAgentById(agentId));
+const html = renderAgentConfig(getAgentConfigState());
 ```
 
-`renderAgentConfig` is pure and attaches no listeners. `AgentDetailsPanel` wires `data-action="retry-config"` and `data-action="reload-config"` to `loadAgentConfig`.
+`renderAgentConfig` is pure and attaches no listeners. `AgentDetailsPanel` wires `data-action="retry-config"` to `loadAgentConfig`.
 
 ## Rendered content
 

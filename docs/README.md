@@ -67,12 +67,12 @@ Located in the [`features/`](features/) directory:
   - Auto-closes on success and refreshes the agent list
 
 - **[Agent Details Panel](features/agent-details-panel.md)** - Right-hand overlay with foldable agent sections
-  - General, Network and Config patch preview sections; section state is kept in memory only (not across page loads)
+  - General, Network and Config patch preview sections; the agent is fetched on open/swap, independent of the table; section state is kept in memory only (not across page loads)
   - Closes with Escape, the close button or an outside click
   - Generic `SidePanel` shell reusable for other information
 
 - **[Agent Config Preview](features/agent-config-preview.md)** - Stored configuration patch of an agent
-  - Fetched on open/swap only, stale-version banner with Reload
+  - Fetched on open/swap only, never refetched automatically
   - Server error messages shown as-is
   - Pure HTML renderer used by the details panel
 

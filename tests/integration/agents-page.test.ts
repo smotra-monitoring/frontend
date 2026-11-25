@@ -20,6 +20,10 @@ vi.mock('../../src/api/index.js', async (importOriginal) => {
         pagination: { page: 1, page_size: 100, total_items: mockAgents.length, total_pages: 1, has_next: false },
       },
     }),
+    getAgent: vi.fn().mockImplementation(async (options: { path: { agentId: string } }) => ({
+      data: mockAgents.find(a => a.id === options.path.agentId),
+      response: { status: 200 },
+    })),
   };
 });
 
@@ -68,7 +72,7 @@ describe('Agents page routing (Integration)', () => {
     row.querySelector<HTMLElement>('.agent-states-row__name')!.click();
 
     expect(panel.classList.contains('side-panel--open')).toBe(true);
-    expect(panel.querySelector('#side-panel-title')?.textContent).toBe(mockAgents[0]!.name);
+    await vi.waitFor(() => expect(panel.querySelector('#side-panel-title')?.textContent).toBe(mockAgents[0]!.name));
     expect(row.classList.contains('agent-states-row--selected')).toBe(true);
     expect(button.getAttribute('aria-expanded')).toBe('true');
 

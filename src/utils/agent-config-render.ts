@@ -1,17 +1,12 @@
 /**
  * Pure HTML rendering of the agent configuration patch preview.
- * Attaches no listeners; the host wires `data-action="retry-config"` and `data-action="reload-config"`.
+ * Attaches no listeners; the host wires `data-action="retry-config"`.
  */
 
 import type { AgentConfigState } from '../types/agent-config-types.js';
-import type { Agent } from '../types/agent-types.js';
 import { escapeHtml } from './dom-helpers.js';
-import { isConfigStale } from './agent-config-utils.js';
 
-/**
- * @param agent The agent's current row in the list; used to flag a stale view
- */
-export function renderAgentConfig(state: AgentConfigState, agent: Agent | null = null): string {
+export function renderAgentConfig(state: AgentConfigState): string {
   switch (state.status) {
     case 'loading':
       return `
@@ -22,7 +17,7 @@ export function renderAgentConfig(state: AgentConfigState, agent: Agent | null =
     case 'error':
       return renderError(state);
     case 'loaded':
-      return renderLoaded(state, agent);
+      return renderLoaded(state);
     default:
       return '';
   }
@@ -40,18 +35,9 @@ function renderError(state: AgentConfigState): string {
   `;
 }
 
-function renderLoaded(state: AgentConfigState, agent: Agent | null): string {
+function renderLoaded(state: AgentConfigState): string {
   const data = state.data;
   if (!data) return '';
-
-  const stale = isConfigStale(state, agent) && agent
-    ? `
-      <div class="agent-config__stale notification is-warning is-light" role="status">
-        <p>Agent list shows version ${escapeHtml(String(agent.config_version_desired))}, this view shows ${escapeHtml(String(data.config_version_desired))}.</p>
-        <button type="button" class="button agent-config__action" data-action="reload-config">Reload</button>
-      </div>
-    `
-    : '';
 
   const tags = data.tags.length > 0
     ? `<ul class="agent-config__tags">${data.tags.map(tag => `<li><code>${escapeHtml(tag)}</code></li>`).join('')}</ul>`
@@ -71,7 +57,6 @@ function renderLoaded(state: AgentConfigState, agent: Agent | null): string {
 
   return `
     <div class="agent-config agent-config--loaded">
-      ${stale}
       <dl class="agent-config__grid">
         <div class="agent-config__item">
           <dt>Desired version</dt>

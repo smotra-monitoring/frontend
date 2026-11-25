@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { AgentConfigState } from '../../../src/types/agent-config-types.js';
 import { renderAgentConfig } from '../../../src/utils/agent-config-render.js';
-import { isConfigStale } from '../../../src/utils/agent-config-utils.js';
 import { mockAgent, mockAgentConfigPatch } from '../../mocks/agent-data.js';
 
 const loaded: AgentConfigState = {
@@ -11,23 +10,6 @@ const loaded: AgentConfigState = {
     error: null,
     fetchedForVersion: mockAgentConfigPatch.config_version_desired,
 };
-
-describe('isConfigStale', () => {
-    it('is false when versions match', () => {
-        expect(isConfigStale(loaded, mockAgent)).toBe(false);
-    });
-
-    it('is true when the list reports a different version, in either direction', () => {
-        expect(isConfigStale(loaded, { ...mockAgent, config_version_desired: BigInt(4) })).toBe(true);
-        expect(isConfigStale(loaded, { ...mockAgent, config_version_desired: BigInt(2) })).toBe(true);
-    });
-
-    it('is false when not loaded, without an agent, or for another agent', () => {
-        expect(isConfigStale({ ...loaded, status: 'loading' }, { ...mockAgent, config_version_desired: BigInt(9) })).toBe(false);
-        expect(isConfigStale(loaded, null)).toBe(false);
-        expect(isConfigStale(loaded, { ...mockAgent, id: 'other', config_version_desired: BigInt(9) })).toBe(false);
-    });
-});
 
 describe('renderAgentConfig', () => {
     it('renders nothing when idle', () => {
@@ -41,7 +23,7 @@ describe('renderAgentConfig', () => {
     });
 
     it('renders version, tags, endpoints and the base config', () => {
-        const html = renderAgentConfig(loaded, mockAgent);
+        const html = renderAgentConfig(loaded);
         expect(html).toContain('<dd>3</dd>');
         expect(html).toContain('production');
         expect(html).toContain('10.0.0.1:443');
@@ -74,12 +56,6 @@ describe('renderAgentConfig', () => {
         });
         expect(html).not.toContain('<img');
         expect(html).toContain('&lt;img');
-    });
-
-    it('shows the stale banner with both versions and a reload button', () => {
-        const html = renderAgentConfig(loaded, { ...mockAgent, config_version_desired: BigInt(5) });
-        expect(html).toContain('Agent list shows version 5, this view shows 3.');
-        expect(html).toContain('data-action="reload-config"');
     });
 
     it('shows the server message in an alert with a retry button', () => {

@@ -3,15 +3,13 @@
  *
  * Right-hand side panel showing one agent: General, Network and a lazily fetched
  * "Config patch preview" section. Opened from the agent table through
- * `openAgentDetails()`; content follows the agent list state, except the config
- * patch, which is fetched on expand/swap only and never refetched automatically.
+ * `openAgentDetails()`. The agent is fetched on open/swap and the config patch on
+ * expand/swap; neither is refetched automatically and neither reads the agent list.
  */
 
 import { BaseComponent } from '../components/base-component.js';
 import { SidePanel } from '../components/side-panel.js';
 import type { ComponentState } from '../types/component-types.js';
-import type { Agent } from '../types/agent-types.js';
-import { getAgentById, subscribeToAgents } from '../state/agent-state.js';
 import {
     closeAgentDetails,
     getAgentDetailsPanelState,
@@ -24,8 +22,16 @@ import {
     resetAgentConfig,
     subscribeToAgentConfig,
 } from '../state/agent-config-state.js';
+import {
+    getAgentDetailsState,
+    loadAgentDetails,
+    resetAgentDetails,
+    subscribeToAgentDetails,
+} from '../state/agent-details-state.js';
 import { renderAgentGeneral, renderAgentNetwork } from '../utils/agent-details-render.js';
 import { renderAgentConfig } from '../utils/agent-config-render.js';
+
+const DEFAULT_TITLE = 'Agent details';
 
 export class AgentDetailsPanel extends BaseComponent<ComponentState> {
     private panel: SidePanel | null = null;
@@ -36,7 +42,7 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
         super(root, {});
 
         this.addSubscription(subscribeToAgentDetailsPanel(state => this.onPanelState(state)));
-        this.addSubscription(subscribeToAgents(() => this.onAgentsChanged()));
+        this.addSubscription(subscribeToAgentDetails(() => this.renderAgentSections()));
         this.addSubscription(subscribeToAgentConfig(() => this.renderConfigSection()));
     }
 
@@ -46,6 +52,7 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
     onMount(): void {
         closeAgentDetails();
         resetAgentConfig();
+        resetAgentDetails();
 
         this.panel = new SidePanel(this.root, {
             sections: [
@@ -59,16 +66,25 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
         this.panel.mount();
 
         this.addEventListener(this.root, 'click', (event) => {
-            const action = (event.target as Element).closest('[data-action="retry-config"], [data-action="reload-config"]');
-            if (action && this.currentAgentId) {
+            const action = (event.target as Element).closest('[data-action="retry-config"], [data-action="retry-agent"]');
+            if (!action || !this.currentAgentId) return;
+
+            if (action.getAttribute('data-action') === 'retry-agent') {
+                void loadAgentDetails(this.currentAgentId);
+            } else if (action.getAttribute('data-action') === 'retry-config') {
                 void loadAgentConfig(this.currentAgentId);
+            } else {
+                // Unknown action, do nothing
+                console.warn('Unknown action:', action.getAttribute('data-action'));
             }
+
         });
     }
 
     onDestroy(): void {
         closeAgentDetails();
         resetAgentConfig();
+        resetAgentDetails();
         this.panel?.destroy();
         this.panel = null;
     }
@@ -77,22 +93,23 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
         const panel = this.panel;
         if (!panel) return;
 
-        const agent = state.agentId ? getAgentById(state.agentId) : null;
-        if (!state.agentId || !agent) {
+        if (!state.agentId) {
             this.currentAgentId = null;
             panel.close();
             resetAgentConfig();
-            if (state.agentId) closeAgentDetails();
+            resetAgentDetails();
             return;
         }
 
         const swapped = state.agentId !== this.currentAgentId;
         this.currentAgentId = state.agentId;
-        // A config of another agent must never linger in the section.
-        if (swapped) resetAgentConfig();
+        // Data of another agent must never linger in the sections.
+        if (swapped) {
+            resetAgentConfig();
+            void loadAgentDetails(state.agentId);
+        }
 
-        panel.setTitle(agent.name);
-        this.renderAgentSections(agent);
+        this.renderAgentSections();
         panel.show();
 
         if (state.configRequest !== this.lastConfigRequest) {
@@ -104,23 +121,14 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
         this.renderConfigSection();
     }
 
-    private onAgentsChanged(): void {
-        if (!this.currentAgentId || !this.panel) return;
+    private renderAgentSections(): void {
+        if (!this.panel) return;
 
-        const agent = getAgentById(this.currentAgentId);
-        if (!agent) {
-            closeAgentDetails();
-            return;
-        }
-
-        this.panel.setTitle(agent.name);
-        this.renderAgentSections(agent);
-        this.renderConfigSection();
-    }
-
-    private renderAgentSections(agent: Agent): void {
-        this.panel?.setSectionContent('general', renderAgentGeneral(agent));
-        this.panel?.setSectionContent('network', renderAgentNetwork(agent));
+        const state = getAgentDetailsState();
+        const showing = this.currentAgentId !== null && state.agentId === this.currentAgentId;
+        if (showing) this.panel.setTitle(state.status === 'loaded' && state.data ? state.data.name : DEFAULT_TITLE);
+        this.panel.setSectionContent('general', showing ? renderAgentGeneral(state) : '');
+        this.panel.setSectionContent('network', showing ? renderAgentNetwork(state) : '');
     }
 
     private renderConfigSection(): void {
@@ -128,8 +136,7 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
 
         const state = getAgentConfigState();
         const showing = this.currentAgentId !== null && state.agentId === this.currentAgentId;
-        const agent = this.currentAgentId ? getAgentById(this.currentAgentId) : null;
-        this.panel.setSectionContent('config', showing ? renderAgentConfig(state, agent) : '');
+        this.panel.setSectionContent('config', showing ? renderAgentConfig(state) : '');
     }
 
     private ensureConfigLoaded(): void {

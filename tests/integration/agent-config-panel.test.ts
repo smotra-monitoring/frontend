@@ -14,6 +14,7 @@ vi.mock('../../src/api/index.js', async (importOriginal) => {
     const actual = await importOriginal<typeof import('../../src/api/index.js')>();
     return {
         ...actual,
+        getAgent: vi.fn(),
         getAgentConfiguration: vi.fn(),
         listAgents: vi.fn().mockResolvedValue({
             data: {
@@ -25,11 +26,12 @@ vi.mock('../../src/api/index.js', async (importOriginal) => {
 });
 
 import { initializeRouter } from '../../src/pages/router.js';
-import { getAgentConfiguration } from '../../src/api/index.js';
+import { getAgent, getAgentConfiguration } from '../../src/api/index.js';
 import { getAgentDetailsPanelState } from '../../src/state/agent-details-panel-state.js';
 import { mockAgentConfigPatch, mockAgents } from '../mocks/agent-data.js';
 
 type ConfigResult = Awaited<ReturnType<typeof getAgentConfiguration>>;
+type AgentResult = Awaited<ReturnType<typeof getAgent>>;
 
 describe('Agent details side panel (Integration)', () => {
     let appRoot: HTMLElement;
@@ -49,6 +51,10 @@ describe('Agent details side panel (Integration)', () => {
     });
 
     beforeEach(() => {
+        vi.mocked(getAgent).mockReset().mockImplementation((async (options: { path: { agentId: string } }) => ({
+            data: mockAgents.find(a => a.id === options.path.agentId),
+            response: { status: 200 },
+        })) as unknown as typeof getAgent);
         vi.mocked(getAgentConfiguration).mockReset().mockResolvedValue(
             { data: mockAgentConfigPatch, response: { status: 200 } } as unknown as ConfigResult
         );
@@ -57,14 +63,32 @@ describe('Agent details side panel (Integration)', () => {
     });
 
     // Section state persists across tests (one page instance), so this must stay the first test.
-    it('opens from a row with General and Network only, without calling the API', () => {
+    it('opens from a row, fetches the agent and shows General and Network without calling the config API', async () => {
         rows()[0]!.click();
 
         expect(panel().classList.contains('side-panel--open')).toBe(true);
-        expect(appRoot.querySelector('#side-panel-section-general')?.textContent).toContain(mockAgents[0]!.id);
+        expect(getAgent).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(getAgent).mock.calls[0]?.[0]?.path).toEqual({ agentId: mockAgents[0]!.id });
+        await vi.waitFor(() => expect(appRoot.querySelector('#side-panel-section-general')?.textContent).toContain(mockAgents[0]!.id));
         expect(appRoot.querySelector('#side-panel-section-network')?.textContent).toContain('192.168.1.100');
         expect(configBody().hidden).toBe(true);
         expect(getAgentConfiguration).not.toHaveBeenCalled();
+    });
+
+    // Regression: the table row is older than the world; the panel must show the fetched agent's status.
+    it('shows the fetched status, not the status of the stale table row', async () => {
+        const stale = rows()[1]!;
+        expect(stale.textContent).toContain('Offline');
+        vi.mocked(getAgent).mockResolvedValue(
+            { data: { ...mockAgents[1]!, last_seen_at: new Date() }, response: { status: 200 } } as unknown as AgentResult
+        );
+
+        stale.click();
+
+        const general = () => appRoot.querySelector('#side-panel-section-general')!;
+        expect(general().textContent).toContain('Loading...');
+        await vi.waitFor(() => expect(general().textContent).toContain('Online'));
+        expect(general().textContent).not.toContain('Offline');
     });
 
     it('fetches and shows the config patch when the Desired version is clicked', async () => {
@@ -98,7 +122,8 @@ describe('Agent details side panel (Integration)', () => {
 
         rows()[1]!.click();
 
-        expect(panel().querySelector('#side-panel-title')?.textContent).toBe(mockAgents[1]!.name);
+        await vi.waitFor(() => expect(panel().querySelector('#side-panel-title')?.textContent).toBe(mockAgents[1]!.name));
+        expect(getAgent).toHaveBeenCalledTimes(2);
         expect(getAgentConfiguration).toHaveBeenCalledTimes(2);
         expect(vi.mocked(getAgentConfiguration).mock.calls[1]?.[0]?.path).toEqual({ agentId: mockAgents[1]!.id });
         expect(rows()[0]!.classList.contains('agent-states-row--selected')).toBe(false);
