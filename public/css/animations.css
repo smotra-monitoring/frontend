@@ -81,6 +81,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* The delayed visibility change would otherwise outlive the near-instant slide */
+  .side-panel {
+    transition: none !important;
+  }
 }
 
 /* Fade in animation */

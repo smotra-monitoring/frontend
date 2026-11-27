@@ -166,8 +166,8 @@ describe('ClaimAgentModal', () => {
 
             await submit();
 
-            const auth = postMock.mock.calls[0][0].auth as () => Promise<string | undefined>;
-            await expect(auth()).resolves.toBe('token');
+            const auth = postMock.mock.calls[0][0].auth as (scheme: unknown) => Promise<string | undefined>;
+            await expect(auth({ type: 'http', scheme: 'bearer' })).resolves.toBe('token');
         });
     });
 

@@ -2,13 +2,12 @@
  * Agent States Widget Component
  * 
  * A self-contained table widget displaying agent states with sortable columns
- * and CSS-only expandable rows for detailed information.
+ * and a row highlight for the agent shown in the details side panel.
  * 
  * Key Features:
  * - Table layout with sortable headers (Name, Status, Last Seen)
- * - CSS-only expand/collapse (no re-renders, smooth transitions)
+ * - Row click opens the agent details side panel; the Desired version button also expands its config preview
  * - Status derived from lastSeenAt using AGENT_ONLINE_THRESHOLD_MS
- * - "Toggle All" button to expand/collapse all rows
  * - Real-time updates via agent state subscription
  */
 
@@ -16,8 +15,10 @@ import { BaseComponent } from '../components/base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import type { Agent, SortOptions, AgentStatus, SortField } from '../types/agent-types.js';
 import { subscribeToAgents, sortAgents, loadAgents } from '../state/agent-state.js';
-import { deriveAgentStatus, formatLastSeen, formatAbsoluteDate } from '../utils/agent-utils.js';
+import { deriveAgentStatus, formatLastSeen } from '../utils/agent-utils.js';
 import { subscribeToRefresh } from '../state/refresh-state.js';
+import { getAgentDetailsPanelState, openAgentDetails, subscribeToAgentDetailsPanel } from '../state/agent-details-panel-state.js';
+import { SIDE_PANEL_ID } from '../components/side-panel.js';
 import { escapeHtml } from '../utils/dom-helpers.js';
 
 interface AgentStatesWidgetState extends ComponentState {
@@ -27,7 +28,7 @@ interface AgentStatesWidgetState extends ComponentState {
 }
 
 /**
- * AgentStatesWidget - Table-based agent list with expandable details
+ * AgentStatesWidget - Table-based agent list that opens a details side panel
  */
 export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
   constructor(root: HTMLElement, agents: Agent[] = []) {
@@ -54,6 +55,11 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         });
       })
     );
+
+    // Update the selected row in place so focus and scroll position survive
+    this.addSubscription(
+      subscribeToAgentDetailsPanel((panelState) => this.updateSelection(panelState.agentId))
+    );
   }
 
   render(): void {
@@ -69,16 +75,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
               ${agents.length}
             </span>
           </div>
-          <button 
-            class="agent-states-widget__toggle-btn" 
-            data-action="toggle-all"
-            aria-label="Toggle all agent details"
-          >
-            <span class="icon">
-              <i class="fas fa-chevron-down"></i>
-            </span>
-            <span>Toggle All</span>
-          </button>
         </div>
 
         ${loading ? this.renderLoading() : this.renderTable(sortedAgents)}
@@ -186,11 +182,17 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
 
   private renderAgentRow(agent: Agent): string {
     const status = deriveAgentStatus(agent.last_seen_at);
-    const rowId = `agent-row-${agent.id}`;
-    const detailsId = `agent-details-${agent.id}`;
+    const selected = getAgentDetailsPanelState().agentId === agent.id;
+    const agentId = escapeHtml(agent.id);
+    const agentName = escapeHtml(agent.name);
 
     return `
-      <tr class="agent-states-row" data-agent-id="${agent.id}">
+      <tr
+        class="agent-states-row${selected ? ' agent-states-row--selected' : ''}"
+        data-agent-row
+        data-agent-id="${agentId}"
+        ${selected ? 'aria-current="true"' : ''}
+      >
         <td class="agent-states-row__name">
           ${escapeHtml(agent.name)}
         </td>
@@ -201,36 +203,32 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
           ${agent.agent_version ? escapeHtml(agent.agent_version) : 'Unknown'}
         </td>
         <td class="agent-states-row__config-version">
-          ${agent.config_version_current ?? 'N/A'} / ${agent.config_version_desired}
+          ${agent.config_version_current ?? 'N/A'} /
+          <button
+            type="button"
+            class="config-version-btn"
+            data-action="show-config"
+            data-agent-id="${agentId}"
+            aria-label="Show desired configuration, version ${agent.config_version_desired}, for ${agentName}"
+          >${agent.config_version_desired}</button>
         </td>
         <td class="agent-states-row__last-seen">
           ${agent.last_seen_at ? formatLastSeen(agent.last_seen_at) : 'Never'}
         </td>
         <td class="agent-states-row__actions">
-          <button 
-            class="button is-small is-ghost chevron-btn" 
+          <button
+            type="button"
+            class="button is-small is-ghost chevron-btn"
             data-action="toggle-details"
-            data-agent-id="${agent.id}"
-            aria-expanded="false"
-            aria-controls="${detailsId}"
-            aria-label="Toggle details for ${escapeHtml(agent.name)}"
+            data-agent-id="${agentId}"
+            aria-expanded="${selected}"
+            aria-controls="${SIDE_PANEL_ID}"
+            aria-label="Show details for ${agentName}"
           >
             <span class="icon">
-              <i class="fas fa-chevron-down"></i>
+              <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </span>
           </button>
-        </td>
-      </tr>
-      <tr 
-        class="agent-states-row__details" 
-        id="${detailsId}"
-        aria-hidden="true"
-        data-agent-id="${agent.id}"
-      >
-        <td colspan="6">
-          <div class="agent-states-row__details-inner">
-            ${this.renderAgentDetails(agent)}
-          </div>
         </td>
       </tr>
     `;
@@ -245,100 +243,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
         <span class="status-pulse status-pulse--${status}"></span>
         <span class="status-label">${statusLabel}</span>
       </span>
-    `;
-  }
-
-  private renderAgentDetails(agent: Agent): string {
-    const primaryIP = agent.ip_addresses?.find(ip => ip.recommended) || agent.ip_addresses?.[0];
-    const allIPs = agent.ip_addresses || [];
-
-    return `
-      <div class="agent-details">
-        <dl class="agent-details__grid">
-          ${agent.workspace_id ? `
-            <div class="agent-details__item">
-              <dt>Workspace ID</dt>
-              <dd><code>${escapeHtml(agent.workspace_id)}</code></dd>
-            </div>
-          ` : ''}
-
-
-          ${allIPs.length > 0 ? `
-            <div class="agent-details__item">
-              <dt>IP Addresses</dt>
-              <dd>
-                <ul class="agent-details__ip-list">
-                  ${allIPs.map(ip => `
-                    <li>
-                      <code>${escapeHtml(ip.ip)}</code>
-                      <span class="has-text-grey"> (${escapeHtml(ip.iface || 'unknown')}${ip.recommended ? ', recommended' : ''})</span>
-                    </li>
-                  `).join('')}
-                </ul>
-              </dd>
-            </div>
-          ` : ''}
-
-          <div class="agent-details__item">
-            <dt>Agent ID</dt>
-            <dd><code>${escapeHtml(agent.id)}</code></dd>
-          </div>
-
-          <div class="agent-details__item">
-          </div>
-
-          ${agent.agent_version ? `
-            <div class="agent-details__item">
-              <dt>Agent Version</dt>
-              <dd>${escapeHtml(agent.agent_version)}</dd>
-            </div>
-          ` : ''}
-
-          <div class="agent-details__item">
-          </div>
-
-          <div class="agent-details__item">
-            <dt>Config Version (Current / Desired)</dt>
-            <dd>${agent.config_version_current ?? 'Not reported'} / ${agent.config_version_desired}</dd>
-          </div>
-
-          <div class="agent-details__item">
-          </div>
-
-          ${agent.last_result_submitted_at ? `
-            <div class="agent-details__item">
-              <dt>Last Result Submitted</dt>
-              <dd>${formatAbsoluteDate(agent.last_result_submitted_at)}</dd>
-            </div>
-          ` : `
-            <div class="agent-details__item">
-              <dt>Last Result Submitted</dt>
-              <dd>Not reported</dd>
-            </div>
-          `}
-
-          ${agent.created_at ? `
-            <div class="agent-details__item">
-              <dt>Created</dt>
-              <dd>${formatAbsoluteDate(agent.created_at)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.last_seen_at ? `
-            <div class="agent-details__item">
-              <dt>Last Seen (Absolute)</dt>
-              <dd>${formatAbsoluteDate(agent.last_seen_at)}</dd>
-            </div>
-          ` : ''}
-
-          ${agent.updated_at ? `
-            <div class="agent-details__item">
-              <dt>Updated</dt>
-              <dd>${formatAbsoluteDate(agent.updated_at)}</dd>
-            </div>
-          ` : ''}
-        </dl>
-      </div>
     `;
   }
 
@@ -376,25 +280,31 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
       });
     });
 
-    // Button clicks (including keyboard activation) bubble to the row.
-    const agentRows = this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row');
-    agentRows.forEach(row => {
-      const button = row.querySelector<HTMLButtonElement>('[data-action="toggle-details"]');
-      this.addEventListener(row, 'click', () => {
-        const agentId = row.dataset.agentId;
-        if (agentId && button) {
-          this.toggleAgentDetails(agentId, button);
-        }
-      });
+    // One delegated listener: keyboard activation of the buttons bubbles here as a click too.
+    this.addEventListener(this.root, 'click', (event) => {
+      this.handleRowClick(event.target as Element);
     });
+  }
 
-    // Toggle all handler (CSS-only, no setState)
-    const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
-    if (toggleAllButton) {
-      this.addEventListener(toggleAllButton, 'click', () => {
-        this.toggleAllDetails();
-      });
-    }
+  private handleRowClick(target: Element): void {
+    const agentId = target.closest<HTMLElement>('[data-agent-row]')?.dataset.agentId;
+    if (!agentId) return;
+
+    const wantsConfig = target.closest('[data-action="show-config"]') !== null;
+    openAgentDetails(agentId, { expandConfig: wantsConfig });
+  }
+
+  private updateSelection(selectedAgentId: string | null): void {
+    this.root.querySelectorAll<HTMLElement>('[data-agent-row]').forEach(row => {
+      const selected = row.dataset.agentId === selectedAgentId;
+      row.classList.toggle('agent-states-row--selected', selected);
+      if (selected) {
+        row.setAttribute('aria-current', 'true');
+      } else {
+        row.removeAttribute('aria-current');
+      }
+      row.querySelector('[data-action="toggle-details"]')?.setAttribute('aria-expanded', String(selected));
+    });
   }
 
   private handleSort(field: SortField): void {
@@ -404,75 +314,6 @@ export class AgentStatesWidget extends BaseComponent<AgentStatesWidgetState> {
     this.setState({
       sort: { field, direction: newDirection },
     });
-  }
-
-  /**
-   * Toggle a single agent's detail row (CSS-only, no setState)
-   * This uses direct DOM manipulation to preserve the element and enable smooth CSS transitions
-   */
-  private toggleAgentDetails(agentId: string, button: HTMLButtonElement): void {
-    const detailsRow = this.root.querySelector<HTMLTableRowElement>(
-      `.agent-states-row__details[data-agent-id="${agentId}"]`
-    );
-
-    if (!detailsRow) return;
-
-    const wasExpanded = detailsRow.classList.contains('is-expanded');
-    const chevronIcon = button.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
-
-    // Toggle classes and ARIA attributes (no setState to avoid re-render)
-    detailsRow.classList.toggle('is-expanded');
-    button.setAttribute('aria-expanded', wasExpanded ? 'false' : 'true');
-    detailsRow.setAttribute('aria-hidden', wasExpanded ? 'true' : 'false');
-
-    // Update chevron icon
-    if (chevronIcon) {
-      chevronIcon.classList.toggle('fa-chevron-down', wasExpanded);
-      chevronIcon.classList.toggle('fa-chevron-up', !wasExpanded);
-    }
-  }
-
-  /**
-   * Toggle all detail rows at once (CSS-only, no setState)
-   * If any row is collapsed, expand all. If all are expanded, collapse all.
-   */
-  private toggleAllDetails(): void {
-    const allDetailsRows = this.root.querySelectorAll<HTMLTableRowElement>('.agent-states-row__details');
-    const allChevronButtons = this.root.querySelectorAll<HTMLButtonElement>('[data-action="toggle-details"]');
-
-    if (allDetailsRows.length === 0) return;
-
-    // Check if any row is collapsed
-    const anyCollapsed = Array.from(allDetailsRows).some(row => !row.classList.contains('is-expanded'));
-    const shouldExpand = anyCollapsed;
-
-    // Toggle all rows
-    allDetailsRows.forEach((row, index) => {
-      const button = allChevronButtons[index];
-      const chevronIcon = button?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
-
-      if (shouldExpand) {
-        row.classList.add('is-expanded');
-        row.setAttribute('aria-hidden', 'false');
-        button?.setAttribute('aria-expanded', 'true');
-        chevronIcon?.classList.remove('fa-chevron-down');
-        chevronIcon?.classList.add('fa-chevron-up');
-      } else {
-        row.classList.remove('is-expanded');
-        row.setAttribute('aria-hidden', 'true');
-        button?.setAttribute('aria-expanded', 'false');
-        chevronIcon?.classList.remove('fa-chevron-up');
-        chevronIcon?.classList.add('fa-chevron-down');
-      }
-    });
-
-    // Update "Toggle All" button icon
-    const toggleAllButton = this.root.querySelector<HTMLButtonElement>('[data-action="toggle-all"]');
-    const toggleAllIcon = toggleAllButton?.querySelector<HTMLElement>('.fa-chevron-down, .fa-chevron-up');
-    if (toggleAllIcon) {
-      toggleAllIcon.classList.toggle('fa-chevron-down', !shouldExpand);
-      toggleAllIcon.classList.toggle('fa-chevron-up', shouldExpand);
-    }
   }
 
   private getStatusLabel(status: AgentStatus): string {

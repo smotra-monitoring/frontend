@@ -31,11 +31,11 @@ describe('session-service', () => {
 
             await expect(fetchSessions()).resolves.toEqual(mockSessions);
 
-            const { auth } = vi.mocked(listSessions).mock.calls[0]![0] as { auth: () => Promise<string | undefined> };
+            const { auth } = vi.mocked(listSessions).mock.calls[0]![0] as { auth: (scheme: unknown) => Promise<string | undefined> };
 
             // listSessions is mocked, so expected number of calls to getValidAccessToken is 0
             expect(getValidAccessToken).toHaveBeenCalledTimes(0);
-            await expect(auth()).resolves.toBe('token-123');
+            await expect(auth({ type: 'http', scheme: 'bearer' })).resolves.toBe('token-123');
             expect(getValidAccessToken).toHaveBeenCalledTimes(1);
         });
 

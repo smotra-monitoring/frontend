@@ -25,6 +25,7 @@ export const AgentStatusSchema = {
     },
     config_version: {
       type: 'integer',
+      format: 'int64',
       description: 'Version of the agent configuration',
       example: 23
     },
@@ -109,8 +110,76 @@ export const AgentCacheStatsSchema = {
   }
 } as const;
 
+export const AgentConfigPatchSchema = {
+  type: 'object',
+  description: 'Agent record with its stored configuration patch, as returned by the server.',
+  required: [
+    'id',
+    'workspace_id',
+    'name',
+    'config_version_desired',
+    'base_config',
+    'tags',
+    'endpoints'
+  ],
+  properties: {
+    id: {
+      $ref: '#/components/schemas/UUIDv7',
+      description: 'Agent identifier; the agent maps it to `agent_id` and rejects a mismatch'
+    },
+    workspace_id: {
+      $ref: '#/components/schemas/UUIDv7',
+      description: 'Workspace this agent belongs to',
+      example: '01930000-0000-7000-0000-000000000001'
+    },
+    name: {
+      type: 'string',
+      description: 'Human-readable agent name; the agent maps it to `agent_name`',
+      example: 'prod-server-01'
+    },
+    config_version_desired: {
+      type: 'integer',
+      format: 'int64',
+      description: 'Configuration version the agent must run after applying `base_config`',
+      example: 3
+    },
+    base_config: {
+      type: 'object',
+      additionalProperties: true,
+      description: 'JSON Merge Patch (RFC 7396) over the `AgentConfig` structure, stored and returned\nunprocessed (a partial object, not a full `AgentConfig`).\nThe agent builds its configuration as: built-in defaults, then local overrides,\nthen this patch.\n- Objects merge key by key; scalars and arrays replace the whole value.\n- `null` removes the key from the local overrides, so the agent default applies again.\n- A key absent from the patch leaves the agent\'s current value unchanged.\n- Must not contain `agent_id`, `agent_name`, `version`, `server.api_key`, `storage.cache_dir`.\n- Must not contain `tags` or `endpoints`; the server resolves them and returns them\n  only as the top-level `tags` and `endpoints` fields.\n- Unknown keys or values of the wrong type make the agent reject the whole patch.\n',
+      example: {
+        monitoring: {
+          interval_secs: 30
+        },
+        storage: {
+          max_cached_results: null
+        }
+      }
+    },
+    tags: {
+      type: 'array',
+      items: {
+        type: 'string'
+      },
+      description: 'Agent tags resolved by the server; they replace the agent\'s tags wholesale',
+      example: [
+        'production',
+        'web-server'
+      ]
+    },
+    endpoints: {
+      type: 'array',
+      items: {
+        $ref: '#/components/schemas/Endpoint'
+      },
+      description: 'Endpoints the agent must monitor, resolved by the server via topology membership'
+    }
+  }
+} as const;
+
 export const AgentConfigSchema = {
   type: 'object',
+  description: 'Effective agent configuration after merging defaults, local overrides and the server\npatch. Never sent by the server; the server returns `AgentConfigPatch`.\n',
   required: [
     'version',
     'agent_id',
@@ -125,7 +194,7 @@ export const AgentConfigSchema = {
   properties: {
     version: {
       type: 'integer',
-      format: 'int32',
+      format: 'int64',
       description: 'Configuration version (used for syncing with server)',
       example: 1
     },
@@ -935,7 +1004,7 @@ export const AgentHeartbeatResponseSchema = {
   properties: {
     config_version_desired: {
       type: 'integer',
-      format: 'int32',
+      format: 'int64',
       description: 'Configuration version the server wants the agent to run. When higher than the\nagent\'s current version, the agent fetches GET /agent/{agentId}/configuration.\n',
       example: 3
     }
@@ -1148,11 +1217,13 @@ export const AgentSchema = {
     },
     config_version_desired: {
       type: 'integer',
+      format: 'int64',
       description: 'Configuration version the server wants the agent to run',
       example: 3
     },
     config_version_current: {
       type: 'integer',
+      format: 'int64',
       nullable: true,
       description: 'Configuration version last reported by the agent in a heartbeat, null if the agent\nhas not sent one yet. Lower than config_version_desired means the agent has not\napplied the latest configuration.\n',
       example: 2

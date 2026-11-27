@@ -5,9 +5,7 @@
 
 import { listSessions, purgeSession, purgeSessions } from '../api/index.js';
 import type { Session } from '../api/index.js';
-import { getValidAccessToken } from '../auth/token-manager.js';
-
-const auth = async () => (await getValidAccessToken()) ?? undefined;
+import { bearerAuth as auth } from '../auth/bearer-auth-guard.js';
 
 /** Error carrying the HTTP status so callers can special-case e.g. 404. */
 export class SessionServiceError extends Error {

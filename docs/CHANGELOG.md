@@ -6,11 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Agent details side panel**: Clicking an agent row on `/agent` opens a non-modal overlay panel on the right with foldable **General**, **Network** and **Config patch preview** sections; see `docs/features/agent-details-panel.md`
+  - The Desired config version in each row is now a button that opens the panel with the stored configuration patch (`GET /agent/{agentId}/configuration`) fetched and shown
+  - The config is fetched on open and on swap only, never refetched automatically
+  - Closes with the close button, `Escape` or a click outside the panel; section state is in memory only (defaults on page load, kept across close/reopen); the selected row is highlighted (`aria-current`)
+  - New generic `SidePanel` component, `AgentDetailsPanel` widget, `agent-details-panel-state` and `agent-details-render` utilities
+- **Agent config preview**: Data layer behind the config patch preview (`GET /agent/{agentId}/configuration`)
+  - `src/state/agent-config-state.ts`: fetch-on-demand state for the selected agent, never refetched automatically; responses of superseded requests are discarded; failures keep the server's own error message
+  - `src/utils/agent-config-render.ts`: pure, escaped HTML renderer; see `docs/features/agent-config-preview.md`
+
 ### Changed
+- **Agent details moved to the side panel**: The inline expandable detail row and the "Toggle All" button of the Agent States Widget are removed; all information from the row (general, IP addresses) is now in the side panel sections. The chevron button opens the panel instead of expanding the row (`aria-controls="side-panel"`, label "Show details for ...")
 - **OpenAPI `AgentStatus.dropped_result_count`**: Regenerated client (`src/api/types.gen.ts`, `schemas.gen.ts`) now includes the required `dropped_result_count` field (results discarded because the server permanently rejected them, HTTP 400/422)
   - `AgentStatus` is only part of the agent-submitted `AgentHeartbeat`; the frontend does not read or render it, so no UI, state or mock changes were needed (build type-checks cleanly)
 
 ### Fixed
+- **Browser sent the user session token in `X-Agent-API-Key`**: `GET /agent/{agentId}/configuration` lists both the agent API key and the bearer scheme, and the generated client fills every listed scheme from the single `auth` callback.
+**Root cause:** the callback ignored which scheme it was asked for and returned the token for all of them
+  - Added `bearerAuth` (`src/auth/bearer-auth.ts`), which returns the token only for the `http` bearer scheme; all API call sites use it so the token is sent only as `Authorization: Bearer`
+- **Agent details panel showed "Offline" for an agent that is online**: The panel rendered the agent from the agent list and derived the status when it opened, while the table row had been rendered earlier and still showed "Online".
+**Root cause:** the list entry can be arbitrarily old (e.g. refresh Off), so its `last_seen_at` was judged against the current time
+  - The panel now fetches the agent (`GET /agents/{agentId}`) on open and on swap, independently of the list, and shows "Loading..." until it arrives; server errors are shown with a Retry button
+  - Removed the config "stale version" banner and `isConfigStale()`: the panel no longer reads the list
+  - Table rows have the same staleness when refresh is Off; not addressed here
 - **Build failure after OpenAPI `Agent.configVersion` split**: `npm run build` failed because the server-facing `Agent` schema now has `configVersionDesired` (required) and `configVersionCurrent` (nullable) instead of `configVersion`. 
 **Root cause:** the regenerated client no longer exposes `configVersion`, which `AgentCard`, `AgentStatesWidget` and `sortAgents()` still read
   - Both versions are shown ("Desired Config Version" / "Current Config Version", "Not reported" when null); `SortField` `configVersion` replaced by `configVersionDesired` and `configVersionCurrent`
