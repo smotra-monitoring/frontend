@@ -7,7 +7,7 @@
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
 import type { AgentDetailsState } from '../types/agent-details-types.js';
 import { getAgent } from '../api/index.js';
-import { getValidAccessToken } from '../auth/token-manager.js';
+import { bearerAuth } from '../auth/bearer-auth-guard.js';
 
 const FALLBACK_MESSAGE = 'Failed to load agent details';
 
@@ -44,7 +44,7 @@ export async function loadAgentDetails(agentId: string): Promise<void> {
     try {
         const { data, error, response } = await getAgent({
             path: { agentId },
-            auth: async () => (await getValidAccessToken()) ?? undefined,
+            auth: bearerAuth,
         });
 
         if (requestId !== latestRequestId) return;

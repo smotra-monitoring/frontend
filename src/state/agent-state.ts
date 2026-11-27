@@ -7,7 +7,7 @@ import type { Agent, AgentListState, FilterOptions, SortOptions, ViewMode } from
 import { deriveAgentStatus } from '../utils/agent-utils.js';
 import type { AgentUpdateMessage } from '../types/websocket-types.js';
 import { listAgents } from '../api/index.js';
-import { getValidAccessToken } from '../auth/token-manager.js';
+import { bearerAuth } from '../auth/bearer-auth-guard.js';
 
 // Server-side maximum page size (see listAgents in the OpenAPI spec)
 const AGENTS_PAGE_SIZE = 100;
@@ -299,7 +299,7 @@ export async function loadAgents(): Promise<void> {
   while (hasNext) {
     const { data, error } = await listAgents({
       query: { page, page_size: AGENTS_PAGE_SIZE },
-      auth: async () => (await getValidAccessToken()) ?? undefined,
+      auth: bearerAuth,
     });
 
     if (error || !data) {

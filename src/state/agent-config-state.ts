@@ -6,7 +6,7 @@
 import { createState, type Subscriber, type UnsubscribeFn } from './global-state.js';
 import type { AgentConfigState } from '../types/agent-config-types.js';
 import { getAgentConfiguration } from '../api/index.js';
-import { getValidAccessToken } from '../auth/token-manager.js';
+import { bearerAuth } from '../auth/bearer-auth-guard.js';
 
 const FALLBACK_MESSAGE = 'Failed to load agent configuration';
 
@@ -44,7 +44,7 @@ export async function loadAgentConfig(agentId: string): Promise<void> {
     try {
         const { data, error, response } = await getAgentConfiguration({
             path: { agentId },
-            auth: async () => (await getValidAccessToken()) ?? undefined,
+            auth: bearerAuth,
         });
 
         if (requestId !== latestRequestId) return;

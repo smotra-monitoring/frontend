@@ -265,8 +265,8 @@ describe('agent-state', () => {
 
       await loadAgents();
 
-      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as () => Promise<string | undefined>;
-      await expect(auth()).resolves.toBe('st_live_token');
+      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as (scheme: unknown) => Promise<string | undefined>;
+      await expect(auth({ type: 'http', scheme: 'bearer' })).resolves.toBe('st_live_token');
     });
 
     it('passes undefined to the auth callback when no valid token exists', async () => {
@@ -277,8 +277,8 @@ describe('agent-state', () => {
 
       await loadAgents();
 
-      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as () => Promise<string | undefined>;
-      await expect(auth()).resolves.toBeUndefined();
+      const auth = vi.mocked(listAgents).mock.calls[0]?.[0]?.auth as (scheme: unknown) => Promise<string | undefined>;
+      await expect(auth({ type: 'http', scheme: 'bearer' })).resolves.toBeUndefined();
     });
 
     it('fetches all pages and combines the agents', async () => {

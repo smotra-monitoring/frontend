@@ -45,8 +45,8 @@ describe('agent-details-state', () => {
         vi.mocked(getAgent).mockResolvedValue(ok());
         await loadAgentDetails(mockAgent.id);
 
-        const auth = vi.mocked(getAgent).mock.calls[0]?.[0]?.auth as () => Promise<string | undefined>;
-        await expect(auth()).resolves.toBe('st_live_token');
+        const auth = vi.mocked(getAgent).mock.calls[0]?.[0]?.auth as (scheme: unknown) => Promise<string | undefined>;
+        await expect(auth({ type: 'http', scheme: 'bearer' })).resolves.toBe('st_live_token');
     });
 
     it.each([401, 404, 500])('stores the server message for HTTP %i', async (status) => {

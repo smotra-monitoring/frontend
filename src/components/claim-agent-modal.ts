@@ -6,7 +6,7 @@
 import { BaseComponent } from './base-component.js';
 import type { ComponentState } from '../types/component-types.js';
 import { postClaimAgent } from '../api/index.js';
-import { getValidAccessToken } from '../auth/token-manager.js';
+import { bearerAuth } from '../auth/bearer-auth-guard.js';
 import { loadAgents } from '../state/agent-state.js';
 import { navigateTo } from '../utils/navigation.js';
 import { escapeHtml } from '../utils/dom-helpers.js';
@@ -409,7 +409,7 @@ export class ClaimAgentModal extends BaseComponent<ClaimAgentModalState> {
         try {
             const result = await postClaimAgent({
                 body: { agent_id: agentId, claim_token: claimCode, name: normalizeAgentName(this.state.name) },
-                auth: async () => (await getValidAccessToken()) ?? undefined,
+                auth: bearerAuth,
             });
 
             if (!this.isSameModalSession(requestId)) return;

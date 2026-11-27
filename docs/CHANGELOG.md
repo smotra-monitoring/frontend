@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `AgentStatus` is only part of the agent-submitted `AgentHeartbeat`; the frontend does not read or render it, so no UI, state or mock changes were needed (build type-checks cleanly)
 
 ### Fixed
+- **Browser sent the user session token in `X-Agent-API-Key`**: `GET /agent/{agentId}/configuration` lists both the agent API key and the bearer scheme, and the generated client fills every listed scheme from the single `auth` callback.
+**Root cause:** the callback ignored which scheme it was asked for and returned the token for all of them
+  - Added `bearerAuth` (`src/auth/bearer-auth.ts`), which returns the token only for the `http` bearer scheme; all API call sites use it so the token is sent only as `Authorization: Bearer`
 - **Agent details panel showed "Offline" for an agent that is online**: The panel rendered the agent from the agent list and derived the status when it opened, while the table row had been rendered earlier and still showed "Online".
 **Root cause:** the list entry can be arbitrarily old (e.g. refresh Off), so its `last_seen_at` was judged against the current time
   - The panel now fetches the agent (`GET /agents/{agentId}`) on open and on swap, independently of the list, and shows "Loading..." until it arrives; server errors are shown with a Retry button
