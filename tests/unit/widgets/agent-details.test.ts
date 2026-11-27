@@ -87,7 +87,7 @@ describe('AgentDetailsPanel', () => {
         await vi.waitFor(() => expect(title()).toBe(mockAgent.name));
         expect(section('general').hidden).toBe(false);
         expect(section('general').textContent).toContain(mockAgent.id);
-        expect(section('network').hidden).toBe(false);
+        expect(section('network').hidden).toBe(true);
         expect(section('network').textContent).toContain('192.168.1.100');
         expect(section('config').hidden).toBe(true);
         expect(container.querySelector('#side-panel-toggle-config')?.textContent).toContain('Config patch preview');

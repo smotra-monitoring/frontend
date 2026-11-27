@@ -71,6 +71,7 @@ describe('Agent details side panel (Integration)', () => {
         expect(vi.mocked(getAgent).mock.calls[0]?.[0]?.path).toEqual({ agentId: mockAgents[0]!.id });
         await vi.waitFor(() => expect(appRoot.querySelector('#side-panel-section-general')?.textContent).toContain(mockAgents[0]!.id));
         expect(appRoot.querySelector('#side-panel-section-network')?.textContent).toContain('192.168.1.100');
+        expect(appRoot.querySelector<HTMLElement>('#side-panel-section-network')!.hidden).toBe(true);
         expect(configBody().hidden).toBe(true);
         expect(getAgentConfiguration).not.toHaveBeenCalled();
     });

@@ -57,7 +57,7 @@ export class AgentDetailsPanel extends BaseComponent<ComponentState> {
         this.panel = new SidePanel(this.root, {
             sections: [
                 { id: 'general', title: 'General', defaultExpanded: true },
-                { id: 'network', title: 'Network', defaultExpanded: true },
+                { id: 'network', title: 'Network', defaultExpanded: false },
                 { id: 'config', title: 'Config patch preview', defaultExpanded: false, onExpand: () => this.ensureConfigLoaded() },
             ],
             onDismiss: () => closeAgentDetails(),
