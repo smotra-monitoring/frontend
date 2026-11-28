@@ -53,9 +53,8 @@
     "jsdom": "^31",
     "prettier": "^3",
     "typescript": "^7",
-    "vitest": "^5"
-  },
-  "dependencies": {
+    "vitest": "^5",
     "npm": "^12"
-  }
+  },
+  "dependencies": {}
 }
